@@ -17,8 +17,8 @@ const Wrapper = styled.div`
 const VideoPlayer = ({ video }) => {
   return (
     <Wrapper>
-      <video controls autoPlay width='100%' height='100%'>
-        <source src={video.path} type={video.type}></source>
+      <video controls autoPlay width='100%' height='100%' playsInline={true}>
+        <source src={video.path} type='video/mp4'></source>
       </video>
     </Wrapper>
   );

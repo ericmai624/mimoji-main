@@ -1,15 +1,14 @@
 const initState = {
   path: '',
-  type: '',
   showVideo: false
 };
 
 export const videoReducer = (state=initState, action) => {
   switch (action.type) {
     case 'UPDATE_VIDEO_SRC':
-      const { path, type } = action.payload;
+      const path = action.payload;
       const showVideo = true;
-      return { ...state, path, type, showVideo };
+      return { ...state, path, showVideo };
     default:
       return state;
   }

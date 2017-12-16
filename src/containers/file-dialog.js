@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
-import axios from 'axios';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
@@ -60,27 +59,25 @@ class FileDialog extends Component {
 
   castSelectedFile(e, file) {
     e.preventDefault();
+    
     const { toggleFileDialog, updateVideoSrc } = this.props;
 
-    axios.post('/api/cast/update', { filePath: file })
-      .then((response) => {
-        console.log(response);
-        const { hash, contentType } = response.data;
-        updateVideoSrc(`http://172.16.1.13:2222/api/cast/video/${hash}`, contentType);
-        // const { cast, chrome } = window;
-    
-        // const castSession = cast.framework.CastContext.getInstance().getCurrentSession();
-        // const mediaInfo = new chrome.cast.media.MediaInfo('http://172.16.1.13:2222/api/cast/video.mp4', 'video/mp4');
-        // // mediaInfo.streamType = chrome.cast.media.StreamType.BUFFERED;
-        // const request = new chrome.cast.media.LoadRequest(mediaInfo);
-    
-        // if (castSession) {
-        //   castSession.loadMedia(request)
-        //     .then(() => console.log('load'), (errorCode) => console.log('Error Code: ', errorCode));
-        // }
-      });
+    updateVideoSrc(`http://172.16.1.13:2222/api/cast/stream?video=${file}`);
+    toggleFileDialog();
 
-    toggleFileDialog()
+    /*
+    const { cast, chrome } = window;
+
+    const castSession = cast.framework.CastContext.getInstance().getCurrentSession();
+    const mediaInfo = new chrome.cast.media.MediaInfo(`http://172.16.1.13:2222/api/cast/stream?video=${file}`, 'video/mp4');
+    mediaInfo.duration = null;
+    const request = new chrome.cast.media.LoadRequest(mediaInfo);
+
+    if (castSession) {
+      castSession.loadMedia(request)
+        .then(() => console.log('load'), (errorCode) => console.log('Error Code: ', errorCode));
+    }
+    */
   }
 
   render() {

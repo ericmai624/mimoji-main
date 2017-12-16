@@ -1,8 +1,6 @@
 const router = require('express').Router();
 const { cast } = require('../controller');
 
-router.get('/video/:hash', cast.stream);
-
-router.post('/update', cast.updateFilePath);
+router.get('/stream', cast.stream);
 
 module.exports = router;

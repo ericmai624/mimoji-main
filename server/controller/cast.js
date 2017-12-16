@@ -1,37 +1,60 @@
 const fs = require('fs');
 const chalk = require('chalk');
-const ffmpeg = require('fluent-ffmpeg');
-const crypto = require('crypto');
 const mime = require('mime-types');
-
-let files = {};
+const ffmpeg = require('fluent-ffmpeg');
 
 module.exports.stream = (req, res) => {
-  const { filePath, contentType } = files[req.params.hash];
-  const stat = fs.statSync(filePath);
-  const fileSize = stat.size;
+  const { video, seek } = req.query;
+  const time = seek ? parseFloat(seek) : 0;
   const { range } = req.headers;
+  const fileSize = fs.statSync(video).size;
+  const command = ffmpeg();
+  // console.log('seek time: ', startTime)
 
-  // if (contentType !== 'video/mp4') {
-  //   console.log(chalk.green('converting video'));
+  res.set({ 
+    'Content-Length': fileSize,
+    'Access-Control-Allow-Origin': '*',
+    'Content-Type': 'video/mp4'
+  });
 
-  //   return ffmpeg()
-  //     .input(fs.createReadStream(filePath))
-  //     .videoCodec('libx264')
-  //     .inputOptions('-preset ultrafast')
-  //     .outputFormat('mp4')
-  //     .outputOptions(['-movflags frag_keyframe+empty_moov'])
-  //     .on('start', (command) => {
-  //       console.log(chalk.blue('ffmpeg command: ', command));
-  //     })
-  //     .on('error', (err) => {
-  //       console.log('error processing video: ', err);
-  //     })
-  //     .on('end', () => {
-  //       console.log('process finished');
-  //     })
-  //     .pipe(res, { end: true });
-  // }
+  command.kill(); // kill any running instances. This will emit an error
+
+  command
+    .input(video)
+    .seekInput(time)
+    .videoCodec('libx264')
+    .outputFormat('mp4')
+    .outputOptions(['-movflags frag_keyframe+empty_moov', '-preset ultrafast', '-crf 17'])
+    .on('start', (command) => {
+      console.log(chalk.blue('ffmpeg command: ', command));
+    })
+    .on('error', (err) => {
+      console.log('error processing video: ', err);
+    })
+    .on('end', () => {
+      console.log('process finished');
+    })
+    .pipe(res, { end: true });
+
+  /*
+  if (contentType !== 'video/mp4') {
+    console.log(chalk.bgWhite('converting video'));
+
+    return ffmpeg(fs.createReadStream(file))
+      .videoCodec('libx264')
+      .outputFormat('mp4')
+      .outputOptions(['-movflags frag_keyframe+empty_moov', '-preset ultrafast', '-crf 17'])
+      .on('start', (command) => {
+        console.log(chalk.blue('ffmpeg command: ', command));
+      })
+      .on('error', (err) => {
+        console.log('error processing video: ', err);
+      })
+      .on('end', () => {
+        console.log('process finished');
+      })
+      .pipe(res, { end: true });
+  }
 
   if (!range) {
     res.status(200).set({
@@ -40,7 +63,7 @@ module.exports.stream = (req, res) => {
       'Content-Type': contentType
     });
 
-    fs.createReadStream(filePath).pipe(res);
+    fs.createReadStream(file).pipe(res);
   } else {
     const [partialStart, partialEnd] = range.replace(/bytes=/, '').split('-');
     const start = parseInt(partialStart, 10);
@@ -59,14 +82,8 @@ module.exports.stream = (req, res) => {
       'Accept-Ranges': 'bytes'
     });
     
-    fs.createReadStream(filePath, { start, end }).pipe(res);
+    fs.createReadStream(file, { start, end }).pipe(res);
   }
+  */
 };
 
-module.exports.updateFilePath = (req, res) => {
-  const { filePath } = req.body;
-  const contentType = mime.lookup(filePath);
-  const hash = crypto.createHash('md5').update(filePath).digest('hex');
-  files[hash] = { filePath, contentType };
-  res.json({ hash, contentType });
-};
