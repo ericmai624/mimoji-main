@@ -1,50 +1,22 @@
-import React, { Component } from 'react';
-import styled from 'styled-components';
+import React, { Component, Fragment } from 'react';
+import axios from 'axios';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
-import FileList from '../components/file-list';
+import FileList from '../../components/file-list/file-list-component';
 
-import { toggleFileDialog, fetchDirList } from '../actions/file-dialog';
-import { updateVideoSrc } from '../actions/video';
+import { toggleFileDialog, fetchDirList } from '../../actions/file-dialog';
+import { updateVideoSrc } from '../../actions/video';
 
-const Wrapper = styled.div`
-  position: fixed;
-  width: 100%;
-  height: 100vh;
-  left: 0;
-  top: 0;
-  align-items: center;
-  justify-content: center;
-  background: rgba(49, 49, 49, 0.9);
-`;
-
-const Dialog = styled.div`
-  display: grid;
-  grid-template-columns: 2fr 4fr;
-  width: 850px;
-  height: 80%;
-  max-height: 600px;
-  background: rgb(255, 255, 255);
-`;
-
-const DialogSidebar = styled.div`
-  grid-column: 1;
-  background: lightcoral;
-`;
-
-const Main = styled.div`
-  grid-column: 2;
-  padding: 1.8em;
-  overflow: auto;
-`;
-
-const Close = styled.div`
-  display: inline-block;
-  width: 40px;
-  height: 40px;
-  cursor: pointer;
-`;
+import {
+  Wrapper,
+  Dialog,
+  DialogSidebar,
+  Main,
+  Close,
+  Label,
+  LabelWrapper
+} from './file-dialog-styles';
 
 class FileDialog extends Component {
   constructor(props) {
@@ -59,12 +31,15 @@ class FileDialog extends Component {
 
   castSelectedFile(e, file) {
     e.preventDefault();
-    
+
     const { toggleFileDialog, updateVideoSrc } = this.props;
 
-    updateVideoSrc(`http://172.16.1.13:2222/api/cast/stream?video=${file}`);
     toggleFileDialog();
-
+    
+    axios.get(`http://172.16.1.13:2222/api/cast/metadata?video=${file}`)
+    .then((response) => {
+        updateVideoSrc(`http://172.16.1.13:2222/api/cast/stream?video=${file}#t=0,${response.data.format.duration}`);
+      });
     /*
     const { cast, chrome } = window;
 
@@ -84,21 +59,26 @@ class FileDialog extends Component {
     const { dir, showFileDialog, toggleFileDialog, fetchDirList } = this.props;
 
     return (
-      <Wrapper style={{ display: showFileDialog ? 'flex' : 'none' }}>
-        <Dialog>
-          <DialogSidebar></DialogSidebar>
-          <Main>
-            <Close onClick={toggleFileDialog}>
-              <i className='fa fa-times fa-lg' aria-hidden='true'></i>
-            </Close>
-            <FileList 
-              dir={dir} 
-              fetchDirList={fetchDirList} 
-              castSelectedFile={this.castSelectedFile}
-            />
-          </Main>
-        </Dialog>
-      </Wrapper>
+      <Fragment>
+        <LabelWrapper>
+          <Label onClick={toggleFileDialog}>Choose a Video</Label>
+        </LabelWrapper>
+        <Wrapper style={{ display: showFileDialog ? 'flex' : 'none' }}>
+          <Dialog>
+            <DialogSidebar></DialogSidebar>
+            <Main>
+              <Close onClick={toggleFileDialog}>
+                <i className='fa fa-times fa-lg' aria-hidden='true'></i>
+              </Close>
+              <FileList 
+                dir={dir} 
+                fetchDirList={fetchDirList} 
+                castSelectedFile={this.castSelectedFile}
+              />
+            </Main>
+          </Dialog>
+        </Wrapper>
+      </Fragment>
     );
   }
 }

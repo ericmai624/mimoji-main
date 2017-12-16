@@ -6,9 +6,8 @@ import styled from 'styled-components';
 import { updateCastPlayer, updateCastController } from './actions/cast';
 
 import Cast from './components/cast';
-import ChooseVideo from './containers/choose-video';
-import FileDialog from './containers/file-dialog';
-import VideoPlayer from './components/video-player';
+import FileDialog from './containers/file-dialog/file-dialog-component';
+import VideoPlayer from './containers/video-player/video-player-component';
 
 const Root = styled.div`
   display: grid;
@@ -40,21 +39,18 @@ class App extends Component {
     updateCastController(controller);
   }
   
-  render() {
-    const { video } = this.props;
-    
+  render() {    
     return (
       <Root>
         <Cast/>
-        <ChooseVideo/>
-        {video.showVideo ? (<VideoPlayer video={video}/>) : null}
+        <VideoPlayer />
         <FileDialog/>
       </Root>
     );
   }
 }
 
-const mapStateToProps = (state) => ({ cast: state.cast, video: state.video });
+const mapStateToProps = (state) => ({ cast: state.cast });
 
 const mapDispatchToProps = (dispath) => ({ 
   updateCastPlayer: bindActionCreators(updateCastPlayer, dispath),
