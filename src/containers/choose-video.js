@@ -16,6 +16,7 @@ const Wrapper = styled.div`
 `;
 
 const Label = styled.label`
+  user-select: none;
   color: #fefefe;
   background-color: #3f51b5;
   outline: none;
@@ -28,27 +29,6 @@ const Label = styled.label`
 `;
 
 class ChooseVideo extends Component {
-  constructor(props) {
-    super(props);
-
-    this.fileReader = new FileReader();
-
-    this.handleVideoInput = this.handleVideoInput.bind(this);
-  }
-  
-  handleVideoInput(e) {
-    e.preventDefault();
-    const { cast, chrome } = window;
-    // const file = e.target.files[0];
-
-    const castSession = cast.framework.CastContext.getInstance().getCurrentSession();
-    const mediaInfo = new chrome.cast.media.MediaInfo('http://172.16.1.13:2222/sample.mp4', 'mkv');
-    const request = new chrome.cast.media.LoadRequest(mediaInfo);
-
-    castSession.loadMedia(request)
-      .then(() => console.log('load'), (err) => console.log(err));
-  }
-
   render() {
     const { toggleFileDialog } = this.props;
 

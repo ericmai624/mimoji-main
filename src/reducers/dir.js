@@ -11,7 +11,8 @@ export const dirReducer = (state=initState, action) => {
     case 'FETCH_DIR_PENDING':
       return { ...state, fetching: true };
     case 'FETCH_DIR_FULFILLED':
-      return { ...state, fetching: false, fetched: true, curr: action.payload.dir, list: action.payload.list };
+      const { curr, list } = action.payload; 
+      return { ...state, fetching: false, fetched: true, curr, list };
     case 'FETCH_DIR_REJECTED':
       return { ...state, fetching: false, fetched: false, error: action.payload };
     default: 

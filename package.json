@@ -11,9 +11,13 @@
   },
   "proxy": "http://localhost:2222",
   "dependencies": {
+    "axios": "^0.17.1",
     "bluebird": "^3.5.1",
     "body-parser": "^1.18.2",
+    "chalk": "^2.3.0",
     "express": "^4.16.2",
+    "fluent-ffmpeg": "^2.1.2",
+    "mime-types": "^2.1.17",
     "morgan": "^1.9.0",
     "react": "^16.2.0",
     "react-dom": "^16.2.0",

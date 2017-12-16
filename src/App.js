@@ -8,6 +8,7 @@ import { updateCastPlayer, updateCastController } from './actions/cast';
 import Cast from './components/cast';
 import ChooseVideo from './containers/choose-video';
 import FileDialog from './containers/file-dialog';
+import VideoPlayer from './components/video-player';
 
 const Root = styled.div`
   display: grid;
@@ -40,17 +41,20 @@ class App extends Component {
   }
   
   render() {
+    const { video } = this.props;
+    
     return (
       <Root>
         <Cast/>
         <ChooseVideo/>
+        {video.showVideo ? (<VideoPlayer video={video}/>) : null}
         <FileDialog/>
       </Root>
     );
   }
 }
 
-const mapStateToProps = (state) => ({ cast: state.cast });
+const mapStateToProps = (state) => ({ cast: state.cast, video: state.video });
 
 const mapDispatchToProps = (dispath) => ({ 
   updateCastPlayer: bindActionCreators(updateCastPlayer, dispath),

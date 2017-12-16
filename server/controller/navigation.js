@@ -4,37 +4,29 @@ const fs = Promise.promisifyAll(require('fs'));
 
 const home = homedir();
 
-module.exports.getHomeDir = (req, res) => {
-  fs.readdirAsync(home)
-    .then((list) => {
-      const response = {
-        folders: [],
-        files: []
-      };
+module.exports.readDir = (req, res) => {
+  const { dir } = req.query;
+  const curr = dir === '' ? home : dir;
 
-      list.forEach((item) => {
-        if (item.indexOf('.') === 0) { // system files, skip
+  fs.readdirAsync(curr)
+    .then((items) => {
+      const list = [];
+
+      items.forEach((fileName) => {
+        if (fileName.indexOf('.') === 0) { // system files, skip
           return;
         }
   
-        let stat = fs.statSync(home + `/${item}`);
-        let { folders, files } = response;
-  
-        if (stat.isFile()) {
-          files.push(item);
-        } else if (stat.isDirectory()) {
-          folders.push(item);
-        }
+        const path = curr + '/' + fileName;
+        const stat = fs.statSync(path);
+        const isDirectory = stat.isDirectory();
+        list.push({ fileName, path, isDirectory });
       });
 
-      return res.json(response);
+      return res.json({ curr, list });
     })
     .catch((err) => {
       console.log(err);
       res.sendStatus(404);
     });
-};
-
-module.exports.subDir = (req, res) => {
-
 };

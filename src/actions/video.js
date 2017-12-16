@@ -1,3 +1,3 @@
-export const uploadVideo = (video) => {
-  return { type: 'UPLOAD_VIDEO', payload: video };
+export const updateVideoSrc = (path, type) => {
+  return { type: 'UPDATE_VIDEO_SRC', payload: { path, type } };
 };
