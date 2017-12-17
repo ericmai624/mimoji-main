@@ -57,7 +57,6 @@ export const Main = styled.div`
 
 export const Close = styled.div`
   display: inline-block;
-  width: 40px;
-  height: 40px;
+  font-size: 1.4em;
   cursor: pointer;
 `;

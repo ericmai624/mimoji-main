@@ -8,7 +8,7 @@ module.exports.stream = (req, res) => {
   const time = seek ? parseFloat(seek) : 0;
   const fileSize = fs.statSync(video).size;
   const command = ffmpeg();
-
+  console.log(chalk.cyan('seek: ', time));
   res.set({ 
     'Content-Length': fileSize,
     'Access-Control-Allow-Origin': '*',
@@ -27,7 +27,7 @@ module.exports.stream = (req, res) => {
       console.log(chalk.blue('ffmpeg command: ', command));
     })
     .on('error', (err) => {
-      console.log('error processing video: ', err);
+      console.log(err);
     })
     .on('end', () => {
       console.log('process finished');
@@ -37,7 +37,7 @@ module.exports.stream = (req, res) => {
 
 module.exports.getMetadata = (req, res) => {
   ffmpeg.ffprobe(req.query.video, (err, metadata) => {
-    console.log(metadata);
+    // console.log(metadata);
     res.set({ 
       'Access-Control-Allow-Origin': '*'
     });

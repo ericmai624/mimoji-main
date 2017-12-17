@@ -22,6 +22,7 @@ export const Entry = styled.li`
 
 export const Icon = styled.div`
   font-size: 1.4em;
+  padding: 0;
 `;
 
 export const Span = styled.span`

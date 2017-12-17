@@ -1,13 +1,14 @@
 {
   "name": "onecast",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "main.js",
   "license": "MIT",
   "scripts": {
     "start": "node server",
     "dev": "nodemon server",
     "client": "react-scripts start",
-    "build": "react-scripts build"
+    "build": "react-scripts build",
+    "electron": "electron ."
   },
   "proxy": "http://localhost:2222",
   "dependencies": {
@@ -27,5 +28,8 @@
     "redux-logger": "^3.0.6",
     "redux-thunk": "^2.2.0",
     "styled-components": "^2.3.0"
+  },
+  "devDependencies": {
+    "electron": "1.7.9"
   }
 }

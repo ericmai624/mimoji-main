@@ -38,7 +38,7 @@ class FileDialog extends Component {
     
     axios.get(`http://172.16.1.13:2222/api/cast/metadata?video=${file}`)
     .then((response) => {
-        updateVideoSrc(`http://172.16.1.13:2222/api/cast/stream?video=${file}#t=0,${response.data.format.duration}`);
+        updateVideoSrc(`http://172.16.1.13:2222/api/cast/stream?video=${file}`);
       });
     /*
     const { cast, chrome } = window;
@@ -68,7 +68,7 @@ class FileDialog extends Component {
             <DialogSidebar></DialogSidebar>
             <Main>
               <Close onClick={toggleFileDialog}>
-                <i className='fa fa-times fa-lg' aria-hidden='true'></i>
+                <i className="fas fa-times"></i>
               </Close>
               <FileList 
                 dir={dir} 

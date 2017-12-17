@@ -15,4 +15,4 @@ const reducer = combineReducers({
   dir: dirReducer
 });
 
-export const store = createStore(reducer, applyMiddleware(logger, thunk));
+export const store = createStore(reducer, applyMiddleware(thunk, logger));

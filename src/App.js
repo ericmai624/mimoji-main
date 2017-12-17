@@ -1,19 +1,12 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
-import styled from 'styled-components';
 
 import { updateCastPlayer, updateCastController } from './actions/cast';
 
 import Cast from './components/cast';
 import FileDialog from './containers/file-dialog/file-dialog-component';
 import VideoPlayer from './containers/video-player/video-player-component';
-
-const Root = styled.div`
-  display: grid;
-  grid-template-columns: 1fr;
-  grid-template-rows: 50px calc(100vh - 50px);
-`;
 
 class App extends Component {
   componentDidMount() {
@@ -41,11 +34,11 @@ class App extends Component {
   
   render() {    
     return (
-      <Root>
+      <Fragment>
         <Cast/>
         <VideoPlayer />
         <FileDialog/>
-      </Root>
+      </Fragment>
     );
   }
 }
