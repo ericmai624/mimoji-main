@@ -3,6 +3,6 @@ const { cast } = require('../controller');
 
 router.get('/stream', cast.stream);
 
-router.get('/metadata', cast.getMetadata);
+router.get('/duration', cast.getDuration);
 
 module.exports = router;

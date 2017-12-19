@@ -22,8 +22,7 @@ class App extends Component {
     const { updateCastPlayer, updateCastController } = this.props;
 
     cast.framework.CastContext.getInstance().setOptions({
-      receiverApplicationId:
-        chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID
+      receiverApplicationId: chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID
     }); 
 
     const player = new cast.framework.RemotePlayer();
@@ -32,18 +31,20 @@ class App extends Component {
     updateCastController(controller);
   }
   
-  render() {    
+  render() {
+    const { player } = this.props;
+    
     return (
       <Fragment>
         <Cast/>
-        <VideoPlayer />
+       {player.showPlayer ? (<VideoPlayer />) : null}
         <FileDialog/>
       </Fragment>
     );
   }
 }
 
-const mapStateToProps = (state) => ({ cast: state.cast });
+const mapStateToProps = (state) => ({ cast: state.cast, player: state.player });
 
 const mapDispatchToProps = (dispath) => ({ 
   updateCastPlayer: bindActionCreators(updateCastPlayer, dispath),

@@ -6,7 +6,8 @@ import { bindActionCreators } from 'redux';
 import FileList from '../../components/file-list/file-list-component';
 
 import { toggleFileDialog, fetchDirList } from '../../actions/file-dialog';
-import { updateVideoSrc } from '../../actions/video';
+import { updateVideoUrl, updateVideoDuration } from '../../actions/video';
+import { toggleVideoPlayer } from '../../actions/player';
 
 import {
   Wrapper,
@@ -29,29 +30,35 @@ class FileDialog extends Component {
     fetchDirList(dir.curr);
   }
 
-  castSelectedFile(e, file) {
+  castSelectedFile(e, path) {
     e.preventDefault();
 
-    const { toggleFileDialog, updateVideoSrc } = this.props;
+    const { toggleFileDialog, toggleVideoPlayer, updateVideoUrl, updateVideoDuration } = this.props;
 
     toggleFileDialog();
     
-    axios.get(`http://172.16.1.13:2222/api/cast/metadata?video=${file}`)
+    axios.get(`http://172.16.1.11:2222/api/cast/duration?video=${path}`)
     .then((response) => {
-        updateVideoSrc(`http://172.16.1.13:2222/api/cast/stream?video=${file}`);
+        const seekTime = 0;
+        toggleVideoPlayer();
+        updateVideoDuration(response.data);
+        updateVideoUrl({ path, seekTime });
+
+        /*
+        const { cast, chrome } = window;
+
+        const castSession = cast.framework.CastContext.getInstance().getCurrentSession();
+        const mediaInfo = new chrome.cast.media.MediaInfo(`http://172.16.1.11:2222/api/cast/stream?video=${path}`, 'video/mp4');
+        const request = new chrome.cast.media.LoadRequest(mediaInfo);
+    
+        if (castSession) {
+          castSession.loadMedia(request)
+            .then(() => console.log('load'), (errorCode) => console.log('Error Code: ', errorCode));
+        }
+        */
       });
     /*
-    const { cast, chrome } = window;
 
-    const castSession = cast.framework.CastContext.getInstance().getCurrentSession();
-    const mediaInfo = new chrome.cast.media.MediaInfo(`http://172.16.1.13:2222/api/cast/stream?video=${file}`, 'video/mp4');
-    mediaInfo.duration = null;
-    const request = new chrome.cast.media.LoadRequest(mediaInfo);
-
-    if (castSession) {
-      castSession.loadMedia(request)
-        .then(() => console.log('load'), (errorCode) => console.log('Error Code: ', errorCode));
-    }
     */
   }
 
@@ -86,9 +93,11 @@ class FileDialog extends Component {
 const mapStateToProps = (state) => ({ showFileDialog: state.showFileDialog, dir: state.dir });
 
 const mapDispatchToProps = (dispatch) => ({ 
-  toggleFileDialog: bindActionCreators(toggleFileDialog, dispatch),
   fetchDirList: bindActionCreators(fetchDirList, dispatch),
-  updateVideoSrc: bindActionCreators(updateVideoSrc, dispatch)
+  toggleFileDialog: bindActionCreators(toggleFileDialog, dispatch),
+  toggleVideoPlayer: bindActionCreators(toggleVideoPlayer, dispatch),
+  updateVideoUrl: bindActionCreators(updateVideoUrl, dispatch),
+  updateVideoDuration: bindActionCreators(updateVideoDuration, dispatch)
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(FileDialog);

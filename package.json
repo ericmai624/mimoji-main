@@ -10,7 +10,7 @@
     "build": "react-scripts build",
     "electron": "electron ."
   },
-  "proxy": "http://localhost:2222",
+  "proxy": "http://172.16.1.11:2222",
   "dependencies": {
     "axios": "^0.17.1",
     "bluebird": "^3.5.1",
@@ -19,6 +19,8 @@
     "express": "^4.16.2",
     "fluent-ffmpeg": "^2.1.2",
     "mime-types": "^2.1.17",
+    "moment": "^2.20.1",
+    "moment-duration-format": "^2.0.1",
     "morgan": "^1.9.0",
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
@@ -30,6 +32,6 @@
     "styled-components": "^2.3.0"
   },
   "devDependencies": {
-    "electron": "1.7.9"
+    "electron": "1.7.10"
   }
 }

@@ -1,5 +1,5 @@
-export const updateVideoSrc = (link) => ({ 
-  type: 'UPDATE_VIDEO_SRC', payload: link 
+export const updateVideoUrl = (payload) => ({ 
+  type: 'UPDATE_VIDEO_URL', payload 
 });
 
 export const updateVideoCurrTime = (time) => ({
@@ -12,8 +12,4 @@ export const updateVideoDuration = (duration) => ({
 
 export const togglePauseVideo = () => ({
   type: 'TOGGLE_PAUSE_VIDEO'
-});
-
-export const toggleVideoControls = () => ({ 
-  type: 'TOGGLE_VIDEO_CONTROLS' 
 });

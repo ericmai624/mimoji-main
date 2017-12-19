@@ -5,26 +5,34 @@ const ffmpeg = require('fluent-ffmpeg');
 
 module.exports.stream = (req, res) => {
   const { video, seek } = req.query;
-  const time = seek ? parseFloat(seek) : 0;
-  const fileSize = fs.statSync(video).size;
-  const command = ffmpeg();
-  console.log(chalk.cyan('seek: ', time));
-  res.set({ 
-    'Content-Length': fileSize,
-    'Access-Control-Allow-Origin': '*',
-    'Content-Type': 'video/mp4'
-  });
 
-  command.kill(); // kill any running instances. This will emit an error
+  if (video === '') {
+    return res.end();
+  }
+
+  const time = seek ? parseInt(seek) : 0;
+  const mimeType = mime.lookup(video);
+
+  let codec = 'libx264';
+  if (mimeType === 'video/mp4') {
+    codec = 'copy';
+  }
+  console.log(chalk.cyan('seeking: ', time));
+
+  const command = ffmpeg(video);
 
   command
-    .input(video)
     .seekInput(time)
-    .videoCodec('libx264')
+    .outputOptions([`-c:v ${codec}`, '-movflags frag_keyframe+empty_moov', '-preset ultrafast', '-crf 17', '-tune zerolatency'])
     .outputFormat('mp4')
-    .outputOptions(['-movflags frag_keyframe+empty_moov', '-preset ultrafast', '-crf 17'])
     .on('start', (command) => {
       console.log(chalk.blue('ffmpeg command: ', command));
+    })
+    .on('progress', (progress) => {
+      console.log('Processing: ' + progress.percent + '% done');
+    })
+    .on('stderr', (stderrLine) => {
+      console.log('Stderr output: ' + stderrLine);
     })
     .on('error', (err) => {
       console.log(err);
@@ -35,13 +43,17 @@ module.exports.stream = (req, res) => {
     .pipe(res, { end: true });
 };
 
-module.exports.getMetadata = (req, res) => {
-  ffmpeg.ffprobe(req.query.video, (err, metadata) => {
-    // console.log(metadata);
+module.exports.getDuration = (req, res) => {
+  const { video } = req.query;
+  if (video === '') {
+    res.end();
+  }
+  ffmpeg.ffprobe(video, (err, metadata) => {
+    console.log(metadata);
     res.set({ 
       'Access-Control-Allow-Origin': '*'
     });
-    res.json(metadata);
+    res.json(metadata.format.duration);
   });
 };
 
