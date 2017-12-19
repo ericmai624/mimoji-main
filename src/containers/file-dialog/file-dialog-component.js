@@ -1,4 +1,5 @@
 import React, { Component, Fragment } from 'react';
+import FontAwesomeIcon from '@fortawesome/react-fontawesome';
 import axios from 'axios';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -22,7 +23,10 @@ import {
 class FileDialog extends Component {
   constructor(props) {
     super(props);
+
     this.castSelectedFile = this.castSelectedFile.bind(this);
+    this.onDoubleClickDirectory = this.onDoubleClickDirectory.bind(this);
+    this.onDoubleClickFile = this.onDoubleClickFile.bind(this);
   }
   
   componentDidMount() {
@@ -30,40 +34,47 @@ class FileDialog extends Component {
     fetchDirList(dir.curr);
   }
 
-  castSelectedFile(e, path) {
+  onDoubleClickDirectory(e, dir) {
     e.preventDefault();
+    const { fetchDirList } = this.props;
+    fetchDirList(dir);
+  }
 
+  onDoubleClickFile(e, file) {
+    e.preventDefault();
+    this.castSelectedFile(file);
+  }
+
+  castSelectedFile(path) {
     const { toggleFileDialog, toggleVideoPlayer, updateVideoUrl, updateVideoDuration } = this.props;
 
     toggleFileDialog();
     
-    axios.get(`http://172.16.1.11:2222/api/cast/duration?video=${path}`)
-    .then((response) => {
-        const seekTime = 0;
-        toggleVideoPlayer();
-        updateVideoDuration(response.data);
-        updateVideoUrl({ path, seekTime });
+    axios.get(`http://localhost:2222/api/cast/duration?video=${path}`)
+      .then((response) => {
+          const seekTime = 0;
+          toggleVideoPlayer();
+          updateVideoDuration(response.data);
+          updateVideoUrl({ path, seekTime });
 
-        /*
-        const { cast, chrome } = window;
+          /*
+          const { cast, chrome } = window;
 
-        const castSession = cast.framework.CastContext.getInstance().getCurrentSession();
-        const mediaInfo = new chrome.cast.media.MediaInfo(`http://172.16.1.11:2222/api/cast/stream?video=${path}`, 'video/mp4');
-        const request = new chrome.cast.media.LoadRequest(mediaInfo);
-    
-        if (castSession) {
-          castSession.loadMedia(request)
-            .then(() => console.log('load'), (errorCode) => console.log('Error Code: ', errorCode));
-        }
-        */
-      });
-    /*
-
-    */
+          const castSession = cast.framework.CastContext.getInstance().getCurrentSession();
+          const mediaInfo = new chrome.cast.media.MediaInfo(`http://172.16.1.11:2222/api/cast/stream?video=${path}`, 'video/mp4');
+          const request = new chrome.cast.media.LoadRequest(mediaInfo);
+      
+          if (castSession) {
+            castSession.loadMedia(request)
+              .then(() => console.log('load'), (errorCode) => console.log('Error Code: ', errorCode));
+          }
+          */
+        });
   }
 
   render() {
-    const { dir, showFileDialog, toggleFileDialog, fetchDirList } = this.props;
+    const { dir, showFileDialog, toggleFileDialog } = this.props;
+    const { onDoubleClickDirectory, onDoubleClickFile } = this;
 
     return (
       <Fragment>
@@ -75,12 +86,12 @@ class FileDialog extends Component {
             <DialogSidebar></DialogSidebar>
             <Main>
               <Close onClick={toggleFileDialog}>
-                <i className="fas fa-times"></i>
+                <FontAwesomeIcon icon={['fas', 'times']}/>
               </Close>
               <FileList 
                 dir={dir} 
-                fetchDirList={fetchDirList} 
-                castSelectedFile={this.castSelectedFile}
+                onDoubleClickDirectory={onDoubleClickDirectory} 
+                onDoubleClickFile={onDoubleClickFile}
               />
             </Main>
           </Dialog>

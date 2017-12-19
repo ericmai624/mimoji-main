@@ -20,6 +20,7 @@ class Cast extends Component {
     style.outline = 'none';
     style.cursor = 'pointer';
     style.background = 'transparent';
+    style.zIndex = '1000';
     document.querySelector('#cast').appendChild(castBtn);
   }
 

@@ -1,4 +1,5 @@
 import React from 'react';
+import FontAwesomeIcon from '@fortawesome/react-fontawesome';
 
 import {
   List,
@@ -7,27 +8,21 @@ import {
   Span
 } from './file-list-styles';
 
-const FileList = ({ dir, fetchDirList, castSelectedFile }) => {
+const FileList = ({ dir, onDoubleClickDirectory, onDoubleClickFile }) => {
   return (
     <List>
       {dir.list.map((file, i) => {
-        if (file.isDirectory) {
-          return (
-            <Entry key={i} onDoubleClick={(e) => fetchDirList(file.path)}>
-              <Icon>
-                <i className="fas fa-folder"></i>
-              </Icon>
-              <Span>{file.fileName}/</Span>
-            </Entry>
-          );
-        }
+        const { isDirectory } = file;
 
         return (
-          <Entry key={i} onDoubleClick={(e) => castSelectedFile(e, file.path)}>
+          <Entry 
+            key={i} 
+            onDoubleClick={isDirectory ? (e) => onDoubleClickDirectory(e, file.path) : (e) => onDoubleClickFile(e, file.path)}
+          >
             <Icon>
-              <i className="fas fa-file"></i>
+              {isDirectory ? <FontAwesomeIcon icon={['fas', 'folder']}/> : <FontAwesomeIcon icon={['fas', 'file']}/>}
             </Icon>
-            <Span>{file.fileName}</Span>
+            <Span>{file.fileName}/</Span>
           </Entry>
         );
       })}

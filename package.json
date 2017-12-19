@@ -10,8 +10,12 @@
     "build": "react-scripts build",
     "electron": "electron ."
   },
-  "proxy": "http://172.16.1.11:2222",
+  "proxy": "http://localhost:2222",
   "dependencies": {
+    "@fortawesome/fontawesome": "^1.0.1",
+    "@fortawesome/fontawesome-free-regular": "^5.0.1",
+    "@fortawesome/fontawesome-free-solid": "^5.0.1",
+    "@fortawesome/react-fontawesome": "^0.0.16",
     "axios": "^0.17.1",
     "bluebird": "^3.5.1",
     "body-parser": "^1.18.2",
@@ -29,7 +33,7 @@
     "redux": "^3.7.2",
     "redux-logger": "^3.0.6",
     "redux-thunk": "^2.2.0",
-    "styled-components": "^2.3.0"
+    "styled-components": "^2.3.2"
   },
   "devDependencies": {
     "electron": "1.7.10"

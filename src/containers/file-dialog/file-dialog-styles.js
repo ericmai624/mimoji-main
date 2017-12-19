@@ -7,7 +7,6 @@ export const LabelWrapper = styled.div`
   align-items: center;
   justify-content: center;
   font-size: 2em;
-  cursor: pointer;
   margin-top: -50px;
 `;
 

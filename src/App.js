@@ -1,4 +1,7 @@
 import React, { Component, Fragment } from 'react';
+import fontawesome from '@fortawesome/fontawesome';
+import solid from '@fortawesome/fontawesome-free-solid';
+import regular from '@fortawesome/fontawesome-free-regular';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 
@@ -8,13 +11,29 @@ import Cast from './components/cast';
 import FileDialog from './containers/file-dialog/file-dialog-component';
 import VideoPlayer from './containers/video-player/video-player-component';
 
+fontawesome.library.add(solid, regular);
+
 class App extends Component {
+  constructor(props) {
+    super(props);
+    
+    this.loadGoogleCastFramework = this.loadGoogleCastFramework.bind(this);
+    this.initializeCastApi = this.initializeCastApi.bind(this);
+  }
+  
   componentDidMount() {
     window['__onGCastApiAvailable'] = (isAvailable) => {
       if (isAvailable) {
         this.initializeCastApi();
       }
     };
+    this.loadGoogleCastFramework();
+  }
+
+  loadGoogleCastFramework() {
+    const script = document.createElement('script');
+    script.src = 'https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1';
+    document.querySelector('#root').appendChild(script);
   }
 
   initializeCastApi() {

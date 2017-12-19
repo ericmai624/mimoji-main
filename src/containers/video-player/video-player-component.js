@@ -101,7 +101,7 @@ class VideoPlayer extends Component {
           onEnded={this.onVideoEnded}
           onStalled={this.onVideoStalled}
           ref={(el) => this.videoEl = el}
-          src={`http://172.16.1.11:2222/api/cast/stream?video=${video.path}&seek=${video.seekTime}`}
+          src={`http://localhost:2222/api/cast/stream?video=${video.path}&seek=${video.seekTime}`}
         >
           {/* <source src={'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4'} type='video/mp4'/> */}
         </video>

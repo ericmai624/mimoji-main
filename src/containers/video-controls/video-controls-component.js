@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import FontAwesomeIcon from '@fortawesome/react-fontawesome';
 import moment from 'moment';
 import momentDurationSetup from 'moment-duration-format';
 
@@ -40,7 +41,7 @@ class VideoControls extends Component {
     return (
       <Wrapper style={{ opacity: show ? '0.7' : '0' }}>
         <Play onClick={togglePlay}>
-          <i className={paused ? 'fas fa-play' : 'fas fa-pause'}></i>
+          {paused ? <FontAwesomeIcon icon={['fas', 'play']}/> : <FontAwesomeIcon icon={['fas', 'pause']}/>}
         </Play>
         <ProgressContainer onClick={this.handleSeek.bind(this)}>
           <Progress 
