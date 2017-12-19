@@ -8,7 +8,7 @@ import { connect } from 'react-redux';
 import { updateCastPlayer, updateCastController } from './actions/cast';
 
 import Cast from './components/cast';
-import FileDialog from './containers/file-dialog/file-dialog-component';
+import FileBrowser from './containers/file-browser/file-browser-component';
 import VideoPlayer from './containers/video-player/video-player-component';
 
 fontawesome.library.add(solid, regular);
@@ -57,7 +57,7 @@ class App extends Component {
       <Fragment>
         <Cast/>
        {player.showPlayer ? (<VideoPlayer />) : null}
-        <FileDialog/>
+        <FileBrowser/>
       </Fragment>
     );
   }

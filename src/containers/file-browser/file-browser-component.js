@@ -4,9 +4,9 @@ import axios from 'axios';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
-import FileList from '../../components/file-list/file-list-component';
+import FileBrowserList from '../../components/file-browser-list/file-browser-list-component';
 
-import { toggleFileDialog, fetchDirList } from '../../actions/file-dialog';
+import { toggleFileBrowserDialog, fetchDirContent } from '../../actions/file-browser';
 import { updateVideoUrl, updateVideoDuration } from '../../actions/video';
 import { toggleVideoPlayer } from '../../actions/player';
 
@@ -15,29 +15,30 @@ import {
   Dialog,
   DialogSidebar,
   Main,
-  Close,
+  NaviBtns,
   Label,
   LabelWrapper
-} from './file-dialog-styles';
+} from './file-browser-styles';
 
-class FileDialog extends Component {
+class FileBrowser extends Component {
   constructor(props) {
     super(props);
 
     this.castSelectedFile = this.castSelectedFile.bind(this);
     this.onDoubleClickDirectory = this.onDoubleClickDirectory.bind(this);
     this.onDoubleClickFile = this.onDoubleClickFile.bind(this);
+    this.navigateUpDir = this.navigateUpDir.bind(this);
   }
   
   componentDidMount() {
-    const { fetchDirList, dir } = this.props;
-    fetchDirList(dir.curr);
+    const { fetchDirContent, fileBrowser } = this.props;
+    fetchDirContent(fileBrowser.currDir);
   }
 
   onDoubleClickDirectory(e, dir) {
     e.preventDefault();
-    const { fetchDirList } = this.props;
-    fetchDirList(dir);
+    const { fetchDirContent } = this.props;
+    fetchDirContent(dir);
   }
 
   onDoubleClickFile(e, file) {
@@ -72,24 +73,33 @@ class FileDialog extends Component {
         });
   }
 
+  navigateUpDir(e) {
+    e.preventDefault();
+    const { fileBrowser, fetchDirContent } = this.props;
+    fetchDirContent(fileBrowser.currDir + '/..');
+  }
+
   render() {
-    const { dir, showFileDialog, toggleFileDialog } = this.props;
+    const { fileBrowser, toggleFileBrowserDialog } = this.props;
     const { onDoubleClickDirectory, onDoubleClickFile } = this;
 
     return (
       <Fragment>
         <LabelWrapper>
-          <Label onClick={toggleFileDialog}>Choose a Video</Label>
+          <Label onClick={toggleFileBrowserDialog}>Choose a Video</Label>
         </LabelWrapper>
-        <Wrapper style={{ display: showFileDialog ? 'flex' : 'none' }}>
+        <Wrapper style={{ display: fileBrowser.showDialog ? 'flex' : 'none' }}>
           <Dialog>
             <DialogSidebar></DialogSidebar>
             <Main>
-              <Close onClick={toggleFileDialog}>
+              <NaviBtns onClick={toggleFileBrowserDialog}>
                 <FontAwesomeIcon icon={['fas', 'times']}/>
-              </Close>
-              <FileList 
-                dir={dir} 
+              </NaviBtns>
+              <NaviBtns>
+                <FontAwesomeIcon icon={['fas', 'chevron-up']} onClick={this.navigateUpDir}/>
+              </NaviBtns>
+              <FileBrowserList
+                content={fileBrowser.content} 
                 onDoubleClickDirectory={onDoubleClickDirectory} 
                 onDoubleClickFile={onDoubleClickFile}
               />
@@ -101,14 +111,14 @@ class FileDialog extends Component {
   }
 }
 
-const mapStateToProps = (state) => ({ showFileDialog: state.showFileDialog, dir: state.dir });
+const mapStateToProps = (state) => ({ showFileDialog: state.showFileDialog, fileBrowser: state.fileBrowser });
 
 const mapDispatchToProps = (dispatch) => ({ 
-  fetchDirList: bindActionCreators(fetchDirList, dispatch),
-  toggleFileDialog: bindActionCreators(toggleFileDialog, dispatch),
+  fetchDirContent: bindActionCreators(fetchDirContent, dispatch),
+  toggleFileBrowserDialog: bindActionCreators(toggleFileBrowserDialog, dispatch),
   toggleVideoPlayer: bindActionCreators(toggleVideoPlayer, dispatch),
   updateVideoUrl: bindActionCreators(updateVideoUrl, dispatch),
   updateVideoDuration: bindActionCreators(updateVideoDuration, dispatch)
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(FileDialog);
+export default connect(mapStateToProps, mapDispatchToProps)(FileBrowser);

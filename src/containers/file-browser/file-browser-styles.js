@@ -54,8 +54,9 @@ export const Main = styled.div`
   overflow: auto;
 `;
 
-export const Close = styled.div`
+export const NaviBtns = styled.div`
   display: inline-block;
   font-size: 1.4em;
   cursor: pointer;
 `;
+

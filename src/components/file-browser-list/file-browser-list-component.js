@@ -6,12 +6,12 @@ import {
   Entry,
   Icon,
   Span
-} from './file-list-styles';
+} from './file-browser-list-styles';
 
-const FileList = ({ dir, onDoubleClickDirectory, onDoubleClickFile }) => {
+const FileBrowserList = ({ content, onDoubleClickDirectory, onDoubleClickFile }) => {
   return (
     <List>
-      {dir.list.map((file, i) => {
+      {content.map((file, i) => {
         const { isDirectory } = file;
 
         return (
@@ -30,4 +30,4 @@ const FileList = ({ dir, onDoubleClickDirectory, onDoubleClickFile }) => {
   );
 };
 
-export default FileList;
+export default FileBrowserList;
