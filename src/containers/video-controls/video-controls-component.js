@@ -1,19 +1,20 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
+import _ from 'lodash';
 import FontAwesomeIcon from '@fortawesome/react-fontawesome';
 import moment from 'moment';
 import momentDurationSetup from 'moment-duration-format';
 
 import { 
   Wrapper,
+  Showtime,
   ProgressContainer,
   Progress,
-  Controls,
-  Play
+  ControlsBtns,
 } from './video-controls-styles';
 
 momentDurationSetup(moment);
 
-class VideoControls extends Component {
+class VideoControls extends PureComponent {
   handleSeek(e) {
     e.stopPropagation();
     const { duration, seek } = this.props;
@@ -29,20 +30,23 @@ class VideoControls extends Component {
     }
 
     const pos = (e.pageX - offsetLeft) / progress.clientWidth;
-    seek(parseInt(pos * duration, 10));
+    seek(_.floor(pos * duration));
   }
 
   render() {
-    const { togglePlay, show, paused, currTime, duration } = this.props;
+    const { toggleFullscreen, togglePlay, show, paused, currTime, duration, fullscreen } = this.props;
     const format = duration > 3599 ? 'hh:mm:ss' : 'mm:ss';
     const displayedTime = moment.duration(currTime, 'seconds').format(format, { trim: false });
     const endTime = moment.duration(duration, 'seconds').format(format, { trim: false });
 
     return (
-      <Wrapper style={{ opacity: show ? '0.7' : '0' }}>
-        <Play onClick={togglePlay}>
+      <Wrapper 
+        className='center'
+        show={show}
+      >
+        <ControlsBtns onClick={togglePlay} className='center'>
           {paused ? <FontAwesomeIcon icon={['fas', 'play']}/> : <FontAwesomeIcon icon={['fas', 'pause']}/>}
-        </Play>
+        </ControlsBtns>
         <ProgressContainer onClick={this.handleSeek.bind(this)}>
           <Progress 
             value={currTime} 
@@ -51,11 +55,18 @@ class VideoControls extends Component {
           >
           </Progress>
         </ProgressContainer>
-        <div style={{color: 'white', marginLeft: '10px'}}>
+        <Showtime>
           {displayedTime} / {endTime}
-        </div>
-        <Controls>
-        </Controls>
+        </Showtime>
+        <ControlsBtns className='center'>
+          <FontAwesomeIcon icon={['fas', 'volume-up']}/>
+        </ControlsBtns>
+        <ControlsBtns className='center'>
+          <FontAwesomeIcon icon={['fas', 'closed-captioning']}/>
+        </ControlsBtns>
+        <ControlsBtns className='center' onClick={toggleFullscreen}>
+          {fullscreen ? <FontAwesomeIcon icon={['fas', 'compress']}/> : <FontAwesomeIcon icon={['fas', 'expand']}/>}
+        </ControlsBtns>
       </Wrapper>
     );
   }

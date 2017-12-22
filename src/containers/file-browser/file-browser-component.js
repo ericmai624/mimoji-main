@@ -15,7 +15,9 @@ import {
   Dialog,
   DialogSidebar,
   Main,
+  Nav,
   NaviBtns,
+  CurrDirectory,
   Label,
   LabelWrapper
 } from './file-browser-styles';
@@ -47,9 +49,9 @@ class FileBrowser extends Component {
   }
 
   castSelectedFile(path) {
-    const { toggleFileDialog, toggleVideoPlayer, updateVideoUrl, updateVideoDuration } = this.props;
+    const { toggleFileBrowserDialog, toggleVideoPlayer, updateVideoUrl, updateVideoDuration } = this.props;
 
-    toggleFileDialog();
+    toggleFileBrowserDialog();
     
     axios.get(`http://localhost:2222/api/cast/duration?video=${path}`)
       .then((response) => {
@@ -85,27 +87,41 @@ class FileBrowser extends Component {
 
     return (
       <Fragment>
-        <LabelWrapper>
-          <Label onClick={toggleFileBrowserDialog}>Choose a Video</Label>
-        </LabelWrapper>
-        <Wrapper style={{ display: fileBrowser.showDialog ? 'flex' : 'none' }}>
-          <Dialog>
-            <DialogSidebar></DialogSidebar>
-            <Main>
-              <NaviBtns onClick={toggleFileBrowserDialog}>
-                <FontAwesomeIcon icon={['fas', 'times']}/>
-              </NaviBtns>
-              <NaviBtns>
-                <FontAwesomeIcon icon={['fas', 'chevron-up']} onClick={this.navigateUpDir}/>
-              </NaviBtns>
-              <FileBrowserList
-                content={fileBrowser.content} 
-                onDoubleClickDirectory={onDoubleClickDirectory} 
-                onDoubleClickFile={onDoubleClickFile}
-              />
-            </Main>
-          </Dialog>
-        </Wrapper>
+        {fileBrowser.showDialog ?
+          (<Wrapper className='center'>
+            <Dialog>
+              <DialogSidebar></DialogSidebar>
+              <Main>
+                <Nav>
+                  <CurrDirectory className='ellipsis'>
+                    {fileBrowser.currDir}
+                  </CurrDirectory>
+                  <NaviBtns className='center' onClick={toggleFileBrowserDialog}>
+                    <FontAwesomeIcon icon={['fas', 'times']}/>
+                  </NaviBtns>
+                  <NaviBtns className='center' onClick={this.navigateUpDir}>
+                    <FontAwesomeIcon icon={['fas', 'chevron-up']}/>
+                  </NaviBtns>
+                  <NaviBtns className='center'>
+                    <FontAwesomeIcon icon={['fas', 'sort-amount-down']}/>
+                  </NaviBtns>
+                  <NaviBtns className='center'>
+                    <FontAwesomeIcon icon={['fas', 'filter']}/>
+                  </NaviBtns>
+                </Nav>
+                <FileBrowserList
+                  content={fileBrowser.content} 
+                  onDoubleClickDirectory={onDoubleClickDirectory} 
+                  onDoubleClickFile={onDoubleClickFile}
+                />
+              </Main>
+            </Dialog>
+          </Wrapper>) 
+          :
+          (<LabelWrapper className='center'>
+            <Label onClick={toggleFileBrowserDialog}>Choose a Video</Label>
+          </LabelWrapper>)
+        }
       </Fragment>
     );
   }

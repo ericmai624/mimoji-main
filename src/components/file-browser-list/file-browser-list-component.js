@@ -17,7 +17,7 @@ const FileBrowserList = ({ content, onDoubleClickDirectory, onDoubleClickFile })
         return (
           <Entry 
             key={i} 
-            onDoubleClick={isDirectory ? (e) => onDoubleClickDirectory(e, file.path) : (e) => onDoubleClickFile(e, file.path)}
+            onDoubleClick={isDirectory ? (e) => onDoubleClickDirectory(e, file.filePath) : (e) => onDoubleClickFile(e, file.filePath)}
           >
             <Icon>
               {isDirectory ? <FontAwesomeIcon icon={['fas', 'folder']}/> : <FontAwesomeIcon icon={['fas', 'file']}/>}

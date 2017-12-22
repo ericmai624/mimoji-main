@@ -9,3 +9,20 @@ body {
   grid-template-columns: 1fr;
   grid-template-rows: 50px calc(100vh - 50px);
 }
+
+.center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ellipsis {
+  text-overflow: ellipsis;
+  overflow: hidden;
+  word-wrap: normal;
+  white-space: nowrap;
+}
+
+video::-webkit-media-controls {
+  display: none !important;
+}

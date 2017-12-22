@@ -1,6 +1,5 @@
 import { createStore, combineReducers, applyMiddleware } from 'redux';
 import thunk from 'redux-thunk';
-import logger from 'redux-logger';
 
 import { castPlayerReducer, castControllerReducer } from './cast';
 import { videoReducer } from './video';
@@ -15,4 +14,11 @@ const reducer = combineReducers({
   fileBrowser: fileBrowserReducer,
 });
 
-export const store = createStore(reducer, applyMiddleware(thunk, logger));
+const middlewares = [thunk];
+
+if (process.env.NODE_ENV !== 'production') {
+  const { logger } = require('redux-logger');
+  middlewares.push(logger);
+}
+
+export const store = createStore(reducer, applyMiddleware(...middlewares));

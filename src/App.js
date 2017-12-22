@@ -56,8 +56,7 @@ class App extends Component {
     return (
       <Fragment>
         <Cast/>
-       {player.showPlayer ? (<VideoPlayer />) : null}
-        <FileBrowser/>
+       {player.showPlayer ? (<VideoPlayer />) : (<FileBrowser/>)}
       </Fragment>
     );
   }

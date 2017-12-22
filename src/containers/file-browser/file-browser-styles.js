@@ -3,9 +3,6 @@ import styled from 'styled-components';
 export const LabelWrapper = styled.div`
   height: 100%;
   grid-row: 2;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   font-size: 2em;
   margin-top: -50px;
 `;
@@ -29,8 +26,6 @@ export const Wrapper = styled.div`
   height: 100vh;
   left: 0;
   top: 0;
-  align-items: center;
-  justify-content: center;
   background: rgba(49, 49, 49, 0.9);
 `;
 
@@ -54,9 +49,27 @@ export const Main = styled.div`
   overflow: auto;
 `;
 
+export const CurrDirectory = styled.div`
+  border: 1px solid #e3e3e3;
+  padding: 0.5em 1em;
+  width: 60%;
+  height: 34.5px;
+  box-sizing: border-box;
+
+  &:hover {
+    height: auto;
+    word-wrap: break-word;
+    white-space: unset;
+  }
+`;
+
+export const Nav = styled.div`
+  display: flex;
+`;
+
 export const NaviBtns = styled.div`
-  display: inline-block;
   font-size: 1.4em;
   cursor: pointer;
+  margin-left: 1em;
 `;
 

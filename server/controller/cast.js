@@ -22,8 +22,9 @@ module.exports.stream = (req, res) => {
   const command = ffmpeg(video);
 
   command
+    .inputOptions(['-loglevel panic'])
     .seekInput(time)
-    .outputOptions([`-c:v ${codec}`, '-movflags frag_keyframe+empty_moov', '-preset ultrafast', '-crf 17', '-tune zerolatency'])
+    .outputOptions([`-c:v ${codec}`, '-c:a copy', '-movflags frag_keyframe+empty_moov', '-preset ultrafast', '-crf 17', '-tune zerolatency'])
     .outputFormat('mp4')
     .on('start', (command) => {
       console.log(chalk.blue('ffmpeg command: ', command));

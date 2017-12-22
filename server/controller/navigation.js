@@ -1,24 +1,25 @@
 const { homedir } = require('os');
+const _ = require('lodash');
+const path = require('path');
 const Promise = require('bluebird');
 const fs = Promise.promisifyAll(require('fs'));
 
 module.exports.readDir = (req, res) => {
   const { dir } = req.query;
-  const currDir = dir === '' ? homedir() : dir;
+  const currDir = path.resolve(dir === '' ? homedir() : dir);
 
   fs.readdirAsync(currDir)
     .then((items) => {
       const content = [];
 
-      items.forEach((fileName) => {
+      _.forEach(items, (fileName) => {
         if (fileName.indexOf('.') === 0) { // system files, skip
           return;
         }
   
-        const path = currDir + '/' + fileName;
-        const stat = fs.statSync(path);
-        const isDirectory = stat.isDirectory();
-        content.push({ fileName, path, isDirectory });
+        const filePath = path.resolve(currDir, fileName);
+        const isDirectory = fs.statSync(filePath).isDirectory();
+        content.push({ fileName, filePath, isDirectory });
       });
 
       return res.json({ currDir, content });
