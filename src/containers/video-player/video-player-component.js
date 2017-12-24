@@ -1,5 +1,6 @@
 import React, { PureComponent } from 'react';
 import _ from 'lodash';
+import Hls from 'hls.js';
 import * as d3 from 'd3-timer';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -23,17 +24,35 @@ class VideoPlayer extends PureComponent {
   constructor(props) {
     super(props);
 
+    this.hls = new Hls();
     this.togglePlay = this.togglePlay.bind(this);
     this._toggleControls = _.throttle(this.toggleControls.bind(this), 4000);
     this.seek = this.seek.bind(this);
-    this.onVideoTimeUpdate = this.onVideoTimeUpdate.bind(this);
+    this.updateElapsedTime = this.updateElapsedTime.bind(this);
+    this.onVideoPlaying = this.onVideoPlaying.bind(this);
     this.onVideoEnded = this.onVideoEnded.bind(this);
     this.toggleFullscreen = this.toggleFullscreen.bind(this);
+    this.clearTimer = this.clearTimer.bind(this);
   }
+
+  componentDidUpdate(prevProps, prevState) {
+    console.log('component updated');
+    const { hls, videoEl } = this;
+    const { video } = this.props;
+
+    hls.loadSource(`http://localhost:2222/api/cast/stream?video=${video.path}`);
+    hls.attachMedia(videoEl);
+    hls.on(Hls.Events.MANIFEST_PARSED, () => {
+      console.log('should play video');
+      videoEl.play()}
+    );
+  }
+  
 
   componentWillUnmount() {
     this.clearTimer();
   }
+  
 
   togglePlay(e) {
     e.preventDefault();
@@ -45,14 +64,17 @@ class VideoPlayer extends PureComponent {
 
   toggleControls() {
     const { toggleVideoControls, player } = this.props;
-    if (this.hideControls) {
-      this.hideControls.stop();
-    }
-    if (player.showControls) {
-      this.hideControls = d3.timeout(toggleVideoControls, 5000);
-    } else {
+    if (!player.showControls) {
       toggleVideoControls();
     }
+    // if (this.hideControls) {
+    //   this.hideControls.stop();
+    // }
+    // if (player.showControls) {
+    //   this.hideControls = d3.timeout(toggleVideoControls, 5000);
+    // } else {
+    //   toggleVideoControls();
+    // }
   } 
 
   seek(seekTime) {
@@ -64,14 +86,30 @@ class VideoPlayer extends PureComponent {
     return updateVideoCurrTime(seekTime);
   }
 
-  onVideoTimeUpdate() {
-    if (this.props.player.showControls) {
-      this.props.updateVideoCurrTime(_.floor(this.videoEl.currentTime + this.props.video.seekTime));
+  updateElapsedTime(startTime) {
+    const { updateVideoCurrTime, video } = this.props;
+    const { videoEl } = this;
+    if (!videoEl.paused) {
+      const currTime = new Date().getTime();
+      this.timer = d3.timeout(_.partial(this.updateElapsedTime, currTime), 1000 - (currTime - startTime));
+      updateVideoCurrTime(0.5 + video.currentTime);
+      console.log('start: ', startTime, 'curr: ', currTime, 'now: ', new Date().getTime(), 'elapsed: ', currTime - startTime);
     }
   }
 
+  onVideoPlaying() {
+    const { video, togglePauseVideo } = this.props;
+    if (video.paused) {
+      togglePauseVideo();
+    }
+    const startTime = new Date().getTime();
+    this.timer = d3.timeout(_.partial(this.updateElapsedTime, startTime), 500);
+  }
+
   onVideoEnded(e) {
-    return this.props.toggleVideoPlayer();    
+    console.log('the video has ended');
+    this.clearTimer();
+    return this.props.toggleVideoPlayer();
   }
 
   toggleFullscreen(e) {
@@ -102,6 +140,10 @@ class VideoPlayer extends PureComponent {
 
     toggleVideoFullscreen();
   }
+
+  clearTimer() {
+    if (this.timer) this.timer.stop();
+  }
   
   render() {
     const { video, player } = this.props;
@@ -111,13 +153,12 @@ class VideoPlayer extends PureComponent {
         <video 
           autoPlay 
           playsInline width='100%'
-          onTimeUpdate={this.onVideoTimeUpdate}
           onPlaying={this.onVideoPlaying}
           onEnded={this.onVideoEnded}
           onStalled={this.clearTimer}
           onPause={this.clearTimer}
           ref={(el) => this.videoEl = el}
-          src={`http://localhost:2222/api/cast/stream?video=${video.path}&seek=${video.seekTime}`}
+          // src={`http://localhost:2222/api/cast/stream?video=${video.path}&seek=${video.seekTime}`}
         >
         </video>
         <VideoControls
