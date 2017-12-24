@@ -15,6 +15,9 @@ app.use(middleware.morgan('dev'));
 app.use(express.static(build));
 
 app.use('/api/navigation', routes.navigation);
-app.use('/api/cast', routes.cast);
+app.use('/api/stream', (req, res, next) => {
+  res.set({ 'Access-Control-Allow-Origin': '*'});
+  next();
+}, routes.stream);
 
 app.listen(2222, () => console.log('Ready to accept connections on port 2222'));

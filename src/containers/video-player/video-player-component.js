@@ -1,4 +1,4 @@
-import React, { PureComponent } from 'react';
+import React, { Component } from 'react';
 import _ from 'lodash';
 import Hls from 'hls.js';
 import * as d3 from 'd3-timer';
@@ -20,7 +20,7 @@ import { toggleVideoPlayer, toggleVideoControls } from '../../actions/player';
 
 import { Wrapper } from './video-player-styles';
 
-class VideoPlayer extends PureComponent {
+class VideoPlayer extends Component {
   constructor(props) {
     super(props);
 
@@ -35,20 +35,21 @@ class VideoPlayer extends PureComponent {
     this.clearTimer = this.clearTimer.bind(this);
   }
 
-  componentDidUpdate(prevProps, prevState) {
-    console.log('component updated');
+  componentDidMount() {
     const { hls, videoEl } = this;
     const { video } = this.props;
-
-    hls.loadSource(`http://localhost:2222/api/cast/stream?video=${video.path}`);
-    hls.attachMedia(videoEl);
-    hls.on(Hls.Events.MANIFEST_PARSED, () => {
-      console.log('should play video');
-      videoEl.play()}
-    );
+  
+    if (video.path !== '') {
+      hls.loadSource(`http://localhost:2222/api/stream/video/${video.path}/index.m3u8`);
+      hls.attachMedia(videoEl);
+      hls.on(Hls.Events.MANIFEST_PARSED, (event, data) => {
+        console.log('manifest_parsed: ', data);
+        console.log('hls event: ', event);
+        videoEl.play();
+      });
+    }
   }
   
-
   componentWillUnmount() {
     this.clearTimer();
   }
@@ -152,11 +153,12 @@ class VideoPlayer extends PureComponent {
       <Wrapper id='video-player' className='center' onMouseMove={this._toggleControls}>
         <video 
           autoPlay 
-          playsInline width='100%'
-          onPlaying={this.onVideoPlaying}
-          onEnded={this.onVideoEnded}
-          onStalled={this.clearTimer}
-          onPause={this.clearTimer}
+          playsInline 
+          width='100%'
+          // onPlaying={this.onVideoPlaying}
+          // onEnded={this.onVideoEnded}
+          // onStalled={this.clearTimer}
+          // onPause={this.clearTimer}
           ref={(el) => this.videoEl = el}
           // src={`http://localhost:2222/api/cast/stream?video=${video.path}&seek=${video.seekTime}`}
         >

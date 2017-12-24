@@ -53,26 +53,13 @@ class FileBrowser extends Component {
 
     toggleFileBrowserDialog();
     
-    axios.get(`http://localhost:2222/api/cast/duration?video=${path}`)
+    axios.get(`http://localhost:2222/api/stream/process?v=${path}`)
       .then((response) => {
-          const seekTime = 0;
-          toggleVideoPlayer();
-          updateVideoDuration(response.data);
-          updateVideoUrl({ path, seekTime });
-
-          /*
-          const { cast, chrome } = window;
-
-          const castSession = cast.framework.CastContext.getInstance().getCurrentSession();
-          const mediaInfo = new chrome.cast.media.MediaInfo(`http://172.16.1.11:2222/api/cast/stream?video=${path}`, 'video/mp4');
-          const request = new chrome.cast.media.LoadRequest(mediaInfo);
-      
-          if (castSession) {
-            castSession.loadMedia(request)
-              .then(() => console.log('load'), (errorCode) => console.log('Error Code: ', errorCode));
-          }
-          */
-        });
+        console.log(response.data);
+        updateVideoUrl({ path: response.data.folder, seekTime: 0 });
+        updateVideoDuration(response.data.metadata.format.duration);
+        toggleVideoPlayer();
+      });
   }
 
   navigateUpDir(e) {
