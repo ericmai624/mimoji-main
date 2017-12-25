@@ -73,11 +73,10 @@ const remove = (filePath) => {
 const streamFile = (filePath, res) => {
   switch (path.extname(filePath)) {
     case '.m3u8':
-      console.log(chalk.bgYellow('start reading index.m3u8'));
       return fs.readFileAsync(filePath, 'utf-8')
         .then((data) => {
           res.set({ 'Content-Type': 'application/vnd.apple.mpegurl' });
-          console.log(chalk.white('playlist: ', data));
+          // console.log(chalk.white('playlist: ', data));
           return res.send(data);
         })
         .catch((err) => {

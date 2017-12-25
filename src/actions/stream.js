@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-export const getVideoStreamInfo = (path, seek) => {
+export const getStreamInfo = (path, seek) => {
   return (dispatch) => {
     dispatch({ type: 'GET_STREAM_INFO_PENDING' });
     return axios.get(`/api/stream/process?v=${path}&s=${seek}`)

@@ -14,7 +14,7 @@ const initState = {
   error: null
 };
 
-export const videoReducer = (state=initState, action) => {
+export const streamReducer = (state=initState, action) => {
   switch (action.type) {
     case 'GET_STREAM_INFO_PENDING':
       return { ...state, fetching: true };

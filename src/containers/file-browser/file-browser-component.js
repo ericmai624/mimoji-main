@@ -6,7 +6,7 @@ import { bindActionCreators } from 'redux';
 import FileBrowserList from '../../components/file-browser-list/file-browser-list-component';
 
 import { toggleFileBrowserDialog, fetchDirContent } from '../../actions/file-browser';
-import { getVideoStreamInfo } from '../../actions/video';
+import { getStreamInfo } from '../../actions/stream';
 import { toggleVideoPlayer } from '../../actions/player';
 
 import {
@@ -48,9 +48,9 @@ class FileBrowser extends Component {
   }
 
   castSelectedFile(path) {
-    const { toggleFileBrowserDialog, toggleVideoPlayer, getVideoStreamInfo } = this.props;
+    const { toggleFileBrowserDialog, toggleVideoPlayer, getStreamInfo } = this.props;
 
-    return getVideoStreamInfo(path, 0)
+    return getStreamInfo(path, 0)
       .then(() => {
         toggleFileBrowserDialog();
         toggleVideoPlayer();
@@ -118,7 +118,7 @@ const mapDispatchToProps = (dispatch) => ({
   fetchDirContent: bindActionCreators(fetchDirContent, dispatch),
   toggleFileBrowserDialog: bindActionCreators(toggleFileBrowserDialog, dispatch),
   toggleVideoPlayer: bindActionCreators(toggleVideoPlayer, dispatch),
-  getVideoStreamInfo: bindActionCreators(getVideoStreamInfo, dispatch)
+  getStreamInfo: bindActionCreators(getStreamInfo, dispatch)
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(FileBrowser);

@@ -1,20 +1,20 @@
 import React, { Component } from 'react';
 import _ from 'lodash';
-import Hls from 'hls.js';
 import axios from 'axios';
+import Hls from 'hls.js';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
 import VideoControls from '../../containers/video-controls/video-controls-component';
 
 import { 
-  getVideoStreamInfo,
+  getStreamInfo,
   updateVideoCurrTime,
   togglePauseVideo,
   toggleVideoFullscreen,
   updateVideoCC,
   updateVideoVolumn 
-} from '../../actions/video';
+} from '../../actions/stream';
 
 import { toggleVideoPlayer, toggleVideoControls } from '../../actions/player';
 
@@ -24,8 +24,7 @@ class VideoPlayer extends Component {
   constructor(props) {
     super(props);
 
-    this.hls = new Hls();
-    this.loadMedia = this.loadMedia.bind(this);
+    this.initHls = this.initHls.bind(this);
     this.togglePlay = this.togglePlay.bind(this);
     this._toggleControls = _.throttle(this.toggleControls.bind(this), 4000);
     this.seek = this.seek.bind(this);
@@ -37,26 +36,23 @@ class VideoPlayer extends Component {
   }
 
   componentDidMount() {
-    console.log('component did mount');
-    const { video } = this.props;
-  
-    if (video.path !== '') {
-      this.loadMedia(video.source);
-    }
+    this.initHls();
   }
 
-  loadMedia(src) {
-    const { hls, videoEl } = this;
-    hls.loadSource(`/api/stream/video/${src}/index.m3u8`);
-    hls.attachMedia(videoEl);
-    hls.on(Hls.Events.MANIFEST_PARSED, (event, data) => videoEl.play());
+  initHls() {
+    const { videoEl } = this;
+    const { source } = this.props.stream;
+    this.hls = new Hls();
+    this.hls.attachMedia(videoEl);
+    this.hls.loadSource(`/api/stream/video/${source}/index.m3u8`);
+    this.hls.on(Hls.Events.MANIFEST_PARSED, (evt, data) => videoEl.play());
   }
 
   togglePlay(e) {
     e.preventDefault();
-    const { video, togglePauseVideo } = this.props;
+    const { stream, togglePauseVideo } = this.props;
     const { videoEl } = this;
-    video.paused ? videoEl.play() : videoEl.pause();
+    stream.paused ? videoEl.play() : videoEl.pause();
     return togglePauseVideo();
   }
 
@@ -76,13 +72,13 @@ class VideoPlayer extends Component {
   } 
 
   seek(seekTime) {
+    const { stream, updateVideoCurrTime, getStreamInfo } = this.props;
+    const { path } = stream;
     this.hls.destroy();
-    const { video, updateVideoCurrTime, getVideoStreamInfo } = this.props;
-    const { path } = video;
-    return getVideoStreamInfo(path, seekTime)
+    return getStreamInfo(path, seekTime)
       .then((data) => {
-        console.log(data);
-        // this.loadMedia(data.source);
+        this.hls.loadSource(`/api/stream/video/${data.source}/index.m3u8`);
+        this.hls.startLoad();
         updateVideoCurrTime(seekTime);
       })
       .catch((err) => {
@@ -91,26 +87,28 @@ class VideoPlayer extends Component {
   }
 
   onVideoPlaying() {
-    const { video, togglePauseVideo } = this.props;
-    if (video.paused) {
+    const { stream, togglePauseVideo } = this.props;
+    if (stream.paused) {
       togglePauseVideo();
     }
   }
 
-  onVideoTimeUpdate(time, cb) {
-    cb(time);
+  onVideoTimeUpdate() {
+    const { stream, updateVideoCurrTime } = this.props;
+    const { videoEl } = this;
+    updateVideoCurrTime(stream.seek + videoEl.currentTime);
   }
 
-  onVideoEnded(e) {
+  onVideoEnded() {
     console.log('the video has ended');
     return this.killSwitch();
   }
 
   toggleFullscreen(e) {
     const { videoEl } = this;
-    const { video, toggleVideoFullscreen } = this.props;
+    const { stream, toggleVideoFullscreen } = this.props;
 
-    if (!video.fullscreen) {
+    if (!stream.fullscreen) {
       if (videoEl.requestFullscreen) {
         videoEl.requestFullscreen();
       } else if (videoEl.mozRequestFullScreen) {
@@ -136,29 +134,25 @@ class VideoPlayer extends Component {
   }
 
   killSwitch() {
-    const { toggleVideoPlayer, video } = this.props;
+    const { toggleVideoPlayer, stream } = this.props;
     this.hls.destroy();
-    axios.post('/api/stream/terminate', { id: video.id });
+    axios.post('/api/stream/terminate', { id: stream.id });
     return toggleVideoPlayer();
   }
   
   render() {
-    const { video, player, updateVideoCurrTime } = this.props;
+    const { stream, player } = this.props;
 
     return (
       <Wrapper id='video-player' className='center' onMouseMove={this._toggleControls}>
         <video
-          id={video.source}
-          autoPlay 
-          playsInline 
+          autoPlay
+          playsInline
           width='100%'
-          onTimeUpdate={() => this.onVideoTimeUpdate(this.videoEl.currentTime, updateVideoCurrTime)}
-          // onPlaying={this.onVideoPlaying}
-          // onEnded={this.onVideoEnded}
-          // onStalled={this.clearTimer}
-          // onPause={this.clearTimer}
+          onPlaying={this.onVideoPlaying}
+          onTimeUpdate={this.onVideoTimeUpdate}
+          onEnded={this.onVideoEnded}
           ref={(el) => this.videoEl = el}
-          // src={`http://localhost:2222/api/cast/stream?video=${video.path}&seek=${video.seekTime}`}
         >
         </video>
         <VideoControls
@@ -166,10 +160,10 @@ class VideoPlayer extends Component {
           togglePlay={this.togglePlay}
           killSwitch={this.killSwitch}
           seek={this.seek}
-          paused={video.paused}
-          currTime={video.currentTime}
-          duration={video.duration}
-          fullscreen={video.fullscreen}
+          paused={stream.paused}
+          currTime={stream.currentTime}
+          duration={stream.duration}
+          fullscreen={stream.fullscreen}
           toggleFullscreen={this.toggleFullscreen}
         />
       </Wrapper>
@@ -177,10 +171,10 @@ class VideoPlayer extends Component {
   }
 }
 
-const mapStateToProps = (state) => ({ video: state.video, player: state.player });
+const mapStateToProps = (state) => ({ stream: state.stream, player: state.player });
 
 const mapDispatchToProps = (dispatch) => ({ 
-  getVideoStreamInfo: bindActionCreators(getVideoStreamInfo, dispatch),
+  getStreamInfo: bindActionCreators(getStreamInfo, dispatch),
   toggleVideoPlayer: bindActionCreators(toggleVideoPlayer, dispatch),
   toggleVideoControls: bindActionCreators(toggleVideoControls, dispatch),
   togglePauseVideo: bindActionCreators(togglePauseVideo, dispatch),
