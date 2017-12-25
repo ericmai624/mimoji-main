@@ -23,10 +23,6 @@ const openFileRecurr = (path, cb, retry=0) => {
       }, 2000);
     }
     return cb(err);
-  })
-  return new Promise((resolve, reject) => {
-    fs.open(path, 'r', (err, fd) => {
-    });
   });
 };
 
@@ -77,7 +73,6 @@ const streamFile = (filePath, res) => {
       return fs.readFileAsync(filePath, 'utf-8')
         .then((data) => {
           res.set({ 'Content-Type': 'application/vnd.apple.mpegurl' });
-          // console.log(chalk.white('playlist: ', data));
           return res.send(data);
         })
         .catch((err) => {
@@ -139,13 +134,13 @@ const transcodeMedia = (video, seek, output) => {
       '-preset ultrafast',
       '-crf 17',
       '-tune zerolatency',
-      '-f segment',
-      '-segment_time 4',
+      '-f ssegment', // ssegment short for stream_segment
+      '-segment_time 10',
       '-segment_format mpegts',
       `-segment_list ${path.join(output, 'index.m3u8')}`,
       '-segment_list_type m3u8',
       '-segment_start_number 0',
-      '-segment_list_flags live'
+      '-segment_list_flags +live'
     ])
     .on('start', (command) => {
       console.log(chalk.blue('ffmpeg command: ', command));

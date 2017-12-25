@@ -14,7 +14,7 @@ export const Wrapper = styled.div.attrs({
   bottom: 5%;
   margin-left: -400px;
   padding: 0.2em 1em;
-  box-sizing: content-box;
+  box-sizing: border-box;
   transition: opacity 0.25s ease-in-out;
   display: flex;
   align-items: center;
@@ -30,7 +30,7 @@ export const Showtime = styled.div`
 
 export const ProgressContainer = styled.div`
   display: block;
-  width: 400px;
+  width: 320px;
   height: 8px;
   border: none;
   margin-left: 1.8em;

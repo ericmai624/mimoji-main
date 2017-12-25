@@ -61,9 +61,6 @@ class VideoPlayer extends Component {
     if (!player.showControls) {
       toggleVideoControls();
     }
-    // if (this.hideControls) {
-    //   this.hideControls.stop();
-    // }
     // if (player.showControls) {
     //   this.hideControls = d3.timeout(toggleVideoControls, 5000);
     // } else {
@@ -93,9 +90,9 @@ class VideoPlayer extends Component {
   }
 
   onVideoTimeUpdate() {
-    const { stream, updateVideoCurrTime } = this.props;
+    const { stream, player, updateVideoCurrTime } = this.props;
     const { videoEl } = this;
-    updateVideoCurrTime(stream.seek + videoEl.currentTime);
+    if (player.showControls) updateVideoCurrTime(stream.seek + videoEl.currentTime);
   }
 
   onVideoEnded() {
