@@ -1,13 +1,12 @@
 import React, { Component, Fragment } from 'react';
 import FontAwesomeIcon from '@fortawesome/react-fontawesome';
-import axios from 'axios';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
 import FileBrowserList from '../../components/file-browser-list/file-browser-list-component';
 
 import { toggleFileBrowserDialog, fetchDirContent } from '../../actions/file-browser';
-import { updateVideoUrl, updateVideoDuration } from '../../actions/video';
+import { getVideoStreamInfo } from '../../actions/video';
 import { toggleVideoPlayer } from '../../actions/player';
 
 import {
@@ -49,16 +48,15 @@ class FileBrowser extends Component {
   }
 
   castSelectedFile(path) {
-    const { toggleFileBrowserDialog, toggleVideoPlayer, updateVideoUrl, updateVideoDuration } = this.props;
+    const { toggleFileBrowserDialog, toggleVideoPlayer, getVideoStreamInfo } = this.props;
 
-    toggleFileBrowserDialog();
-    
-    axios.get(`http://localhost:2222/api/stream/process?v=${path}`)
-      .then((response) => {
-        console.log(response.data);
-        updateVideoUrl({ path: response.data.folder, seekTime: 0 });
-        updateVideoDuration(response.data.metadata.format.duration);
+    return getVideoStreamInfo(path, 0)
+      .then(() => {
+        toggleFileBrowserDialog();
         toggleVideoPlayer();
+      })
+      .catch((err) => {
+        console.log(err);
       });
   }
 
@@ -120,8 +118,7 @@ const mapDispatchToProps = (dispatch) => ({
   fetchDirContent: bindActionCreators(fetchDirContent, dispatch),
   toggleFileBrowserDialog: bindActionCreators(toggleFileBrowserDialog, dispatch),
   toggleVideoPlayer: bindActionCreators(toggleVideoPlayer, dispatch),
-  updateVideoUrl: bindActionCreators(updateVideoUrl, dispatch),
-  updateVideoDuration: bindActionCreators(updateVideoDuration, dispatch)
+  getVideoStreamInfo: bindActionCreators(getVideoStreamInfo, dispatch)
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(FileBrowser);

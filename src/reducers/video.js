@@ -1,26 +1,30 @@
 const initState = {
+  id: '',
+  source: '',
   path: '',
-  seekTime: 0,
+  seek: 0,
   currentTime: 0,
   duration: 0,
   paused: false,
   fullscreen: false,
   volumn: 100,
-  cc: null
+  cc: null,
+  fetching: false,
+  fetched: false,
+  error: null
 };
 
 export const videoReducer = (state=initState, action) => {
   switch (action.type) {
-    case 'UPDATE_VIDEO_URL':
-      return {
-        ...state,
-        path: action.payload.path,
-        seekTime: action.payload.seekTime
-      };
+    case 'GET_STREAM_INFO_PENDING':
+      return { ...state, fetching: true };
+    case 'GET_STREAM_INFO_FULFILLED':
+      const { id, source, duration, path, seek } = action.payload;
+      return { ...state, id, source, duration, path, seek, fetched: true, fetching: false };
+    case 'GET_STREAM_INFO_REJECTED':
+      return { ...state, fetching: false, fetched: false, error: action.payload };
     case 'UPDATE_VIDEO_CURRENTTIME':
       return { ...state, currentTime: action.payload };
-    case 'UPDATE_VIDEO_DURATION':
-      return { ...state, duration: action.payload };
     case 'TOGGLE_PAUSE_VIDEO':
       return { ...state, paused: !state.paused };
     case 'TOGGLE_FULLSCREEN':

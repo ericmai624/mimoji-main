@@ -5,19 +5,21 @@ const Promise = require('bluebird');
 const fs = Promise.promisifyAll(require('fs'));
 const ffmpeg = require('fluent-ffmpeg');
 const path = require('path');
+const _ = require('lodash');
 const { createHash } = require('crypto');
 const { sep } = path;
 
 const mediaProcesses = {};
+const finishedQueue = [];
 
 const openFileRecurr = (path, cb, retry=0) => {
   fs.open(path, 'r', (err, fd) => {
     if (!err) return cb(null, fd);
     if (err && err.code === 'ENOENT' && retry < 10) {
-      console.log(chalk.red('file not found, retrying ', retry, 'times'));
+      console.log(chalk.red('file not found, retrying ', retry + 1, 'times'));
       return setTimeout(() => {
         openFileRecurr(path, cb, retry + 1);
-      }, 1000);
+      }, 2000);
     }
     return cb(err);
   })
@@ -30,10 +32,42 @@ const openFileRecurr = (path, cb, retry=0) => {
 const createDirIfNotExist = (dir) => {
   return new Promise((resolve, reject) => {
     fs.mkdir(dir, (err) => {
-      if (err.code !== 'EEXIST') reject(err);
+      if (err && err.code !== 'EEXIST') reject(err);
       resolve();
     });
   });
+};
+
+const remove = (filePath) => {
+  console.log('removing ', filePath);
+  let isFulfilled = false;
+  return fs.statAsync(filePath)
+    .then((stats) => {
+      if (stats.isFile()) {
+        return fs.unlinkAsync(filePath);
+      } else if (stats.isDirectory()) {
+        return fs.readdirAsync(filePath);
+      }
+    })
+    .then((files) => {
+      if (!files) {
+        isFulfilled = true;
+        throw files;
+      };
+
+      let tasks = [];
+      _.each(files, (file) => tasks.push(remove(path.join(filePath, file))));
+      return Promise.all(tasks);
+    })
+    .then(() => {
+      return fs.rmdirAsync(filePath);
+    })
+    .catch((err) => {
+      if (isFulfilled) {
+        return console.log(chalk.green('removed ', filePath));
+      }
+      console.log(chalk.red(err));
+    });
 };
 
 const streamFile = (filePath, res) => {
@@ -51,7 +85,7 @@ const streamFile = (filePath, res) => {
           res.sendStatus(500);
         });
     case '.ts':
-      console.log(chalk.bgYellow('start reading ', filePath));
+      console.log(chalk.greenBright('start reading ', filePath));
 
       res.set({ 'Content-Type': 'video/MP2T'  });
 
@@ -59,12 +93,15 @@ const streamFile = (filePath, res) => {
 
       stream.on('end', () => {
         console.log('stream finished: ', filePath);
-        fs.unlink(filePath, (err) => console.log(chalk.red(err)));
+        finishedQueue.push(filePath);
+        if (finishedQueue.length > 5) {
+          remove(finishedQueue.shift());
+        }
       });
 
       return stream.pipe(res);
     default:
-      console.log('unspported file');
+      console.log(chalk.red('unspported file'));
       res.sendStatus(500);
   }
 };
@@ -92,15 +129,15 @@ const transcodeMedia = (video, seek, output) => {
       '-map 0:1',
       `-c:v ${isSupported(video) ? 'copy' : 'libx264'}`,
       `-threads ${os.cpus().length}`,
-      '-c:a copy',
+      `-c:a ${isSupported(video) ? 'copy' : 'aac'}`,
       '-movflags faststart',
       '-preset ultrafast',
       '-crf 17',
       '-tune zerolatency',
       '-f segment',
-      '-segment_time 8',
+      '-segment_time 4',
       '-segment_format mpegts',
-      `-segment_list ${output}${sep}index.m3u8`,
+      `-segment_list ${path.join(output, 'index.m3u8')}`,
       '-segment_list_type m3u8',
       '-segment_start_number 0',
       '-segment_list_flags live'
@@ -120,14 +157,22 @@ const transcodeMedia = (video, seek, output) => {
     .on('end', () => {
       console.log(chalk.cyan('process finished'));
     })
-    .save(`${output}${sep}file%d.ts`);
+    .save(path.join(output, 'seq%010d.ts'));
     
   return command;
 };
 
-module.exports.stream = (req, res) => {
+const terminateProcess = (id) => {
+  if (mediaProcesses[id]) {
+    mediaProcesses[id].command.kill();
+    remove(path.join(os.tmpdir(), 'onecast', mediaProcesses[id].source));
+    delete mediaProcesses[id];
+  }
+};
+
+module.exports.serveFiles = (req, res) => {
   let { dir, file } = req.params;
-  let filePath = [os.tmpdir(), 'onecast', dir, file].join(sep);
+  let filePath = path.join(os.tmpdir(), 'onecast', dir, file);
   console.log(chalk.green(filePath));
 
   openFileRecurr(filePath, (err, fd) => {
@@ -141,9 +186,11 @@ module.exports.stream = (req, res) => {
 
 module.exports.createStreamProcess = (req, res) => {
   let { v, s } = req.query;
+  if (!v || v === '') {
+    return res.end();
+  }
   let id = createHash('md5').update(v).digest('hex');
-  let directory = path.join(os.tmpdir() + `${sep}onecast`);
-  let response = { v, id };
+  let directory = path.join(os.tmpdir(), 'onecast');
   let getMetadata = new Promise((resolve, reject) => {
     ffmpeg.ffprobe(v, (err, metadata) => {
       if (err) reject(err);
@@ -151,17 +198,18 @@ module.exports.createStreamProcess = (req, res) => {
     });
   });
 
+  terminateProcess(id); // Kill any existing ffmpeg process and remove tmp files
+
   createDirIfNotExist(directory)
     .then(() => {
       return Promise.all([ fs.mkdtempAsync(directory + sep), getMetadata ]);
     })
     .then(([folder, metadata]) => {
-      if (mediaProcesses[id]) mediaProcesses[id].process.kill();
-      response.folder = folder.slice(-6);
-      response.metadata = metadata;
-      response.process = transcodeMedia(v, s, folder);
-      mediaProcesses[id] = response;
-      return res.json(response);
+      let source = folder.slice(-6);
+      let duration = metadata.format.duration;
+      let command = transcodeMedia(v, s, folder);
+      mediaProcesses[id] = { v, s, id, source, command };
+      return res.json({ id, source, duration });
     })
     .catch((err) => {
       console.log(chalk.red(err));
@@ -169,7 +217,10 @@ module.exports.createStreamProcess = (req, res) => {
     });
 };
 
-module.exports.cleanup = (req, res) => {
+module.exports.terminate = (req, res) => {
   // remove tmp folder
+  console.log(chalk.blueBright('terminate request id: ', req.body.id));
+  terminateProcess(req.body.id);
+  res.sendStatus(200);
 };
 

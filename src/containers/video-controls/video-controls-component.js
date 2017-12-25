@@ -34,7 +34,7 @@ class VideoControls extends PureComponent {
   }
 
   render() {
-    const { toggleFullscreen, togglePlay, show, paused, currTime, duration, fullscreen } = this.props;
+    const { toggleFullscreen, togglePlay, killSwitch, show, paused, currTime, duration, fullscreen } = this.props;
     const format = duration > 3599 ? 'hh:mm:ss' : 'mm:ss';
     const displayedTime = moment.duration(currTime, 'seconds').format(format, { trim: false });
     const endTime = moment.duration(duration, 'seconds').format(format, { trim: false });
@@ -46,6 +46,9 @@ class VideoControls extends PureComponent {
       >
         <ControlsBtns onClick={togglePlay} className='center'>
           {paused ? <FontAwesomeIcon icon={['fas', 'play']}/> : <FontAwesomeIcon icon={['fas', 'pause']}/>}
+        </ControlsBtns>
+        <ControlsBtns onClick={killSwitch} className='center'>
+          <FontAwesomeIcon icon={['fas', 'stop']}/>
         </ControlsBtns>
         <ProgressContainer onClick={this.handleSeek.bind(this)}>
           <Progress 

@@ -1,13 +1,23 @@
-export const updateVideoUrl = (payload) => ({ 
-  type: 'UPDATE_VIDEO_URL', payload 
-});
+import axios from 'axios';
+
+export const getVideoStreamInfo = (path, seek) => {
+  return (dispatch) => {
+    dispatch({ type: 'GET_STREAM_INFO_PENDING' });
+    return axios.get(`/api/stream/process?v=${path}&s=${seek}`)
+      .then((response) => {
+        const { id, source, duration } = response.data;
+        dispatch({ type: 'GET_STREAM_INFO_FULFILLED', payload: { id, source, duration, path, seek } });
+        return response.data;
+      })
+      .catch((err) => {
+        dispatch({ type: 'GET_STREAM_INFO_REJECTED', payload: err });
+        return err;
+      });
+  }
+};
 
 export const updateVideoCurrTime = (time) => ({
   type: 'UPDATE_VIDEO_CURRENTTIME', payload: time
-});
-
-export const updateVideoDuration = (duration) => ({
-  type: 'UPDATE_VIDEO_DURATION', payload: duration
 });
 
 export const togglePauseVideo = () => ({

@@ -1,14 +1,14 @@
 import React, { Component } from 'react';
 import _ from 'lodash';
 import Hls from 'hls.js';
-import * as d3 from 'd3-timer';
+import axios from 'axios';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
 import VideoControls from '../../containers/video-controls/video-controls-component';
 
 import { 
-  updateVideoUrl,
+  getVideoStreamInfo,
   updateVideoCurrTime,
   togglePauseVideo,
   toggleVideoFullscreen,
@@ -25,35 +25,32 @@ class VideoPlayer extends Component {
     super(props);
 
     this.hls = new Hls();
+    this.loadMedia = this.loadMedia.bind(this);
     this.togglePlay = this.togglePlay.bind(this);
     this._toggleControls = _.throttle(this.toggleControls.bind(this), 4000);
     this.seek = this.seek.bind(this);
-    this.updateElapsedTime = this.updateElapsedTime.bind(this);
     this.onVideoPlaying = this.onVideoPlaying.bind(this);
+    this.onVideoTimeUpdate = this.onVideoTimeUpdate.bind(this);
     this.onVideoEnded = this.onVideoEnded.bind(this);
     this.toggleFullscreen = this.toggleFullscreen.bind(this);
-    this.clearTimer = this.clearTimer.bind(this);
+    this.killSwitch = this.killSwitch.bind(this);
   }
 
   componentDidMount() {
-    const { hls, videoEl } = this;
+    console.log('component did mount');
     const { video } = this.props;
   
     if (video.path !== '') {
-      hls.loadSource(`http://localhost:2222/api/stream/video/${video.path}/index.m3u8`);
-      hls.attachMedia(videoEl);
-      hls.on(Hls.Events.MANIFEST_PARSED, (event, data) => {
-        console.log('manifest_parsed: ', data);
-        console.log('hls event: ', event);
-        videoEl.play();
-      });
+      this.loadMedia(video.source);
     }
   }
-  
-  componentWillUnmount() {
-    this.clearTimer();
+
+  loadMedia(src) {
+    const { hls, videoEl } = this;
+    hls.loadSource(`/api/stream/video/${src}/index.m3u8`);
+    hls.attachMedia(videoEl);
+    hls.on(Hls.Events.MANIFEST_PARSED, (event, data) => videoEl.play());
   }
-  
 
   togglePlay(e) {
     e.preventDefault();
@@ -79,23 +76,18 @@ class VideoPlayer extends Component {
   } 
 
   seek(seekTime) {
-    this.videoEl.pause();
-    this.clearTimer();
-    const { video, updateVideoUrl, updateVideoCurrTime } = this.props;
+    this.hls.destroy();
+    const { video, updateVideoCurrTime, getVideoStreamInfo } = this.props;
     const { path } = video;
-    updateVideoUrl({ path, seekTime });
-    return updateVideoCurrTime(seekTime);
-  }
-
-  updateElapsedTime(startTime) {
-    const { updateVideoCurrTime, video } = this.props;
-    const { videoEl } = this;
-    if (!videoEl.paused) {
-      const currTime = new Date().getTime();
-      this.timer = d3.timeout(_.partial(this.updateElapsedTime, currTime), 1000 - (currTime - startTime));
-      updateVideoCurrTime(0.5 + video.currentTime);
-      console.log('start: ', startTime, 'curr: ', currTime, 'now: ', new Date().getTime(), 'elapsed: ', currTime - startTime);
-    }
+    return getVideoStreamInfo(path, seekTime)
+      .then((data) => {
+        console.log(data);
+        // this.loadMedia(data.source);
+        updateVideoCurrTime(seekTime);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   }
 
   onVideoPlaying() {
@@ -103,14 +95,15 @@ class VideoPlayer extends Component {
     if (video.paused) {
       togglePauseVideo();
     }
-    const startTime = new Date().getTime();
-    this.timer = d3.timeout(_.partial(this.updateElapsedTime, startTime), 500);
+  }
+
+  onVideoTimeUpdate(time, cb) {
+    cb(time);
   }
 
   onVideoEnded(e) {
     console.log('the video has ended');
-    this.clearTimer();
-    return this.props.toggleVideoPlayer();
+    return this.killSwitch();
   }
 
   toggleFullscreen(e) {
@@ -142,19 +135,24 @@ class VideoPlayer extends Component {
     toggleVideoFullscreen();
   }
 
-  clearTimer() {
-    if (this.timer) this.timer.stop();
+  killSwitch() {
+    const { toggleVideoPlayer, video } = this.props;
+    this.hls.destroy();
+    axios.post('/api/stream/terminate', { id: video.id });
+    return toggleVideoPlayer();
   }
   
   render() {
-    const { video, player } = this.props;
+    const { video, player, updateVideoCurrTime } = this.props;
 
     return (
       <Wrapper id='video-player' className='center' onMouseMove={this._toggleControls}>
-        <video 
+        <video
+          id={video.source}
           autoPlay 
           playsInline 
           width='100%'
+          onTimeUpdate={() => this.onVideoTimeUpdate(this.videoEl.currentTime, updateVideoCurrTime)}
           // onPlaying={this.onVideoPlaying}
           // onEnded={this.onVideoEnded}
           // onStalled={this.clearTimer}
@@ -166,6 +164,7 @@ class VideoPlayer extends Component {
         <VideoControls
           show={player.showControls}
           togglePlay={this.togglePlay}
+          killSwitch={this.killSwitch}
           seek={this.seek}
           paused={video.paused}
           currTime={video.currentTime}
@@ -181,13 +180,13 @@ class VideoPlayer extends Component {
 const mapStateToProps = (state) => ({ video: state.video, player: state.player });
 
 const mapDispatchToProps = (dispatch) => ({ 
+  getVideoStreamInfo: bindActionCreators(getVideoStreamInfo, dispatch),
   toggleVideoPlayer: bindActionCreators(toggleVideoPlayer, dispatch),
   toggleVideoControls: bindActionCreators(toggleVideoControls, dispatch),
   togglePauseVideo: bindActionCreators(togglePauseVideo, dispatch),
   toggleVideoFullscreen: bindActionCreators(toggleVideoFullscreen, dispatch),
   updateVideoCC: bindActionCreators(updateVideoCC, dispatch),
   updateVideoVolumn: bindActionCreators(updateVideoVolumn, dispatch),
-  updateVideoUrl: bindActionCreators(updateVideoUrl, dispatch),
   updateVideoCurrTime: bindActionCreators(updateVideoCurrTime, dispatch),
 });
 
