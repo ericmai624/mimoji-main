@@ -77,8 +77,7 @@ class VideoPlayer extends Component {
     this.hls.destroy();
     return getStreamInfo(path, seekTime)
       .then((data) => {
-        this.hls.loadSource(`/api/stream/video/${data.source}/index.m3u8`);
-        this.hls.startLoad();
+        this.initHls();
         updateVideoCurrTime(seekTime);
       })
       .catch((err) => {

@@ -11,6 +11,7 @@ const { sep } = path;
 
 const mediaProcesses = {};
 const finishedQueue = [];
+const uniqueFilePath = new Set();
 
 const openFileRecurr = (path, cb, retry=0) => {
   fs.open(path, 'r', (err, fd) => {
@@ -92,9 +93,14 @@ const streamFile = (filePath, res) => {
 
       stream.on('end', () => {
         console.log('stream finished: ', filePath);
-        finishedQueue.push(filePath);
+        if (!uniqueFilePath.has(filePath)) {
+          uniqueFilePath.add(filePath);
+          finishedQueue.push(filePath);
+        }
         if (finishedQueue.length > 5) {
-          remove(finishedQueue.shift());
+          let trash = finishedQueue.shift();
+          remove(trash);
+          uniqueFilePath.delete(trash);
         }
       });
 
@@ -125,10 +131,10 @@ const transcodeMedia = (video, seek, output) => {
     .outputOptions([
       '-y',
       '-map 0:0',
-      '-map 0:1',
-      `-c:v ${isSupported(video) ? 'copy' : 'libx264'}`,
+      '-c:v libx264',
       `-threads ${os.cpus().length}`,
-      `-c:a ${isSupported(video) ? 'copy' : 'aac'}`,
+      '-map 0:1',
+      '-c:a aac',
       '-movflags faststart',
       '-preset ultrafast',
       '-crf 17',
@@ -166,6 +172,8 @@ const terminateProcess = (id) => {
     mediaProcesses[id].command.kill();
     remove(path.join(os.tmpdir(), 'onecast', mediaProcesses[id].source));
     delete mediaProcesses[id];
+    finishedQueue.length = 0;
+    uniqueFilePath.clear();
   }
 };
 
