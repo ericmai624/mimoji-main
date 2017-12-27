@@ -1,5 +1,5 @@
 import axios from 'axios';
-
+import { toUpper } from 'lodash';
 export const getStreamInfo = (path, seek) => {
   return (dispatch) => {
     dispatch({ type: 'GET_STREAM_INFO_PENDING' });
@@ -16,20 +16,16 @@ export const getStreamInfo = (path, seek) => {
   }
 };
 
+export const toggleStreamProps = (prop) => ({
+  type: `TOGGLE_STREAM_${toUpper(prop)}`
+});
+
 export const updateVideoCurrTime = (time) => ({
   type: 'UPDATE_VIDEO_CURRENTTIME', payload: time
 });
 
-export const togglePauseVideo = () => ({
-  type: 'TOGGLE_PAUSE_VIDEO'
-});
-
-export const toggleVideoFullscreen = () => ({
-  type: 'TOGGLE_FULLSCREEN'
-});
-
-export const updateVideoVolumn = (volumn) => ({
-  type: 'UPDATE_VIDEO_VOLUMN', payload: volumn
+export const updateVideoVolume = (volume) => ({
+  type: 'UPDATE_VIDEO_VOLUME', payload: volume
 });
 
 export const updateVideoCC = (ccPath) => ({

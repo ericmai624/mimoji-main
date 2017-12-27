@@ -11,18 +11,18 @@ import {
 const FileBrowserList = ({ content, onDoubleClickDirectory, onDoubleClickFile }) => {
   return (
     <List>
-      {content.map((file, i) => {
-        const { isDirectory } = file;
+      {content.map((entry, i) => {
+        const { isDirectory } = entry;
 
         return (
           <Entry 
             key={i} 
-            onDoubleClick={isDirectory ? (e) => onDoubleClickDirectory(e, file.filePath) : (e) => onDoubleClickFile(e, file.filePath)}
+            onDoubleClick={isDirectory ? (e) => onDoubleClickDirectory(e, entry.filePath) : (e) => onDoubleClickFile(e, entry.filePath)}
           >
             <Icon>
-              {isDirectory ? <FontAwesomeIcon icon={['fas', 'folder']}/> : <FontAwesomeIcon icon={['fas', 'file']}/>}
+              <FontAwesomeIcon icon={['fas', isDirectory ? 'folder' : 'file']}/>
             </Icon>
-            <Span>{file.fileName}/</Span>
+            <Span>{entry.fileName}/</Span>
           </Entry>
         );
       })}

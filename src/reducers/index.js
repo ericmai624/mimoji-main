@@ -16,9 +16,11 @@ const reducer = combineReducers({
 
 const middlewares = [thunk];
 
-// if (process.env.NODE_ENV !== 'production') {
-//   const { logger } = require('redux-logger');
-//   middlewares.push(logger);
-// }
+if (process.env.NODE_ENV !== 'production') {
+  const { createLogger } = require('redux-logger');
+  middlewares.push(createLogger({
+    collapsed: (getState, action) => action.type === 'UPDATE_VIDEO_CURRENTTIME'
+  }));
+}
 
 export const store = createStore(reducer, applyMiddleware(...middlewares));

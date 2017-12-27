@@ -10,14 +10,23 @@ import {
   ProgressContainer,
   Progress,
   ControlsBtns,
+  VolumeRangeWrapper,
+  VolumeRange
 } from './video-controls-styles';
 
 momentDurationSetup(moment);
 
 class VideoControls extends PureComponent {
+  constructor(props) {
+    super(props);
+
+    this.handleSeek = this.handleSeek.bind(this);
+    this.onVolumeMouseOver = this.onVolumeMouseOver.bind(this);
+  }
+  
   handleSeek(e) {
     e.stopPropagation();
-    const { duration, seek } = this.props;
+    const { stream, seek } = this.props;
     const { progress } = this;
 
     let offsetLeft = 0;
@@ -30,14 +39,32 @@ class VideoControls extends PureComponent {
     }
 
     const pos = (e.pageX - offsetLeft) / progress.clientWidth;
-    seek(_.floor(pos * duration));
+    seek(_.floor(pos * stream.duration));
+  }
+
+  onVolumeMouseEnter(e) {
+
+  }
+
+  onVolumeMouseLeave(e) {
+
   }
 
   render() {
-    const { toggleFullscreen, togglePlay, killSwitch, show, paused, currTime, duration, fullscreen } = this.props;
+    const { toggleFullscreen, togglePlay, toggleMute, changeVolume, killSwitch, stream, show } = this.props;
+    const { paused, currentTime, duration, fullscreen, muted, volume } = stream;
     const format = duration > 3599 ? 'hh:mm:ss' : 'mm:ss';
-    const displayedTime = moment.duration(currTime, 'seconds').format(format, { trim: false });
+    const displayedTime = moment.duration(currentTime, 'seconds').format(format, { trim: false });
     const endTime = moment.duration(duration, 'seconds').format(format, { trim: false });
+
+    let volumeIcon = (<FontAwesomeIcon icon={['fas', 'volume-up']}/>);
+    if (volume < 0.5) volumeIcon = (<FontAwesomeIcon icon={['fas', 'volume-down']}/>);
+    if (volume === 0 || muted) {
+      volumeIcon = [
+        <FontAwesomeIcon key='volume-off' icon={['fas', 'volume-off']} transform='left-5.4'/>,
+        <FontAwesomeIcon key='times' icon={['fas', 'times']} transform='shrink-7 right-3.4'/>
+      ];
+    }
 
     return (
       <Wrapper 
@@ -45,14 +72,14 @@ class VideoControls extends PureComponent {
         show={show}
       >
         <ControlsBtns onClick={togglePlay} className='center'>
-          {paused ? <FontAwesomeIcon icon={['fas', 'play']}/> : <FontAwesomeIcon icon={['fas', 'pause']}/>}
+          <FontAwesomeIcon icon={['fas', paused ? 'play' : 'pause']}/>
         </ControlsBtns>
         <ControlsBtns onClick={killSwitch} className='center'>
           <FontAwesomeIcon icon={['fas', 'stop']}/>
         </ControlsBtns>
-        <ProgressContainer onClick={this.handleSeek.bind(this)}>
+        <ProgressContainer onClick={this.handleSeek}>
           <Progress 
-            value={currTime} 
+            value={currentTime} 
             max={duration}
             innerRef={(el) => this.progress = el}
           >
@@ -61,14 +88,31 @@ class VideoControls extends PureComponent {
         <Showtime>
           {displayedTime} / {endTime}
         </Showtime>
-        <ControlsBtns className='center'>
-          <FontAwesomeIcon icon={['fas', 'volume-up']}/>
+        <ControlsBtns className='center fa-layers fa-fw' onClick={toggleMute}>
+          {volumeIcon}
+          <VolumeRangeWrapper className='center' onClick={(e) => e.stopPropagation()}>
+            <VolumeRange 
+              type='range'
+              value={volume}
+              min='0'
+              max='1'
+              step='0.01'
+              onChange={changeVolume}
+              style={{
+                background: 'linear-gradient(to right, rgba(228, 75, 54, 0.9) 0%,' 
+                            + `rgba(228, 75, 54, 0.9) ${volume * 100}%,` 
+                            + `rgba(69, 69, 69, 0.9) ${volume * 100}%,` 
+                            + 'rgba(69, 69, 69, 0.9) 100%)'
+              }}
+            >
+            </VolumeRange>
+          </VolumeRangeWrapper>
         </ControlsBtns>
         <ControlsBtns className='center'>
           <FontAwesomeIcon icon={['fas', 'closed-captioning']}/>
         </ControlsBtns>
         <ControlsBtns className='center' onClick={toggleFullscreen}>
-          {fullscreen ? <FontAwesomeIcon icon={['fas', 'compress']}/> : <FontAwesomeIcon icon={['fas', 'expand']}/>}
+          <FontAwesomeIcon icon={['fas', fullscreen ? 'compress' : 'expand']}/>
         </ControlsBtns>
       </Wrapper>
     );

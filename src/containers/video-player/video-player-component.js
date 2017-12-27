@@ -10,10 +10,9 @@ import VideoControls from '../../containers/video-controls/video-controls-compon
 import { 
   getStreamInfo,
   updateVideoCurrTime,
-  togglePauseVideo,
-  toggleVideoFullscreen,
   updateVideoCC,
-  updateVideoVolumn 
+  updateVideoVolume,
+  toggleStreamProps
 } from '../../actions/stream';
 
 import { toggleVideoPlayer, toggleVideoControls } from '../../actions/player';
@@ -31,6 +30,8 @@ class VideoPlayer extends Component {
     this.onVideoPlaying = this.onVideoPlaying.bind(this);
     this.onVideoTimeUpdate = this.onVideoTimeUpdate.bind(this);
     this.onVideoEnded = this.onVideoEnded.bind(this);
+    this.changeVolume = this.changeVolume.bind(this);
+    this.toggleMute = this.toggleMute.bind(this);
     this.toggleFullscreen = this.toggleFullscreen.bind(this);
     this.killSwitch = this.killSwitch.bind(this);
   }
@@ -46,14 +47,30 @@ class VideoPlayer extends Component {
     this.hls.attachMedia(videoEl);
     this.hls.loadSource(`/api/stream/video/${source}/index.m3u8`);
     this.hls.on(Hls.Events.MANIFEST_PARSED, (evt, data) => videoEl.play());
+    // hls error handling
+    this.hls.on(Hls.Events.ERROR, (evt, data) => { 
+      if (data.fatal) {
+        switch (data.type) {
+        case Hls.ErrorTypes.NETWORK_ERROR:
+          console.log('Trying to recover from fatal network error');
+          return this.hls.startLoad();
+        case Hls.ErrorTypes.MEDIA_ERROR:
+          console.log('Trying to recover from fatal media error');
+          return this.hls.recoverMediaError();
+        default:
+          console.log('Unable to recover from fatal error');
+          return this.hls.destroy();
+        }
+      }
+    });
   }
 
   togglePlay(e) {
     e.preventDefault();
-    const { stream, togglePauseVideo } = this.props;
+    const { stream, toggleStreamProps } = this.props;
     const { videoEl } = this;
     stream.paused ? videoEl.play() : videoEl.pause();
-    return togglePauseVideo();
+    return toggleStreamProps('pause');
   }
 
   toggleControls() {
@@ -61,11 +78,6 @@ class VideoPlayer extends Component {
     if (!player.showControls) {
       toggleVideoControls();
     }
-    // if (player.showControls) {
-    //   this.hideControls = d3.timeout(toggleVideoControls, 5000);
-    // } else {
-    //   toggleVideoControls();
-    // }
   } 
 
   seek(seekTime) {
@@ -83,9 +95,9 @@ class VideoPlayer extends Component {
   }
 
   onVideoPlaying() {
-    const { stream, togglePauseVideo } = this.props;
+    const { stream, toggleStreamProps } = this.props;
     if (stream.paused) {
-      togglePauseVideo();
+      toggleStreamProps('pause');
     }
   }
 
@@ -100,9 +112,24 @@ class VideoPlayer extends Component {
     return this.killSwitch();
   }
 
+  changeVolume(e) {
+    const { updateVideoVolume } = this.props;
+    const { videoEl } = this;
+    const volume = parseFloat(e.target.value);
+    updateVideoVolume(volume);
+    videoEl.volume = volume;
+  }
+
+  toggleMute() {
+    const { toggleStreamProps, stream } = this.props;
+    const { videoEl } = this;
+    videoEl.muted = !stream.muted;
+    toggleStreamProps('muted');
+  }
+
   toggleFullscreen(e) {
     const { videoEl } = this;
-    const { stream, toggleVideoFullscreen } = this.props;
+    const { stream, toggleStreamProps } = this.props;
 
     if (!stream.fullscreen) {
       if (videoEl.requestFullscreen) {
@@ -126,7 +153,7 @@ class VideoPlayer extends Component {
       }
     }
 
-    toggleVideoFullscreen();
+    toggleStreamProps('fullscreen');
   }
 
   killSwitch() {
@@ -154,12 +181,11 @@ class VideoPlayer extends Component {
         <VideoControls
           show={player.showControls}
           togglePlay={this.togglePlay}
+          toggleMute={this.toggleMute}
+          changeVolume={this.changeVolume}
           killSwitch={this.killSwitch}
           seek={this.seek}
-          paused={stream.paused}
-          currTime={stream.currentTime}
-          duration={stream.duration}
-          fullscreen={stream.fullscreen}
+          stream={stream}
           toggleFullscreen={this.toggleFullscreen}
         />
       </Wrapper>
@@ -173,10 +199,9 @@ const mapDispatchToProps = (dispatch) => ({
   getStreamInfo: bindActionCreators(getStreamInfo, dispatch),
   toggleVideoPlayer: bindActionCreators(toggleVideoPlayer, dispatch),
   toggleVideoControls: bindActionCreators(toggleVideoControls, dispatch),
-  togglePauseVideo: bindActionCreators(togglePauseVideo, dispatch),
-  toggleVideoFullscreen: bindActionCreators(toggleVideoFullscreen, dispatch),
+  toggleStreamProps: bindActionCreators(toggleStreamProps, dispatch),
   updateVideoCC: bindActionCreators(updateVideoCC, dispatch),
-  updateVideoVolumn: bindActionCreators(updateVideoVolumn, dispatch),
+  updateVideoVolume: bindActionCreators(updateVideoVolume, dispatch),
   updateVideoCurrTime: bindActionCreators(updateVideoCurrTime, dispatch),
 });
 

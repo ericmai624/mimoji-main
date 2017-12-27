@@ -75,3 +75,73 @@ export const ControlsBtns = styled.div`
     transition: color 0.25s ease-in;
   }
 `;
+
+export const VolumeRangeWrapper = styled.div`
+  transform: rotate(-90deg);
+  transform-origin: 50% 50%;
+  position: absolute;
+  padding: 0;
+  background: rgba(48, 47, 42, 0.5);
+  width: 95px;
+  height: 40px;
+  border-radius: 5px;
+  top: -85px;
+`;
+
+export const VolumeRange = styled.input`
+  width: 80px;
+  height: 6px;
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+  box-sizing: border-box;
+  -webkit-appearance: none;
+
+  &::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    background: rgba(219, 219, 219, 1);
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    cursor: pointer;
+  }
+
+  &::-webkit-slider-runnable-track {
+    background: transparent;
+    cursor: pointer;
+  }
+
+  &::-moz-range-thumb {
+    background: rgba(219, 219, 219, 1);
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    cursor: pointer;
+  }
+
+  &::-moz-range-track {
+    background: transparent;
+    cursor: pointer;
+  }
+
+  &::-ms-thumb {
+    background: rgba(219, 219, 219, 1);
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    cursor: pointer; 
+  }
+
+  &::-ms-track {
+    width: 80px;
+    height: 8px;
+    cursor: pointer;
+    background: transparent;
+    border-color: transparent;
+    color: transparent;
+  }
+
+  &:focus {
+    outline: none;
+  }
+`;

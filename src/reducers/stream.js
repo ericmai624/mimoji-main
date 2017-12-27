@@ -7,7 +7,8 @@ const initState = {
   duration: 0,
   paused: false,
   fullscreen: false,
-  volumn: 100,
+  volume: 1,
+  muted: false,
   cc: null,
   fetching: false,
   fetched: false,
@@ -25,12 +26,14 @@ export const streamReducer = (state=initState, action) => {
       return { ...state, fetching: false, fetched: false, error: action.payload };
     case 'UPDATE_VIDEO_CURRENTTIME':
       return { ...state, currentTime: action.payload };
-    case 'TOGGLE_PAUSE_VIDEO':
+    case 'TOGGLE_STREAM_PAUSE':
       return { ...state, paused: !state.paused };
-    case 'TOGGLE_FULLSCREEN':
+    case 'TOGGLE_STREAM_FULLSCREEN':
       return { ...state, fullscreen: !state.fullscreen };
-    case 'UPDATE_VIDEO_VOLUMN':
-      return { ...state, volumn: action.payload };
+    case 'TOGGLE_STREAM_MUTED':
+      return { ...state, muted: !state.muted };
+    case 'UPDATE_VIDEO_VOLUME':
+      return { ...state, volume: action.payload };
     case 'UPDATE_VIDEO_CC':
       return { ...state, cc: action.payload };
     default:

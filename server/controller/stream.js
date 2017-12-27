@@ -69,40 +69,40 @@ const remove = (filePath) => {
 
 const streamFile = (filePath, res) => {
   switch (path.extname(filePath)) {
-    case '.m3u8':
-      return fs.readFileAsync(filePath, 'utf-8')
-        .then((data) => {
-          res.set({ 'Content-Type': 'application/vnd.apple.mpegurl' });
-          return res.send(data);
-        })
-        .catch((err) => {
-          console.log(chalk.red(err));
-          res.sendStatus(500);
-        });
-    case '.ts':
-      console.log(chalk.greenBright('start reading ', filePath));
-
-      res.set({ 'Content-Type': 'video/MP2T'  });
-
-      let stream = fs.createReadStream(filePath);
-
-      stream.on('end', () => {
-        console.log('stream finished: ', filePath);
-        if (!uniqueFilePath.has(filePath)) {
-          uniqueFilePath.add(filePath);
-          finishedQueue.push(filePath);
-        }
-        if (finishedQueue.length > 5) {
-          let trash = finishedQueue.shift();
-          remove(trash);
-          uniqueFilePath.delete(trash);
-        }
+  case '.m3u8':
+    return fs.readFileAsync(filePath, 'utf-8')
+      .then((data) => {
+        res.set({ 'Content-Type': 'application/vnd.apple.mpegurl' });
+        return res.send(data);
+      })
+      .catch((err) => {
+        console.log(chalk.red(err));
+        res.sendStatus(500);
       });
+  case '.ts':
+    console.log(chalk.greenBright('start reading ', filePath));
 
-      return stream.pipe(res);
-    default:
-      console.log(chalk.red('unspported file'));
-      res.sendStatus(500);
+    res.set({ 'Content-Type': 'video/MP2T'  });
+
+    let stream = fs.createReadStream(filePath);
+
+    stream.on('end', () => {
+      console.log('stream finished: ', filePath);
+      if (!uniqueFilePath.has(filePath)) {
+        uniqueFilePath.add(filePath);
+        finishedQueue.push(filePath);
+      }
+      if (finishedQueue.length > 5) {
+        let trash = finishedQueue.shift();
+        remove(trash);
+        uniqueFilePath.delete(trash);
+      }
+    });
+
+    return stream.pipe(res);
+  default:
+    console.log(chalk.red('unspported file'));
+    res.sendStatus(500);
   }
 };
 
