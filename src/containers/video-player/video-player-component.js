@@ -179,7 +179,7 @@ class VideoPlayer extends Component {
         >
         </video>
         <VideoControls
-          show={player.showControls}
+          showControls={player.showControls}
           togglePlay={this.togglePlay}
           toggleMute={this.toggleMute}
           changeVolume={this.changeVolume}

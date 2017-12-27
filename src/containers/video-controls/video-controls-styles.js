@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 
 export const Wrapper = styled.div.attrs({
-  opacity: props => props.show ? 1 : 0
+  opacity: props => props.showControls ? 1 : 0
 })`
   width: 800px;
   height: 3em;
@@ -76,7 +76,10 @@ export const ControlsBtns = styled.div`
   }
 `;
 
-export const VolumeRangeWrapper = styled.div`
+export const VolumeRangeWrapper = styled.div.attrs({
+  display: props => props.showVolumeRange ? 'flex' : 'none'
+})`
+  display: ${(props) => props.display};
   transform: rotate(-90deg);
   transform-origin: 50% 50%;
   position: absolute;

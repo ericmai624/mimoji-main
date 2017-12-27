@@ -20,8 +20,10 @@ class VideoControls extends PureComponent {
   constructor(props) {
     super(props);
 
+    this.state = { showVolumeRange: false };
     this.handleSeek = this.handleSeek.bind(this);
-    this.onVolumeMouseOver = this.onVolumeMouseOver.bind(this);
+    this.onVolumeMouseEnter = this.onVolumeMouseEnter.bind(this);
+    this.onVolumeMouseLeave = this.onVolumeMouseLeave.bind(this);
   }
   
   handleSeek(e) {
@@ -43,16 +45,18 @@ class VideoControls extends PureComponent {
   }
 
   onVolumeMouseEnter(e) {
-
+    this.setState({ showVolumeRange: true });
   }
 
   onVolumeMouseLeave(e) {
-
+    this.setState({ showVolumeRange: false });
   }
 
   render() {
-    const { toggleFullscreen, togglePlay, toggleMute, changeVolume, killSwitch, stream, show } = this.props;
+    const { toggleFullscreen, togglePlay, toggleMute, changeVolume, killSwitch, stream, showControls } = this.props;
     const { paused, currentTime, duration, fullscreen, muted, volume } = stream;
+    const { showVolumeRange } = this.state;
+
     const format = duration > 3599 ? 'hh:mm:ss' : 'mm:ss';
     const displayedTime = moment.duration(currentTime, 'seconds').format(format, { trim: false });
     const endTime = moment.duration(duration, 'seconds').format(format, { trim: false });
@@ -69,7 +73,7 @@ class VideoControls extends PureComponent {
     return (
       <Wrapper 
         className='center'
-        show={show}
+        showControls={showControls}
       >
         <ControlsBtns onClick={togglePlay} className='center'>
           <FontAwesomeIcon icon={['fas', paused ? 'play' : 'pause']}/>
@@ -88,9 +92,18 @@ class VideoControls extends PureComponent {
         <Showtime>
           {displayedTime} / {endTime}
         </Showtime>
-        <ControlsBtns className='center fa-layers fa-fw' onClick={toggleMute}>
+        <ControlsBtns
+          className='center fa-layers fa-fw'
+          onClick={toggleMute}
+          onMouseEnter={this.onVolumeMouseEnter}
+        >
           {volumeIcon}
-          <VolumeRangeWrapper className='center' onClick={(e) => e.stopPropagation()}>
+          <VolumeRangeWrapper 
+            showVolumeRange={showVolumeRange}
+            className='center'
+            onClick={(e) => e.stopPropagation()}
+            onMouseLeave={this.onVolumeMouseLeave}
+          >
             <VolumeRange 
               type='range'
               value={volume}
