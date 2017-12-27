@@ -40,17 +40,14 @@ const remove = (filePath) => {
   let isFulfilled = false;
   return fs.statAsync(filePath)
     .then((stats) => {
-      if (stats.isFile()) {
-        return fs.unlinkAsync(filePath);
-      } else if (stats.isDirectory()) {
-        return fs.readdirAsync(filePath);
-      }
+      if (stats.isFile()) return fs.unlinkAsync(filePath);
+      else if (stats.isDirectory()) return fs.readdirAsync(filePath);
     })
     .then((files) => {
       if (!files) {
         isFulfilled = true;
         throw files;
-      };
+      }
 
       let tasks = [];
       _.each(files, (file) => tasks.push(remove(path.join(filePath, file))));
@@ -60,9 +57,8 @@ const remove = (filePath) => {
       return fs.rmdirAsync(filePath);
     })
     .catch((err) => {
-      if (isFulfilled) {
-        return console.log(chalk.green('removed ', filePath));
-      }
+      if (isFulfilled) return console.log(chalk.green('removed ', filePath));
+
       console.log(chalk.red(err));
     });
 };
@@ -108,14 +104,12 @@ const streamFile = (filePath, res) => {
 
 const isSupported = (file) => {
   return mime.lookup(file) === 'video/mp4';
-}
+};
 
 const transcodeMedia = (video, seek, output) => {
   let inputOptions = ['-loglevel panic'];
 
-  if (seek) {
-    inputOptions.push(`-ss ${seek}`);
-  }
+  if (seek) inputOptions.push(`-ss ${seek}`);
 
   console.log(chalk.cyan('seeking: ', seek ? seek : 0));
 
@@ -172,25 +166,9 @@ const terminateProcess = (id) => {
   }
 };
 
-module.exports.serveFiles = (req, res) => {
-  let { dir, file } = req.params;
-  let filePath = path.join(os.tmpdir(), 'onecast', dir, file);
-  console.log(chalk.green(filePath));
-
-  openFileRecurr(filePath, (err, fd) => {
-    if (!err) {
-      console.log(chalk.magenta('start streaming...'));
-      return streamFile(filePath, res);
-    }
-    console.log(chalk.red(err));
-  });
-};
-
 module.exports.createStreamProcess = (req, res) => {
   let { v, s } = req.query;
-  if (!v || v === '') {
-    return res.end();
-  }
+  if (!v || v === '') return res.end();
   let id = createHash('md5').update(v).digest('hex');
   let directory = path.join(os.tmpdir(), 'onecast');
   let getMetadata = new Promise((resolve, reject) => {
@@ -213,6 +191,33 @@ module.exports.createStreamProcess = (req, res) => {
       mediaProcesses[id] = { v, s, id, source, command };
       return res.json({ id, source, duration });
     })
+    .catch((err) => {
+      console.log(chalk.red(err));
+      res.sendStatus(500);
+    });
+};
+
+module.exports.serveFiles = (req, res) => {
+  let { dir, file } = req.params;
+  let filePath = path.join(os.tmpdir(), 'onecast', dir, file);
+  console.log(chalk.green(filePath));
+
+  openFileRecurr(filePath, (err, fd) => {
+    if (!err) {
+      console.log(chalk.magenta('start streaming...'));
+      return streamFile(filePath, res);
+    }
+    console.log(chalk.red(err));
+  });
+};
+
+module.exports.loadSubtitle = (req, res) => {
+  console.log(chalk.white('loading subtitle'));
+  res.set({ 'Content-Type': 'text/vtt' });
+  fs.readFileAsync(path.join(__dirname, '../../public/assets/blue.planet.vtt'), 'utf-8')
+    .then(data => {
+      res.send(data);
+    }) 
     .catch((err) => {
       console.log(chalk.red(err));
       res.sendStatus(500);

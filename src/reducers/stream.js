@@ -9,7 +9,7 @@ const initState = {
   fullscreen: false,
   volume: 1,
   muted: false,
-  cc: null,
+  subtitle: null,
   fetching: false,
   fetched: false,
   error: null
@@ -24,7 +24,7 @@ export const streamReducer = (state=initState, action) => {
       return { ...state, id, source, duration, path, seek, fetched: true, fetching: false };
     case 'GET_STREAM_INFO_REJECTED':
       return { ...state, fetching: false, fetched: false, error: action.payload };
-    case 'UPDATE_VIDEO_CURRENTTIME':
+    case 'UPDATE_STREAM_TIME':
       return { ...state, currentTime: action.payload };
     case 'TOGGLE_STREAM_PAUSE':
       return { ...state, paused: !state.paused };
@@ -32,10 +32,10 @@ export const streamReducer = (state=initState, action) => {
       return { ...state, fullscreen: !state.fullscreen };
     case 'TOGGLE_STREAM_MUTED':
       return { ...state, muted: !state.muted };
-    case 'UPDATE_VIDEO_VOLUME':
+    case 'UPDATE_STREAM_VOLUME':
       return { ...state, volume: action.payload };
-    case 'UPDATE_VIDEO_CC':
-      return { ...state, cc: action.payload };
+    case 'UPDATE_STREAM_subtitle':
+      return { ...state, subtitle: action.payload };
     default:
       return state;
   }

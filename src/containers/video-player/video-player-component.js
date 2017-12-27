@@ -9,9 +9,9 @@ import VideoControls from '../../containers/video-controls/video-controls-compon
 
 import { 
   getStreamInfo,
-  updateVideoCurrTime,
-  updateVideoCC,
-  updateVideoVolume,
+  updateStreamTime,
+  updateStreamSub,
+  updateStreamVolume,
   toggleStreamProps
 } from '../../actions/stream';
 
@@ -27,6 +27,8 @@ class VideoPlayer extends Component {
     this.togglePlay = this.togglePlay.bind(this);
     this._toggleControls = _.throttle(this.toggleControls.bind(this), 4000);
     this.seek = this.seek.bind(this);
+    this.addSubtitle = this.addSubtitle.bind(this);
+    this.syncSubtitle = this.syncSubtitle.bind(this);
     this.onVideoPlaying = this.onVideoPlaying.bind(this);
     this.onVideoTimeUpdate = this.onVideoTimeUpdate.bind(this);
     this.onVideoEnded = this.onVideoEnded.bind(this);
@@ -46,7 +48,9 @@ class VideoPlayer extends Component {
     this.hls = new Hls();
     this.hls.attachMedia(videoEl);
     this.hls.loadSource(`/api/stream/video/${source}/index.m3u8`);
-    this.hls.on(Hls.Events.MANIFEST_PARSED, (evt, data) => videoEl.play());
+    this.hls.on(Hls.Events.MANIFEST_PARSED, (evt, data) => {
+      videoEl.play();
+    });
     // hls error handling
     this.hls.on(Hls.Events.ERROR, (evt, data) => { 
       if (data.fatal) {
@@ -75,36 +79,56 @@ class VideoPlayer extends Component {
 
   toggleControls() {
     const { toggleVideoControls, player } = this.props;
-    if (!player.showControls) {
-      toggleVideoControls();
-    }
+    if (!player.showControls) toggleVideoControls();
   } 
 
   seek(seekTime) {
-    const { stream, updateVideoCurrTime, getStreamInfo } = this.props;
+    const { stream, updateStreamTime, getStreamInfo } = this.props;
     const { path } = stream;
     this.hls.destroy();
     return getStreamInfo(path, seekTime)
       .then((data) => {
         this.initHls();
-        updateVideoCurrTime(seekTime);
+        this.syncSubtitle(seekTime * 1000);
+        updateStreamTime(seekTime);
       })
       .catch((err) => {
         console.log(err);
       });
   }
 
+  addSubtitle() {
+    let sub = document.createElement('track');
+    sub.kind = 'subtitles';
+    sub.src = '/api/stream/subtitle';
+    sub.label = 'English';
+    sub.srclang = 'en';
+    sub.setAttribute('default', true);
+    this.videoEl.appendChild(sub);
+  }
+
+  syncSubtitle(offset) {
+    let textTracks = this.videoEl.textTracks;
+    console.log('synchronizing subtitle...', typeof textTracks, textTracks);
+    _.each(textTracks, (track) => {
+      console.log('track: ', track, track.cues);
+      _.each(track.cues, (cue) => {
+        console.log('cue: ', cue);
+        cue.startTime -= offset;
+        cue.endTime -= offset;
+      });
+    });
+  }
+
   onVideoPlaying() {
     const { stream, toggleStreamProps } = this.props;
-    if (stream.paused) {
-      toggleStreamProps('pause');
-    }
+    if (stream.paused) toggleStreamProps('pause');
   }
 
   onVideoTimeUpdate() {
-    const { stream, player, updateVideoCurrTime } = this.props;
+    const { stream, player, updateStreamTime } = this.props;
     const { videoEl } = this;
-    if (player.showControls) updateVideoCurrTime(stream.seek + videoEl.currentTime);
+    if (player.showControls) updateStreamTime(stream.seek + videoEl.currentTime);
   }
 
   onVideoEnded() {
@@ -113,10 +137,10 @@ class VideoPlayer extends Component {
   }
 
   changeVolume(e) {
-    const { updateVideoVolume } = this.props;
+    const { updateStreamVolume } = this.props;
     const { videoEl } = this;
     const volume = parseFloat(e.target.value);
-    updateVideoVolume(volume);
+    updateStreamVolume(volume);
     videoEl.volume = volume;
   }
 
@@ -130,28 +154,18 @@ class VideoPlayer extends Component {
   toggleFullscreen(e) {
     const { videoEl } = this;
     const { stream, toggleStreamProps } = this.props;
+    const requestFullscreen = videoEl.requestFullscreen ||
+                              videoEl.mozRequestFullScreen ||
+                              videoEl.webkitRequestFullScreen ||
+                              videoEl.msRequestFullscreen;
 
-    if (!stream.fullscreen) {
-      if (videoEl.requestFullscreen) {
-        videoEl.requestFullscreen();
-      } else if (videoEl.mozRequestFullScreen) {
-        videoEl.mozRequestFullScreen();
-      } else if (videoEl.webkitRequestFullScreen) {
-        videoEl.webkitRequestFullScreen();
-      } else if (videoEl.msRequestFullscreen) {
-        videoEl.msRequestFullscreen();
-      }
-    } else {
-      if (document.exitFullscreen) {
-        document.exitFullscreen();
-      } else if (document.mozCancelFullScreen) {
-        document.mozCancelFullScreen();
-      } else if (document.webkitCancelFullScreen) {
-        document.webkitCancelFullScreen();
-      } else if (document.msExitFullscreen) {
-        document.msExitFullscreen();
-      }
-    }
+    const exitFullscreen = document.exitFullscreen ||
+                           document.mozCancelFullScreen ||
+                           document.webkitCancelFullScreen ||
+                           document.msExitFullscreen;
+
+    if (!stream.fullscreen) requestFullscreen.call(videoEl); // use call to bind to the videoEl when invoked
+    else exitFullscreen.call(document);
 
     toggleStreamProps('fullscreen');
   }
@@ -169,14 +183,16 @@ class VideoPlayer extends Component {
     return (
       <Wrapper id='video-player' className='center' onMouseMove={this._toggleControls}>
         <video
-          autoPlay
-          playsInline
+          autoPlay={true}
+          playsInline={true}
           width='100%'
           onPlaying={this.onVideoPlaying}
           onTimeUpdate={this.onVideoTimeUpdate}
           onEnded={this.onVideoEnded}
           ref={(el) => this.videoEl = el}
+          crossOrigin='anonymous'
         >
+          <track kind='subtitles' src='/api/stream/subtitle' srcLang='zh' default={true}/>
         </video>
         <VideoControls
           showControls={player.showControls}
@@ -200,9 +216,9 @@ const mapDispatchToProps = (dispatch) => ({
   toggleVideoPlayer: bindActionCreators(toggleVideoPlayer, dispatch),
   toggleVideoControls: bindActionCreators(toggleVideoControls, dispatch),
   toggleStreamProps: bindActionCreators(toggleStreamProps, dispatch),
-  updateVideoCC: bindActionCreators(updateVideoCC, dispatch),
-  updateVideoVolume: bindActionCreators(updateVideoVolume, dispatch),
-  updateVideoCurrTime: bindActionCreators(updateVideoCurrTime, dispatch),
+  updateStreamSub: bindActionCreators(updateStreamSub, dispatch),
+  updateStreamVolume: bindActionCreators(updateStreamVolume, dispatch),
+  updateStreamTime: bindActionCreators(updateStreamTime, dispatch),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(VideoPlayer);

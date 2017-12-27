@@ -63,12 +63,10 @@ class VideoControls extends PureComponent {
 
     let volumeIcon = (<FontAwesomeIcon icon={['fas', 'volume-up']}/>);
     if (volume < 0.5) volumeIcon = (<FontAwesomeIcon icon={['fas', 'volume-down']}/>);
-    if (volume === 0 || muted) {
-      volumeIcon = [
-        <FontAwesomeIcon key='volume-off' icon={['fas', 'volume-off']} transform='left-5.4'/>,
-        <FontAwesomeIcon key='times' icon={['fas', 'times']} transform='shrink-7 right-3.4'/>
-      ];
-    }
+    if (volume === 0 || muted) volumeIcon = [
+      <FontAwesomeIcon key='volume-off' icon={['fas', 'volume-off']} transform='left-5.4'/>,
+      <FontAwesomeIcon key='times' icon={['fas', 'times']} transform='shrink-7 right-3.4'/>
+    ];
 
     return (
       <Wrapper 

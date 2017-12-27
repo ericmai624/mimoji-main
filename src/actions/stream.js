@@ -20,14 +20,14 @@ export const toggleStreamProps = (prop) => ({
   type: `TOGGLE_STREAM_${toUpper(prop)}`
 });
 
-export const updateVideoCurrTime = (time) => ({
-  type: 'UPDATE_VIDEO_CURRENTTIME', payload: time
+export const updateStreamTime = (time) => ({
+  type: 'UPDATE_STREAM_TIME', payload: time
 });
 
-export const updateVideoVolume = (volume) => ({
-  type: 'UPDATE_VIDEO_VOLUME', payload: volume
+export const updateStreamVolume = (volume) => ({
+  type: 'UPDATE_STREAM_VOLUME', payload: volume
 });
 
-export const updateVideoCC = (ccPath) => ({
-  type: 'UPDATE_VIDEO_CC', payload: ccPath
+export const updateStreamSub = (path) => ({
+  type: 'UPDATE_STREAM_SUBTITLE', payload: path
 });
