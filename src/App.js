@@ -2,16 +2,38 @@ import React, { Component, Fragment } from 'react';
 import fontawesome from '@fortawesome/fontawesome';
 import solid from '@fortawesome/fontawesome-free-solid';
 import regular from '@fortawesome/fontawesome-free-regular';
+import styled from 'styled-components';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 
 import { updateCastPlayer, updateCastController } from './actions/cast';
+import { toggleFileBrowserDialog } from './actions/file-browser';
 
 import Cast from './components/cast';
 import FileBrowser from './containers/file-browser/file-browser-component';
 import VideoPlayer from './containers/video-player/video-player-component';
 
 fontawesome.library.add(solid, regular);
+
+const LabelWrapper = styled.div`
+  height: 100%;
+  grid-row: 2;
+  font-size: 2em;
+  margin-top: -50px;
+`;
+
+const Label = styled.label`
+  user-select: none;
+  color: #fefefe;
+  background-color: #3f51b5;
+  outline: none;
+  border: none;
+  border-radius: 2px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  padding: 0.6em 0.8em;
+  margin: 0;
+  cursor: pointer;
+`;
 
 class App extends Component {
   constructor(props) {
@@ -51,22 +73,27 @@ class App extends Component {
   }
   
   render() {
-    const { player } = this.props;
+    const { player, fileBrowser, toggleFileBrowserDialog } = this.props;
     
     return (
       <Fragment>
         <Cast/>
-       {player.showPlayer ? (<VideoPlayer />) : (<FileBrowser/>)}
+        <LabelWrapper className='center'>
+          <Label onClick={toggleFileBrowserDialog}>Choose a Video</Label>
+        </LabelWrapper>
+        {fileBrowser.showDialog ? (<FileBrowser/>) : null}
+        {player.showPlayer ? (<VideoPlayer />) : null}
       </Fragment>
     );
   }
 }
 
-const mapStateToProps = (state) => ({ cast: state.cast, player: state.player });
+const mapStateToProps = (state) => ({ cast: state.cast, player: state.player, fileBrowser: state.fileBrowser });
 
-const mapDispatchToProps = (dispath) => ({ 
-  updateCastPlayer: bindActionCreators(updateCastPlayer, dispath),
-  updateCastController: bindActionCreators(updateCastController, dispath)
+const mapDispatchToProps = (dispatch) => ({ 
+  updateCastPlayer: bindActionCreators(updateCastPlayer, dispatch),
+  updateCastController: bindActionCreators(updateCastController, dispatch),
+  toggleFileBrowserDialog: bindActionCreators(toggleFileBrowserDialog, dispatch)
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(App);

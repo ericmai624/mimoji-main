@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import FontAwesomeIcon from '@fortawesome/react-fontawesome';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -16,9 +16,7 @@ import {
   Main,
   Nav,
   NaviBtns,
-  CurrDirectory,
-  Label,
-  LabelWrapper
+  CurrDirectory
 } from './file-browser-styles';
 
 class FileBrowser extends Component {
@@ -71,43 +69,35 @@ class FileBrowser extends Component {
     const { onDoubleClickDirectory, onDoubleClickFile } = this;
 
     return (
-      <Fragment>
-        {fileBrowser.showDialog ?
-          (<Wrapper className='center'>
-            <Dialog>
-              <DialogSidebar></DialogSidebar>
-              <Main>
-                <Nav>
-                  <CurrDirectory className='ellipsis'>
-                    {fileBrowser.currDir}
-                  </CurrDirectory>
-                  <NaviBtns className='center' onClick={toggleFileBrowserDialog}>
-                    <FontAwesomeIcon icon={['fas', 'times']}/>
-                  </NaviBtns>
-                  <NaviBtns className='center' onClick={this.navigateUpDir}>
-                    <FontAwesomeIcon icon={['fas', 'chevron-up']}/>
-                  </NaviBtns>
-                  <NaviBtns className='center'>
-                    <FontAwesomeIcon icon={['fas', 'sort-amount-down']}/>
-                  </NaviBtns>
-                  <NaviBtns className='center'>
-                    <FontAwesomeIcon icon={['fas', 'filter']}/>
-                  </NaviBtns>
-                </Nav>
-                <FileBrowserList
-                  content={fileBrowser.content} 
-                  onDoubleClickDirectory={onDoubleClickDirectory} 
-                  onDoubleClickFile={onDoubleClickFile}
-                />
-              </Main>
-            </Dialog>
-          </Wrapper>) 
-          :
-          (<LabelWrapper className='center'>
-            <Label onClick={toggleFileBrowserDialog}>Choose a Video</Label>
-          </LabelWrapper>)
-        }
-      </Fragment>
+      <Wrapper className='center'>
+        <Dialog>
+          <DialogSidebar></DialogSidebar>
+          <Main>
+            <Nav>
+              <CurrDirectory className='ellipsis'>
+                {fileBrowser.currDir}
+              </CurrDirectory>
+              <NaviBtns className='center' onClick={toggleFileBrowserDialog}>
+                <FontAwesomeIcon icon={['fas', 'times']}/>
+              </NaviBtns>
+              <NaviBtns className='center' onClick={this.navigateUpDir}>
+                <FontAwesomeIcon icon={['fas', 'chevron-up']}/>
+              </NaviBtns>
+              <NaviBtns className='center'>
+                <FontAwesomeIcon icon={['fas', 'sort-amount-down']}/>
+              </NaviBtns>
+              <NaviBtns className='center'>
+                <FontAwesomeIcon icon={['fas', 'filter']}/>
+              </NaviBtns>
+            </Nav>
+            <FileBrowserList
+              content={fileBrowser.content} 
+              onDoubleClickDirectory={onDoubleClickDirectory} 
+              onDoubleClickFile={onDoubleClickFile}
+            />
+          </Main>
+        </Dialog>
+      </Wrapper>
     );
   }
 }

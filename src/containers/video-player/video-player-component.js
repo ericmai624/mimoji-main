@@ -27,10 +27,6 @@ class VideoPlayer extends Component {
     this.togglePlay = this.togglePlay.bind(this);
     this._toggleControls = _.throttle(this.toggleControls.bind(this), 4000);
     this.seek = this.seek.bind(this);
-    this.addSubtitle = this.addSubtitle.bind(this);
-    this.syncSubtitle = this.syncSubtitle.bind(this);
-    this.onVideoLoadStart = this.onVideoLoadStart.bind(this);
-    this.onVideoLoadedMetadata = this.onVideoLoadedMetadata.bind(this);
     this.onVideoPlaying = this.onVideoPlaying.bind(this);
     this.onVideoTimeUpdate = this.onVideoTimeUpdate.bind(this);
     this.onVideoEnded = this.onVideoEnded.bind(this);
@@ -47,22 +43,12 @@ class VideoPlayer extends Component {
   initHls() {
     const { videoEl } = this;
     const { stream } = this.props;
+
     this.hls = new Hls();
     this.hls.attachMedia(videoEl);
     this.hls.loadSource(`/api/stream/video/${stream.source}/index.m3u8`);
-    if (this.sub) this.videoEl.removeChild(this.sub);
-    this.sub = this.addSubtitle();
-    this.videoEl.appendChild(this.sub);
-    this.hls.on(Hls.Events.MANIFEST_PARSED, (evt, data) => {
-      const { textTracks } = this.videoEl;
-      if (textTracks.length) {
-        let tracks = Array.from(textTracks);
-        _.each(tracks, (track) => {
-          this.syncSubtitle(track, stream.subtitle.offset - stream.seek);
-        });
-      }
-      videoEl.play();
-    });
+    
+    this.hls.on(Hls.Events.MANIFEST_PARSED, (evt, data) => videoEl.play());
     // hls error handling
     this.hls.on(Hls.Events.ERROR, (evt, data) => { 
       if (data.fatal) {
@@ -89,7 +75,7 @@ class VideoPlayer extends Component {
     return toggleStreamProps('pause');
   }
 
-  toggleControls() {
+  toggleControls(e) {
     const { toggleVideoControls, player } = this.props;
     if (!player.showControls) toggleVideoControls();
   } 
@@ -100,44 +86,12 @@ class VideoPlayer extends Component {
     this.hls.destroy();
     return getStreamInfo(path, seekTime)
       .then((data) => {
-        this.initHls();
         updateStreamTime(seekTime);
+        this.initHls();
       })
       .catch((err) => {
         console.log(err);
       });
-  }
-
-  addSubtitle() {
-    let sub = document.createElement('track');
-    sub.kind = 'subtitles';
-    sub.src = '/api/stream/subtitle';
-    sub.label = 'Sub';
-    sub.srclang = 'zh';
-    sub.setAttribute('default', true);
-    return sub;
-  }
-
-  syncSubtitle(track, offset) {
-    let cues = Array.from(track.cues);
-    _.each(cues, (cue) => {
-      if (cue) {
-        // if (cue.endTime + offset < 0) return track.removeCue(cue);
-        cue.startTime += offset;
-        cue.endTime += offset;
-      } 
-    });
-    console.log('synced sub: ', track);
-  }
-
-  onVideoLoadStart() {
-
-  }
-
-  onVideoLoadedMetadata() {
-    const { stream } = this.props;
-    const { textTracks } = this.videoEl;
-
   }
 
   onVideoPlaying() {
@@ -205,17 +159,21 @@ class VideoPlayer extends Component {
         <video
           autoPlay={true}
           playsInline={true}
-          controls
+          controls={true}
           width='800px'
-          onLoadStart={this.onVideoLoadStart}
-          onLoadedMetadata={this.onVideoLoadedMetadata}
+          crossOrigin='anonymous'
           onPlaying={this.onVideoPlaying}
           onTimeUpdate={this.onVideoTimeUpdate}
           onEnded={this.onVideoEnded}
           ref={(el) => this.videoEl = el}
-          crossOrigin='anonymous'
         >
-          {/* <track kind='subtitles' src={`/api/stream/subtitle?p=${stream.subtitle.path}`} srcLang='zh' default={true}/> */}
+          {stream.subtitle.enabled ? 
+            <track 
+              kind='subtitles'
+              src={`/api/stream/subtitle?sub=${stream.subtitle.path}&offset=${stream.subtitle.offset - stream.seek}`}
+              srcLang={stream.subtitle.lang}
+              default={true}
+            /> : null}
         </video>
         <VideoControls
           showControls={player.showControls}

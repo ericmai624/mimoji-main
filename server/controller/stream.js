@@ -6,6 +6,7 @@ const fs = Promise.promisifyAll(require('fs'));
 const ffmpeg = require('fluent-ffmpeg');
 const path = require('path');
 const _ = require('lodash');
+const util = require('../utilities');
 const { createHash } = require('crypto');
 const { sep } = path;
 
@@ -17,16 +18,17 @@ const openFileRecurr = (path, cb, retry = 0) => {
   fs.open(path, 'r', (err, fd) => {
     if (!err) return cb(null, fd);
     if (err && err.code === 'ENOENT' && retry < 10) {
-      console.log(chalk.red('file not found, retrying ', retry + 1, 'times'));
+      retry++;
+      console.log(chalk.red('file not found, retrying ', retry, 'times'));
       return setTimeout(() => {
-        openFileRecurr(path, cb, retry + 1);
+        openFileRecurr(path, cb, retry);
       }, 2000);
     }
     return cb(err);
   });
 };
 
-const createDirIfNotExist = (dir) => {
+const createFolder = (dir) => {
   return new Promise((resolve, reject) => {
     fs.mkdir(dir, (err) => {
       if (err && err.code !== 'EEXIST') reject(err);
@@ -180,7 +182,7 @@ module.exports.createStreamProcess = (req, res) => {
 
   terminateProcess(id); // Kill any existing ffmpeg process and remove tmp files
 
-  createDirIfNotExist(directory)
+  createFolder(directory)
     .then(() => {
       return Promise.all([ fs.mkdtempAsync(directory + sep), getMetadata ]);
     })
@@ -212,11 +214,15 @@ module.exports.serveFiles = (req, res) => {
 };
 
 module.exports.loadSubtitle = (req, res) => {
+  let { sub, offset } = req.query;
+  offset = parseFloat(offset);
+
   console.log(chalk.white('loading subtitle'));
   res.set({ 'Content-Type': 'text/vtt' });
   fs.readFileAsync(path.join(__dirname, '../../public/assets/blue.planet.vtt'), 'utf-8')
     .then(data => {
-      res.send(data);
+      if (offset === 0) return res.send(data);
+      return res.send(util.webVTTParser(data, offset));
     }) 
     .catch((err) => {
       console.log(chalk.red(err));

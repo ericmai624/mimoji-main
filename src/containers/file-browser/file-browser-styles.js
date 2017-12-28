@@ -1,25 +1,5 @@
 import styled from 'styled-components';
 
-export const LabelWrapper = styled.div`
-  height: 100%;
-  grid-row: 2;
-  font-size: 2em;
-  margin-top: -50px;
-`;
-
-export const Label = styled.label`
-  user-select: none;
-  color: #fefefe;
-  background-color: #3f51b5;
-  outline: none;
-  border: none;
-  border-radius: 2px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
-  padding: 0.6em 0.8em;
-  margin: 0;
-  cursor: pointer;
-`;
-
 export const Wrapper = styled.div`
   position: fixed;
   width: 100%;
@@ -27,6 +7,7 @@ export const Wrapper = styled.div`
   left: 0;
   top: 0;
   background: rgba(49, 49, 49, 0.9);
+  z-index: 105;
 `;
 
 export const Dialog = styled.div`
