@@ -13,7 +13,7 @@ const mediaProcesses = {};
 const finishedQueue = [];
 const uniqueFilePath = new Set();
 
-const openFileRecurr = (path, cb, retry=0) => {
+const openFileRecurr = (path, cb, retry = 0) => {
   fs.open(path, 'r', (err, fd) => {
     if (!err) return cb(null, fd);
     if (err && err.code === 'ENOENT' && retry < 10) {
