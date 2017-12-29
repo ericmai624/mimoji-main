@@ -10,8 +10,26 @@ body {
   grid-template-rows: 50px calc(100vh - 50px);
 }
 
-.center {
-  display: flex;
+#root:before {
+  content: "";
+  position: fixed;
+  left: -25px;
+  top: -25px;;
+  width: calc(100% + 50px);
+  height: calc(100vh + 50px);
+  background: url('/assets/background/466681.jpg');
+  background-position: center;
+  background-size: cover;
+  overflow: hidden;
+  z-index: -1;
+  -webkit-filter: blur(2px);
+  -moz-filter: blur(2px);
+  -o-filter: blur(2px);
+  -ms-filter: blur(2px);
+  filter: blur(2px);
+}
+
+.flex-center {
   align-items: center;
   justify-content: center;
 }
@@ -23,6 +41,42 @@ body {
   white-space: nowrap;
 }
 
+.grid {
+  display: grid;
+}
+
+.flex {
+  display: flex;
+}
+
+.flex-align-center {
+  align-items: center;
+}
+
+.flex-space-around {
+  justify-content: space-around;
+}
+
+.relative {
+  position: relative;
+}
+
+.absolute {
+  position: absolute;
+}
+
+.fixed {
+  position: fixed;
+}
+
+.zero-padding {
+  padding: 0;
+}
+
+.zero-margin {
+  margin: 0;
+}
+
 video::-webkit-media-controls {
-  /* display: none !important; */
+  display: none !important;
 }

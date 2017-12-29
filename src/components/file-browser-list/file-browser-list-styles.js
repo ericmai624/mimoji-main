@@ -3,20 +3,20 @@ import styled from 'styled-components';
 export const List = styled.ul`
   list-style: none;
   max-height: 600px;
-  padding: 0;
-  margin: 0;
 `;
 
 export const Entry = styled.li`
   user-select: none;
   padding: 1em;
-  display: flex;
   align-items: center;
   border-bottom: 1px solid #e3e3e3;
   cursor: pointer;
+  transition: color 0.15s ease-out;
 
   &:hover {
-    background: rgba(235, 235, 235, 0.8);
+    background: rgba(59, 59, 59, 0.4);
+    color: rgb(228, 75, 54);
+    transition: color 0.15s ease-in;
   }
 `;
 

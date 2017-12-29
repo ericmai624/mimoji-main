@@ -20,4 +20,4 @@ app.use('/api/stream', (req, res, next) => {
   next();
 }, routes.stream);
 
-app.listen(2222, () => console.log('Ready to accept connections on port 2222'));
+app.listen(6300, () => console.log('Ready to accept connections on port 6300'));

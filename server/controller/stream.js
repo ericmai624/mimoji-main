@@ -215,6 +215,7 @@ module.exports.serveFiles = (req, res) => {
 
 module.exports.loadSubtitle = (req, res) => {
   let { sub, offset } = req.query;
+  if (!sub || sub === '') return res.end();
   offset = parseFloat(offset);
 
   console.log(chalk.white('loading subtitle'));

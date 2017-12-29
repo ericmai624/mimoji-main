@@ -1,7 +1,6 @@
 import styled from 'styled-components';
 
 export const Wrapper = styled.div`
-  position: fixed;
   width: 100%;
   height: 100vh;
   left: 0;
@@ -11,23 +10,27 @@ export const Wrapper = styled.div`
 `;
 
 export const Dialog = styled.div`
-  display: grid;
   grid-template-columns: 2fr 4fr;
-  width: 850px;
+  grid-column-gap: 20px;
+  width: 900px;
   height: 80%;
-  max-height: 600px;
-  background: rgb(255, 255, 255);
+  max-height: 480px;
 `;
 
 export const DialogSidebar = styled.div`
   grid-column: 1;
-  background: lightcoral;
+  border-radius: 5px;
+  background: rgba(34, 34, 34, 0.8);
 `;
 
 export const Main = styled.div`
+  border-radius: 5px;
+  user-select: none;
   grid-column: 2;
   padding: 1.8em;
   overflow: auto;
+  background: rgba(34, 34, 34, 0.8);
+  color: rgb(255, 255, 255);
 `;
 
 export const CurrDirectory = styled.div`
@@ -50,6 +53,7 @@ export const Nav = styled.div`
 
 export const NaviBtns = styled.div`
   font-size: 1.4em;
+  color: rgb(255, 255, 255);
   cursor: pointer;
   margin-left: 1em;
 `;

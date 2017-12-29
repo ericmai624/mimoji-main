@@ -5,13 +5,16 @@ import moment from 'moment';
 import momentDurationSetup from 'moment-duration-format';
 
 import { 
-  Wrapper,
+  Container,
   Showtime,
   ProgressContainer,
   Progress,
   ControlsBtns,
+  Bridge,
+  VolumeContainer,
   VolumeRangeWrapper,
-  VolumeRange
+  VolumeRange,
+  Sub
 } from './video-controls-styles';
 
 momentDurationSetup(moment);
@@ -45,7 +48,7 @@ class VideoControls extends PureComponent {
   }
 
   onVolumeMouseEnter(e) {
-    this.setState({ showVolumeRange: true });
+    if (!this.state.showVolumeRange) this.setState({ showVolumeRange: true });
   }
 
   onVolumeMouseLeave(e) {
@@ -63,23 +66,22 @@ class VideoControls extends PureComponent {
 
     let volumeIcon = (<FontAwesomeIcon icon={['fas', 'volume-up']}/>);
     if (volume < 0.5) volumeIcon = (<FontAwesomeIcon icon={['fas', 'volume-down']}/>);
-    if (volume === 0 || muted) volumeIcon = [
-      <FontAwesomeIcon key='volume-off' icon={['fas', 'volume-off']} transform='left-5.4'/>,
-      <FontAwesomeIcon key='times' icon={['fas', 'times']} transform='shrink-7 right-3.4'/>
-    ];
+    if (volume === 0 || muted) {
+      volumeIcon = [
+        <FontAwesomeIcon key='volume-off' icon={['fas', 'volume-off']} transform='left-5.4'/>,
+        <FontAwesomeIcon key='times' icon={['fas', 'times']} transform='shrink-7 right-3.4'/>
+      ];
+    }
 
     return (
-      <Wrapper 
-        className='center'
-        showControls={showControls}
-      >
-        <ControlsBtns onClick={togglePlay} className='center'>
+      <Container className='flex flex-align-center flex-space-around fixed' showControls={showControls}>
+        <ControlsBtns onClick={togglePlay} className='flex flex-center'>
           <FontAwesomeIcon icon={['fas', paused ? 'play' : 'pause']}/>
         </ControlsBtns>
-        <ControlsBtns onClick={killSwitch} className='center'>
+        <ControlsBtns onClick={killSwitch} className='flex flex-center'>
           <FontAwesomeIcon icon={['fas', 'stop']}/>
         </ControlsBtns>
-        <ProgressContainer onClick={this.handleSeek}>
+        <ProgressContainer className='zero-padding' onClick={this.handleSeek}>
           <Progress 
             value={currentTime} 
             max={duration}
@@ -90,24 +92,24 @@ class VideoControls extends PureComponent {
         <Showtime>
           {displayedTime} / {endTime}
         </Showtime>
-        <ControlsBtns
-          className='center fa-layers fa-fw'
-          onClick={toggleMute}
-          onMouseEnter={this.onVolumeMouseEnter}
+        <VolumeContainer
+          className='relative'
+          onMouseOver={this.onVolumeMouseEnter}
+          onMouseLeave={this.onVolumeMouseLeave}
         >
-          {volumeIcon}
-          <VolumeRangeWrapper 
-            showVolumeRange={showVolumeRange}
-            className='center'
-            onClick={(e) => e.stopPropagation()}
-            onMouseLeave={this.onVolumeMouseLeave}
+          <ControlsBtns
+            className='flex flex-center fa-layers fa-fw'
+            onClick={toggleMute}
           >
-            <VolumeRange 
-              type='range'
+            {volumeIcon}
+          </ControlsBtns>
+          <VolumeRangeWrapper 
+            className='flex flex-center absolute'
+            onClick={(e) => e.stopPropagation()}
+            showVolumeRange={showVolumeRange}
+          >
+            <VolumeRange className='zero-padding zero-margin'
               value={volume}
-              min='0'
-              max='1'
-              step='0.01'
               onChange={changeVolume}
               style={{
                 background: 'linear-gradient(to right, rgba(228, 75, 54, 0.9) 0%,' 
@@ -118,14 +120,15 @@ class VideoControls extends PureComponent {
             >
             </VolumeRange>
           </VolumeRangeWrapper>
+          <Bridge className='relative' showVolumeRange={showVolumeRange}></Bridge>
+        </VolumeContainer>
+        <ControlsBtns className='flex flex-center'>
+          <Sub>SUB</Sub>
         </ControlsBtns>
-        <ControlsBtns className='center'>
-          <FontAwesomeIcon icon={['fas', 'closed-captioning']}/>
-        </ControlsBtns>
-        <ControlsBtns className='center' onClick={toggleFullscreen}>
+        <ControlsBtns className='flex flex-center' onClick={toggleFullscreen}>
           <FontAwesomeIcon icon={['fas', fullscreen ? 'compress' : 'expand']}/>
         </ControlsBtns>
-      </Wrapper>
+      </Container>
     );
   }
 }

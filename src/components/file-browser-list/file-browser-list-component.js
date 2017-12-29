@@ -10,12 +10,12 @@ import {
 
 const FileBrowserList = ({ content, onDoubleClickDirectory, onDoubleClickFile }) => {
   return (
-    <List>
+    <List className='zero-padding zero-margin'>
       {content.map((entry, i) => {
         const { isDirectory } = entry;
 
         return (
-          <Entry 
+          <Entry className='flex'
             key={i} 
             onDoubleClick={isDirectory ? (e) => onDoubleClickDirectory(e, entry.filePath) : (e) => onDoubleClickFile(e, entry.filePath)}
           >

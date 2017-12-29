@@ -37,7 +37,8 @@ class VideoPlayer extends Component {
   }
 
   componentDidMount() {
-    this.initHls();
+    const { stream } = this.props;
+    if (stream.source !== '') this.initHls();
   }
 
   initHls() {
@@ -83,7 +84,7 @@ class VideoPlayer extends Component {
   seek(seekTime) {
     const { stream, updateStreamTime, getStreamInfo } = this.props;
     const { path } = stream;
-    this.hls.destroy();
+    if (this.hls) this.hls.destroy();
     return getStreamInfo(path, seekTime)
       .then((data) => {
         updateStreamTime(seekTime);
@@ -146,7 +147,7 @@ class VideoPlayer extends Component {
 
   killSwitch() {
     const { toggleVideoPlayer, stream } = this.props;
-    this.hls.destroy();
+    if (this.hls) this.hls.destroy();
     axios.post('/api/stream/terminate', { id: stream.id });
     return toggleVideoPlayer();
   }
@@ -155,12 +156,11 @@ class VideoPlayer extends Component {
     const { stream, player } = this.props;
 
     return (
-      <Wrapper id='video-player' className='center' onMouseMove={this._toggleControls}>
+      <Wrapper id='video-player' className='flex flex-center' onMouseMove={this._toggleControls}>
         <video
           autoPlay={true}
           playsInline={true}
-          controls={true}
-          width='800px'
+          width='100%'
           crossOrigin='anonymous'
           onPlaying={this.onVideoPlaying}
           onTimeUpdate={this.onVideoTimeUpdate}

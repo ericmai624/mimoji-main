@@ -69,24 +69,24 @@ class FileBrowser extends Component {
     const { onDoubleClickDirectory, onDoubleClickFile } = this;
 
     return (
-      <Wrapper className='center'>
-        <Dialog>
+      <Wrapper className='flex flex-center fixed'>
+        <Dialog className='grid'>
           <DialogSidebar></DialogSidebar>
           <Main>
             <Nav>
               <CurrDirectory className='ellipsis'>
                 {fileBrowser.currDir}
               </CurrDirectory>
-              <NaviBtns className='center' onClick={toggleFileBrowserDialog}>
+              <NaviBtns className='flex flex-center' onClick={toggleFileBrowserDialog}>
                 <FontAwesomeIcon icon={['fas', 'times']}/>
               </NaviBtns>
-              <NaviBtns className='center' onClick={this.navigateUpDir}>
+              <NaviBtns className='flex flex-center' onClick={this.navigateUpDir}>
                 <FontAwesomeIcon icon={['fas', 'chevron-up']}/>
               </NaviBtns>
-              <NaviBtns className='center'>
+              <NaviBtns className='flex flex-center'>
                 <FontAwesomeIcon icon={['fas', 'sort-amount-down']}/>
               </NaviBtns>
-              <NaviBtns className='center'>
+              <NaviBtns className='flex flex-center'>
                 <FontAwesomeIcon icon={['fas', 'filter']}/>
               </NaviBtns>
             </Nav>

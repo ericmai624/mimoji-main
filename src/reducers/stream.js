@@ -10,7 +10,7 @@ const initState = {
   volume: 1,
   muted: false,
   subtitle: {
-    enabled: true,
+    enabled: false,
     path: '',
     offset: 0,
     lang: 'zh'

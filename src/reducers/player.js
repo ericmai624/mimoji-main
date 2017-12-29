@@ -1,6 +1,6 @@
 const initState = {
-  showPlayer: false,
-  showControls: false
+  showPlayer: true,
+  showControls: true
 };
 
 export const playerReducer = (state = initState, action) => {
