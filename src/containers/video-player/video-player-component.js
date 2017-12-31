@@ -5,7 +5,7 @@ import Hls from 'hls.js';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
-import VideoControls from '../../containers/video-controls/video-controls-component';
+import VideoControls from '../../components/video-controls/video-controls-component';
 
 import { 
   getStreamInfo,
@@ -15,7 +15,7 @@ import {
   toggleStreamProps
 } from '../../actions/stream';
 
-import { toggleVideoPlayer, toggleVideoControls } from '../../actions/player';
+import { togglePlayerProps } from '../../actions/player';
 
 import { Wrapper } from './video-player-styles';
 
@@ -45,10 +45,16 @@ class VideoPlayer extends Component {
     const { videoEl } = this;
     const { stream } = this.props;
 
-    this.hls = new Hls();
+    this.hls = new Hls({ 
+      maxBufferLength: 10,
+      maxBufferSize: 150 * 1000 * 1000,
+      manifestLoadingMaxRetry: 3
+    });
     this.hls.attachMedia(videoEl);
-    this.hls.loadSource(`/api/stream/video/${stream.source}/index.m3u8`);
-    
+    // load source when hls is attached to video element
+    this.hls.on(Hls.Events.MEDIA_ATTACHED, () => {
+      return this.hls.loadSource(`/api/stream/video/${stream.source}/index.m3u8`);
+    });
     this.hls.on(Hls.Events.MANIFEST_PARSED, (evt, data) => videoEl.play());
     // hls error handling
     this.hls.on(Hls.Events.ERROR, (evt, data) => { 
@@ -77,8 +83,8 @@ class VideoPlayer extends Component {
   }
 
   toggleControls(e) {
-    const { toggleVideoControls, player } = this.props;
-    if (!player.showControls) toggleVideoControls();
+    const { togglePlayerProps, player } = this.props;
+    if (!player.showControls) togglePlayerProps('controls');
   } 
 
   seek(seekTime) {
@@ -146,14 +152,14 @@ class VideoPlayer extends Component {
   }
 
   killSwitch() {
-    const { toggleVideoPlayer, stream } = this.props;
+    const { togglePlayerProps, stream } = this.props;
     if (this.hls) this.hls.destroy();
     axios.post('/api/stream/terminate', { id: stream.id });
-    return toggleVideoPlayer();
+    return togglePlayerProps('main');
   }
   
   render() {
-    const { stream, player } = this.props;
+    const { stream, player, togglePlayerProps } = this.props;
 
     return (
       <Wrapper id='video-player' className='flex flex-center' onMouseMove={this._toggleControls}>
@@ -161,6 +167,7 @@ class VideoPlayer extends Component {
           autoPlay={true}
           playsInline={true}
           width='100%'
+          height='100%'
           crossOrigin='anonymous'
           onPlaying={this.onVideoPlaying}
           onTimeUpdate={this.onVideoTimeUpdate}
@@ -168,15 +175,18 @@ class VideoPlayer extends Component {
           ref={(el) => this.videoEl = el}
         >
           {stream.subtitle.enabled ? 
-            <track 
+            <track
               kind='subtitles'
-              src={`/api/stream/subtitle?sub=${stream.subtitle.path}&offset=${stream.subtitle.offset - stream.seek}`}
-              srcLang={stream.subtitle.lang}
+              src={`/api/stream/subtitle?sub=${stream.subtitle.path}&`
+                  + `offset=${stream.subtitle.offset - stream.seek}&`
+                  + `encoding=${stream.subtitle.encoding}`}
               default={true}
             /> : null}
         </video>
         <VideoControls
           showControls={player.showControls}
+          showSubSettings={player.showSubSettings}
+          togglePlayerProps={togglePlayerProps}
           togglePlay={this.togglePlay}
           toggleMute={this.toggleMute}
           changeVolume={this.changeVolume}
@@ -194,8 +204,7 @@ const mapStateToProps = (state) => ({ stream: state.stream, player: state.player
 
 const mapDispatchToProps = (dispatch) => ({ 
   getStreamInfo: bindActionCreators(getStreamInfo, dispatch),
-  toggleVideoPlayer: bindActionCreators(toggleVideoPlayer, dispatch),
-  toggleVideoControls: bindActionCreators(toggleVideoControls, dispatch),
+  togglePlayerProps: bindActionCreators(togglePlayerProps, dispatch),
   toggleStreamProps: bindActionCreators(toggleStreamProps, dispatch),
   updateStreamSub: bindActionCreators(updateStreamSub, dispatch),
   updateStreamVolume: bindActionCreators(updateStreamVolume, dispatch),

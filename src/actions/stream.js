@@ -28,6 +28,6 @@ export const updateStreamVolume = (volume) => ({
   type: 'UPDATE_STREAM_VOLUME', payload: volume
 });
 
-export const updateStreamSub = (path) => ({
-  type: 'UPDATE_STREAM_SUBTITLE', payload: path
+export const updateStreamSub = (payload) => ({
+  type: 'UPDATE_STREAM_SUBTITLE', payload
 });

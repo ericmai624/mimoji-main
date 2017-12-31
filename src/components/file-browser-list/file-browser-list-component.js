@@ -10,7 +10,7 @@ import {
 
 const FileBrowserList = ({ content, onDoubleClickDirectory, onDoubleClickFile }) => {
   return (
-    <List className='zero-padding zero-margin'>
+    <List>
       {content.map((entry, i) => {
         const { isDirectory } = entry;
 

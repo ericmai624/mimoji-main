@@ -2,19 +2,19 @@ import styled from 'styled-components';
 
 export const List = styled.ul`
   list-style: none;
-  max-height: 600px;
+  max-height: 480px;
 `;
 
 export const Entry = styled.li`
   user-select: none;
   padding: 1em;
   align-items: center;
-  border-bottom: 1px solid #e3e3e3;
+  border-bottom: 1px solid rgba(155, 155, 155, 0.8);
   cursor: pointer;
   transition: color 0.15s ease-out;
 
   &:hover {
-    background: rgba(59, 59, 59, 0.4);
+    background: rgba(221, 221, 221, 1);
     color: rgb(228, 75, 54);
     transition: color 0.15s ease-in;
   }

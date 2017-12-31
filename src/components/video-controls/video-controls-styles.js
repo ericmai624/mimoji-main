@@ -1,14 +1,16 @@
 import styled from 'styled-components';
 
+const ctrlBg = 'rgba(65, 68, 86, 0.5)';
+
 export const Container = styled.div.attrs({
-  opacity: props => props.showControls ? 1 : 0
+  opacity: ({ showControls }) => showControls ? 1 : 0
 })`
   width: 800px;
   height: 3em;
   padding: 0 45px;
   border-radius: 10px;
-  background: rgba(48, 47, 42, 0.5);
-  opacity: ${(props) => props.opacity};
+  background: ${ctrlBg};
+  opacity: ${({ opacity }) => opacity};
   z-index: 2147483647;
   left: 50%;
   bottom: 5%;
@@ -76,8 +78,8 @@ export const Bridge = styled.div.attrs({
   display: ${({ display }) => display};
   background: transparent;
   width: 42px;
-  height: 20px;
-  transform: translateY(-43px);
+  height: 25px;
+  transform: translateY(-50px);
 `;
 
 export const VolumeContainer = styled.div`
@@ -89,15 +91,15 @@ export const VolumeContainer = styled.div`
 `;
 
 export const VolumeRangeWrapper = styled.div.attrs({
-  opacity: (props) => props.showVolumeRange ? '1' : '0',
-  visibility: (props) => props.showVolumeRange ? 'visible' : 'hidden'
+  opacity: ({ showVolumeRange }) => showVolumeRange ? '1' : '0',
+  visibility: ({ showVolumeRange }) => showVolumeRange ? 'visible' : 'hidden'
 })`
-  opacity: ${props => props.opacity};
-  visibility: ${props => props.visibility};
-  transform: rotate(-90deg) translate(110px, -27px);
+  opacity: ${({ opacity }) => opacity};
+  visibility: ${({ visibility }) => visibility};
+  transform: rotate(-90deg) translate(115px, -32px);
   transform-origin: 50% 50%;
-  background: rgba(48, 47, 42, 0.5);
-  width: 95px;
+  background: ${ctrlBg};
+  width: 105px;
   height: 40px;
   border-radius: 5px;
   padding: 0px 5px;
@@ -111,7 +113,7 @@ export const VolumeRange = styled.input.attrs({
   max: '1',
   step: '0.01'
 })`
-  width: 80px;
+  width: 90px;
   height: 6px;
   border-radius: 2px;
   outline: none;

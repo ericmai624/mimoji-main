@@ -7,6 +7,8 @@ const ffmpeg = require('fluent-ffmpeg');
 const path = require('path');
 const _ = require('lodash');
 const util = require('../utilities');
+const jschardet = require('jschardet');
+const iconv = require('iconv-lite');
 const { createHash } = require('crypto');
 const { sep } = path;
 
@@ -38,7 +40,6 @@ const createFolder = (dir) => {
 };
 
 const remove = (filePath) => {
-  console.log('removing ', filePath);
   let isFulfilled = false;
   return fs.statAsync(filePath)
     .then((stats) => {
@@ -68,7 +69,7 @@ const remove = (filePath) => {
 const streamFile = (filePath, res) => {
   switch (path.extname(filePath)) {
   case '.m3u8':
-    return fs.readFileAsync(filePath, 'utf-8')
+    return fs.readFileAsync(filePath)
       .then((data) => {
         res.set({ 'Content-Type': 'application/vnd.apple.mpegurl' });
         return res.send(data);
@@ -80,17 +81,17 @@ const streamFile = (filePath, res) => {
   case '.ts':
     console.log(chalk.greenBright('start reading ', filePath));
 
-    res.set({ 'Content-Type': 'video/MP2T'  });
+    res.set({ 'Content-Type': 'video/MP2T' });
 
     let stream = fs.createReadStream(filePath);
 
     stream.on('end', () => {
-      console.log('stream finished: ', filePath);
+      console.log(chalk.white('stream finished: ', filePath));
       if (!uniqueFilePath.has(filePath)) {
         uniqueFilePath.add(filePath);
         finishedQueue.push(filePath);
       }
-      if (finishedQueue.length > 5) {
+      if (finishedQueue.length > 2) {
         let trash = finishedQueue.shift();
         remove(trash);
         uniqueFilePath.delete(trash);
@@ -123,7 +124,7 @@ const transcodeMedia = (video, seek, output) => {
       '-y',
       '-map 0:0',
       '-c:v libx264',
-      `-threads ${os.cpus().length}`,
+      '-threads 1',
       '-map 0:1',
       '-c:a aac',
       '-movflags faststart',
@@ -202,13 +203,9 @@ module.exports.createStreamProcess = (req, res) => {
 module.exports.serveFiles = (req, res) => {
   let { dir, file } = req.params;
   let filePath = path.join(os.tmpdir(), 'onecast', dir, file);
-  console.log(chalk.green(filePath));
 
   openFileRecurr(filePath, (err, fd) => {
-    if (!err) {
-      console.log(chalk.magenta('start streaming...'));
-      return streamFile(filePath, res);
-    }
+    if (!err) return streamFile(filePath, res);
     console.log(chalk.red(err));
   });
 };
@@ -217,13 +214,16 @@ module.exports.loadSubtitle = (req, res) => {
   let { sub, offset } = req.query;
   if (!sub || sub === '') return res.end();
   offset = parseFloat(offset);
-
-  console.log(chalk.white('loading subtitle'));
-  res.set({ 'Content-Type': 'text/vtt' });
-  fs.readFileAsync(path.join(__dirname, '../../public/assets/blue.planet.vtt'), 'utf-8')
-    .then(data => {
-      if (offset === 0) return res.send(data);
-      return res.send(util.webVTTParser(data, offset));
+  let ext = path.extname(sub);
+  
+  fs.readFileAsync(sub)
+    .then(buffer => {
+      let charset = jschardet.detect(buffer);
+      let str = iconv.decode(buffer, charset.encoding);
+      res.set({ 'Content-Type': `text/vtt; charset=${charset.encoding}` }); // set response header
+      
+      if (offset === 0 && ext === '.vtt') return res.send(str);
+      return res.send(util.subParser(str, offset, ext));
     }) 
     .catch((err) => {
       console.log(chalk.red(err));

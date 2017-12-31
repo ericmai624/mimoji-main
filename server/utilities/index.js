@@ -1,1 +1,1 @@
-module.exports.webVTTParser = require('./webVTTParser');
+module.exports.subParser = require('./subParser');

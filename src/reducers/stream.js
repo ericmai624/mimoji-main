@@ -10,10 +10,10 @@ const initState = {
   volume: 1,
   muted: false,
   subtitle: {
-    enabled: false,
+    enabled: true,
     path: '',
     offset: 0,
-    lang: 'zh'
+    encoding: 'gbk'
   },
   fetching: false,
   fetched: false,
@@ -39,7 +39,7 @@ export const streamReducer = (state = initState, action) => {
     return { ...state, muted: !state.muted };
   case 'UPDATE_STREAM_VOLUME':
     return { ...state, volume: action.payload };
-  case 'UPDATE_STREAM_subtitle':
+  case 'UPDATE_STREAM_SUBTITLE':
     return { ...state, subtitle: action.payload };
   default:
     return state;

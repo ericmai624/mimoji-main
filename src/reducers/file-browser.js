@@ -1,7 +1,7 @@
 const initState = {
+  showDialog: false,
   currDir: '',
   content: [],
-  showDialog: false,
   fetching: false,
   fetched: false,
   error: null

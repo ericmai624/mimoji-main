@@ -1,14 +1,17 @@
 const initState = {
-  showPlayer: true,
-  showControls: true
+  showPlayer: false,
+  showControls: true,
+  showSubSettings: false
 };
 
 export const playerReducer = (state = initState, action) => {
   switch (action.type) {
-  case 'TOGGLE_VIDEO_PLAYER':
+  case 'TOGGLE_PLAYER_MAIN':
     return { ...state, showPlayer: !state.showPlayer };
-  case 'TOGGLE_VIDEO_CONTROLS':
+  case 'TOGGLE_PLAYER_CONTROLS':
     return { ...state, showControls: !state.showControls };
+  case 'TOGGLE_PLAYER_SUBSETTINGS':
+    return { ...state, showSubSettings: !state.showSubSettings };
   default:
     return state;
   }

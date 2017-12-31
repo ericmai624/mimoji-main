@@ -6,13 +6,13 @@ import { bindActionCreators } from 'redux';
 import FileBrowserList from '../../components/file-browser-list/file-browser-list-component';
 
 import { toggleFileBrowserDialog, fetchDirContent } from '../../actions/file-browser';
-import { getStreamInfo } from '../../actions/stream';
-import { toggleVideoPlayer } from '../../actions/player';
+import { getStreamInfo, updateStreamSub } from '../../actions/stream';
+import { togglePlayerProps } from '../../actions/player';
 
 import {
-  Wrapper,
-  Dialog,
-  DialogSidebar,
+  Dimmer,
+  Container,
+  Side,
   Main,
   Nav,
   NaviBtns,
@@ -23,35 +23,49 @@ class FileBrowser extends Component {
   constructor(props) {
     super(props);
 
-    this.castSelectedFile = this.castSelectedFile.bind(this);
+    this.fetchContent = this.fetchContent.bind(this);
     this.onDoubleClickDirectory = this.onDoubleClickDirectory.bind(this);
     this.onDoubleClickFile = this.onDoubleClickFile.bind(this);
+    this.addSubtitle = this.addSubtitle.bind(this);
+    this.castSelectedFile = this.castSelectedFile.bind(this);
     this.navigateUpDir = this.navigateUpDir.bind(this);
   }
   
   componentDidMount() {
-    const { fetchDirContent, fileBrowser } = this.props;
-    fetchDirContent(fileBrowser.currDir);
+    const { fileBrowser } = this.props;
+    this.fetchContent(fileBrowser.currDir);
+  }
+
+  fetchContent(dir) {
+    const { fetchDirContent } = this.props;
+    return fetchDirContent(dir);
   }
 
   onDoubleClickDirectory(e, dir) {
     e.preventDefault();
-    const { fetchDirContent } = this.props;
-    fetchDirContent(dir);
+    this.fetchContent(dir);
   }
 
   onDoubleClickFile(e, file) {
     e.preventDefault();
-    this.castSelectedFile(file);
+    let ext = file.slice(-3);
+    if (ext === 'srt' || ext === 'vtt') return this.addSubtitle(file, 'zh', 0);
+    return this.castSelectedFile(file);
+  }
+
+  addSubtitle(path, lang, offset) {
+    const { updateStreamSub, toggleFileBrowserDialog } = this.props;
+    updateStreamSub({ path, lang, offset, enabled: true });
+    toggleFileBrowserDialog();
   }
 
   castSelectedFile(path) {
-    const { toggleFileBrowserDialog, toggleVideoPlayer, getStreamInfo } = this.props;
+    const { toggleFileBrowserDialog, togglePlayerProps, getStreamInfo } = this.props;
 
     return getStreamInfo(path, 0)
       .then(() => {
         toggleFileBrowserDialog();
-        toggleVideoPlayer();
+        togglePlayerProps('main');
       })
       .catch((err) => {
         console.log(err);
@@ -66,16 +80,15 @@ class FileBrowser extends Component {
 
   render() {
     const { fileBrowser, toggleFileBrowserDialog } = this.props;
-    const { onDoubleClickDirectory, onDoubleClickFile } = this;
 
     return (
-      <Wrapper className='flex flex-center fixed'>
-        <Dialog className='grid'>
-          <DialogSidebar></DialogSidebar>
+      <Dimmer className='flex flex-center absolute' hidden={!fileBrowser.showDialog}>
+        <Container className='grid'>
+          <Side></Side>
           <Main>
-            <Nav>
+            <Nav className='flex flex-align-center flex-space-between'>
               <CurrDirectory className='ellipsis'>
-                {fileBrowser.currDir}
+                <span>{fileBrowser.currDir}</span>
               </CurrDirectory>
               <NaviBtns className='flex flex-center' onClick={toggleFileBrowserDialog}>
                 <FontAwesomeIcon icon={['fas', 'times']}/>
@@ -92,23 +105,24 @@ class FileBrowser extends Component {
             </Nav>
             <FileBrowserList
               content={fileBrowser.content} 
-              onDoubleClickDirectory={onDoubleClickDirectory} 
-              onDoubleClickFile={onDoubleClickFile}
+              onDoubleClickDirectory={this.onDoubleClickDirectory} 
+              onDoubleClickFile={this.onDoubleClickFile}
             />
           </Main>
-        </Dialog>
-      </Wrapper>
+        </Container>
+      </Dimmer>
     );
   }
 }
 
-const mapStateToProps = (state) => ({ showFileDialog: state.showFileDialog, fileBrowser: state.fileBrowser });
+const mapStateToProps = (state) => ({ fileBrowser: state.fileBrowser });
 
 const mapDispatchToProps = (dispatch) => ({ 
   fetchDirContent: bindActionCreators(fetchDirContent, dispatch),
   toggleFileBrowserDialog: bindActionCreators(toggleFileBrowserDialog, dispatch),
-  toggleVideoPlayer: bindActionCreators(toggleVideoPlayer, dispatch),
-  getStreamInfo: bindActionCreators(getStreamInfo, dispatch)
+  togglePlayerProps: bindActionCreators(togglePlayerProps, dispatch),
+  getStreamInfo: bindActionCreators(getStreamInfo, dispatch),
+  updateStreamSub: bindActionCreators(updateStreamSub, dispatch)
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(FileBrowser);

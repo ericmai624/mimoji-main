@@ -34,9 +34,9 @@ const processCue = (cue, offset) => {
 
   let lines = cue.split('\n'); /* ->
     [
-      1,
-      00:00:18.700 --> 00:00:21.500,
-      this blade has a dark past.
+      '1',
+      '00:00:18.700 --> 00:00:21.500',
+      'this blade has a dark past.'
     ]
   */
 
@@ -46,10 +46,9 @@ const processCue = (cue, offset) => {
       startTime = parseTimeStamp(startTime.trim());
       endTime = parseTimeStamp(endTime.trim());
   
-      if ((endTime + offset) < 0) return null;
+      if ((startTime + offset) < 0) return null;
       startTime += offset;
       endTime += offset;
-  
       lines[i] = `${formatTimeStamp(startTime)} --> ${formatTimeStamp(endTime)}`;
       return lines.join('\n');
     }
@@ -65,35 +64,64 @@ const processCues = (cues, offset) => {
 const join = (arr, sep) => {
   let output = '';
 
-  for (let i = 0; i < arr.length - 1; i++) {
-    if (arr[i] !== null || arr[i] !== undefined || arr[i] !== '') {
+  for (let i = 0; i < arr.length; i++) {
+    if (arr[i] !== null) {
       output += (arr[i] + sep);
     }
   }
 
-  return output + arr[arr.length - 1];
+  return output;
 };
 
-const parse = (input, offset) => {
-  if (typeof input !== 'string') throw new ParserError('Input must be a string');
-
-  if (typeof offset !== 'number') throw new ParserError('Offset must be a number');
-
+const split = (input) => {
   input = input.replace(/\r\n/g, '\n');
   input = input.replace(/\r/g, '\n');
 
-  let cues = [];
-  let parts = input.split('\n\n');
+  return input.split('\n\n');
+};
+
+const convertSRT = (parts) => {
+  if (!parts || !parts.length) return [];
+  let output = [];
   let header = parts[0];
   let headerParts = header.split('\n');
 
-  if (!header.startsWith('WEBVTT')) throw new ParserError('Must start with WEBVTT');
+  if (!header.startsWith('WEBVTT')) output = ['WEBVTT'];
 
-  if (parts.length < 1) return cues;
+  let converted = _.map(parts, (part, idx) => {
+    let lines = part.split('\n');
 
-  if (headerParts.length > 1 && headerParts[1] === '') throw new ParserError('No blank line after signature');
+    for (let i = 0; i < lines.length; i++) {
+      if (lines[i].includes('-->')) {
+        lines[i] = lines[i].replace(/[,]/g, '.');
+      }
+    }
 
-  cues = processCues(parts, offset);
+    return lines.join('\n');
+  });
+
+  return output.concat(converted);
+};
+
+const parse = (input, offset, ext) => {
+  if (typeof input !== 'string') throw new ParserError('Input must be a string');
+  if (typeof offset !== 'number') throw new ParserError('Offset must be a number');
+
+  // convert sub input to array
+  let parts = split(input);
+  let header = parts[0];
+  let headerParts = header.split('\n');
+
+  if (ext === '.vtt') {
+    // vtt file must start with WEBVTT
+    if (!header.startsWith('WEBVTT')) throw new ParserError('Must start with WEBVTT');
+  
+    if (headerParts.length > 1 && headerParts[1] === '') throw new ParserError('No blank line after signature');
+  } else if (ext === '.srt') {
+    parts = convertSRT(parts);
+  }
+
+  let cues = processCues(parts, offset);
 
   return join(cues, '\n\n');
 };
