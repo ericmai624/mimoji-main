@@ -5,7 +5,7 @@ import { bindActionCreators } from 'redux';
 
 import FileBrowserList from '../../components/file-browser-list/file-browser-list-component';
 
-import { toggleFileBrowserDialog, fetchDirContent } from '../../actions/file-browser';
+import { toggleFileBrowserDialog, fetchContent } from '../../actions/file-browser';
 import { getStreamInfo, updateStreamSub } from '../../actions/stream';
 import { togglePlayerProps } from '../../actions/player';
 
@@ -23,7 +23,7 @@ class FileBrowser extends Component {
   constructor(props) {
     super(props);
 
-    this.fetchContent = this.fetchContent.bind(this);
+    this.fetch = this.fetch.bind(this);
     this.onDoubleClickDirectory = this.onDoubleClickDirectory.bind(this);
     this.onDoubleClickFile = this.onDoubleClickFile.bind(this);
     this.addSubtitle = this.addSubtitle.bind(this);
@@ -33,29 +33,29 @@ class FileBrowser extends Component {
   
   componentDidMount() {
     const { fileBrowser } = this.props;
-    this.fetchContent(fileBrowser.currDir);
+    this.fetch(fileBrowser.currDir);
   }
 
-  fetchContent(dir) {
-    const { fetchDirContent } = this.props;
-    return fetchDirContent(dir);
+  fetch(dir, nav) {
+    const { fetchContent } = this.props;
+    return fetchContent(dir, nav);
   }
 
   onDoubleClickDirectory(e, dir) {
     e.preventDefault();
-    this.fetchContent(dir);
+    this.fetch(dir);
   }
 
   onDoubleClickFile(e, file) {
     e.preventDefault();
     let ext = file.slice(-3);
-    if (ext === 'srt' || ext === 'vtt') return this.addSubtitle(file, 'zh', 0);
+    if (ext === 'srt' || ext === 'vtt') return this.addSubtitle(file, 'utf8', 0);
     return this.castSelectedFile(file);
   }
 
-  addSubtitle(path, lang, offset) {
+  addSubtitle(path, encoding, offset) {
     const { updateStreamSub, toggleFileBrowserDialog } = this.props;
-    updateStreamSub({ path, lang, offset, enabled: true });
+    updateStreamSub({ path, encoding, offset, enabled: true });
     toggleFileBrowserDialog();
   }
 
@@ -74,8 +74,8 @@ class FileBrowser extends Component {
 
   navigateUpDir(e) {
     e.preventDefault();
-    const { fileBrowser, fetchDirContent } = this.props;
-    fetchDirContent(fileBrowser.currDir + '/..');
+    const { fileBrowser } = this.props;
+    this.fetch(fileBrowser.currDir, '..');
   }
 
   render() {
@@ -90,9 +90,6 @@ class FileBrowser extends Component {
               <CurrDirectory className='ellipsis'>
                 <span>{fileBrowser.currDir}</span>
               </CurrDirectory>
-              <NaviBtns className='flex flex-center' onClick={toggleFileBrowserDialog}>
-                <FontAwesomeIcon icon={['fas', 'times']}/>
-              </NaviBtns>
               <NaviBtns className='flex flex-center' onClick={this.navigateUpDir}>
                 <FontAwesomeIcon icon={['fas', 'chevron-up']}/>
               </NaviBtns>
@@ -102,11 +99,15 @@ class FileBrowser extends Component {
               <NaviBtns className='flex flex-center'>
                 <FontAwesomeIcon icon={['fas', 'filter']}/>
               </NaviBtns>
+              <NaviBtns className='flex flex-center' onClick={toggleFileBrowserDialog}>
+                <FontAwesomeIcon icon={['fas', 'times']}/>
+              </NaviBtns>
             </Nav>
             <FileBrowserList
               content={fileBrowser.content} 
               onDoubleClickDirectory={this.onDoubleClickDirectory} 
               onDoubleClickFile={this.onDoubleClickFile}
+              navigateUpDir={this.navigateUpDir}
             />
           </Main>
         </Container>
@@ -118,7 +119,7 @@ class FileBrowser extends Component {
 const mapStateToProps = (state) => ({ fileBrowser: state.fileBrowser });
 
 const mapDispatchToProps = (dispatch) => ({ 
-  fetchDirContent: bindActionCreators(fetchDirContent, dispatch),
+  fetchContent: bindActionCreators(fetchContent, dispatch),
   toggleFileBrowserDialog: bindActionCreators(toggleFileBrowserDialog, dispatch),
   togglePlayerProps: bindActionCreators(togglePlayerProps, dispatch),
   getStreamInfo: bindActionCreators(getStreamInfo, dispatch),

@@ -8,21 +8,32 @@ import {
   Span
 } from './file-browser-list-styles';
 
-const FileBrowserList = ({ content, onDoubleClickDirectory, onDoubleClickFile }) => {
+const FileBrowserList = ({ content, onDoubleClickDirectory, onDoubleClickFile, navigateUpDir }) => {
   return (
     <List>
+      <Entry className='flex' onDoubleClick={navigateUpDir}>
+        <Icon>
+          <FontAwesomeIcon icon={['far', 'folder']}/>
+        </Icon>
+        <Span>..</Span>
+      </Entry>
       {content.map((entry, i) => {
-        const { isDirectory } = entry;
+        let { name, filePath, type } = entry;
+        let icon;
+        if (type === 'directory') icon = ['far', 'folder'];
+        else if (type === 'video') icon = ['fas', 'film'];
+        else if (type === 'subtitle') icon = ['far', 'file-alt'];
+        else icon = ['far', 'file'];
 
         return (
           <Entry className='flex'
             key={i} 
-            onDoubleClick={isDirectory ? (e) => onDoubleClickDirectory(e, entry.filePath) : (e) => onDoubleClickFile(e, entry.filePath)}
+            onDoubleClick={type === 'directory' ? (e) => onDoubleClickDirectory(e, filePath) : (e) => onDoubleClickFile(e, filePath)}
           >
             <Icon>
-              <FontAwesomeIcon icon={['fas', isDirectory ? 'folder' : 'file']}/>
+              <FontAwesomeIcon icon={icon}/>
             </Icon>
-            <Span>{entry.fileName}/</Span>
+            <Span>{name}/</Span>
           </Entry>
         );
       })}

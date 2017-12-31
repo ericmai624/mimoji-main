@@ -162,7 +162,7 @@ class VideoPlayer extends Component {
     const { stream, player, togglePlayerProps } = this.props;
 
     return (
-      <Wrapper id='video-player' className='flex flex-center' onMouseMove={this._toggleControls}>
+      <Wrapper id='video-player' className='flex flex-center fixed' onMouseMove={this._toggleControls}>
         <video
           autoPlay={true}
           playsInline={true}

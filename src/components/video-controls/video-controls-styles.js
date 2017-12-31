@@ -1,6 +1,7 @@
 import styled from 'styled-components';
 
 const ctrlBg = 'rgba(65, 68, 86, 0.5)';
+const orange = 'rgba(228, 75, 54, 0.9)';
 
 export const Container = styled.div.attrs({
   opacity: ({ showControls }) => showControls ? 1 : 0
@@ -48,13 +49,13 @@ export const Progress = styled.progress`
   height: 8px;
   border: none;
   border-radius: 4px;
-  color: rgba(228, 75, 54, 0.9);
+  color: ${orange};
 
   &::-webkit-progress-value {
-    background: rgba(228, 75, 54, 0.9);
+    background: ${orange};
   }
   &::-moz-progress-bar {
-    background: rgba(228, 75, 54, 0.9);
+    background: ${orange};
   }
 `;
 
@@ -67,7 +68,7 @@ export const ControlsBtns = styled.div`
   transition: color 0.25s ease-out;
 
   &:hover {
-    color: rgba(228, 75, 54, 0.9);
+    color: ${orange};
     transition: color 0.25s ease-in;
   }
 `;
@@ -184,7 +185,7 @@ export const Sub = styled.div`
 
   &:hover {
     color: rgb(255, 255, 255);
-    background: rgba(228, 75, 54, 0.9);
+    background: ${orange};
     transition: background 0.25s ease-in;
   }
 `;

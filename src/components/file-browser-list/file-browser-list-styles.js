@@ -1,5 +1,7 @@
 import styled from 'styled-components';
 
+const iconSize = '${iconSize}';
+
 export const List = styled.ul`
   list-style: none;
   max-height: 480px;
@@ -7,7 +9,7 @@ export const List = styled.ul`
 
 export const Entry = styled.li`
   user-select: none;
-  padding: 1em;
+  padding: 16px;
   align-items: center;
   border-bottom: 1px solid rgba(155, 155, 155, 0.8);
   cursor: pointer;
@@ -21,11 +23,13 @@ export const Entry = styled.li`
 `;
 
 export const Icon = styled.div`
-  font-size: 1.4em;
+  width: ${iconSize};
+  height: ${iconSize};
+  font-size: ${iconSize};
   padding: 0;
 `;
 
 export const Span = styled.span`
-  margin-left: 0.7em;
+  margin-left: 12px;
   word-break: break-all;
 `;
