@@ -13,11 +13,10 @@ import {
   Bridge,
   VolumeContainer,
   VolumeRangeWrapper,
-  VolumeRange,
-  Sub
+  VolumeRange
 } from './video-controls-styles';
 
-import SubSettings from '../subtitle-settings/subtitle-settings-component';
+import SubSettings from '../../containers/subtitle-settings/subtitle-settings-component';
 
 momentDurationSetup(moment);
 
@@ -77,14 +76,14 @@ class VideoControls extends Component {
     if (volume < 0.5) volumeIcon = (<FontAwesomeIcon icon={['fas', 'volume-down']}/>);
     if (volume === 0 || muted) {
       volumeIcon = [
-        <FontAwesomeIcon key='volume-off' icon={['fas', 'volume-off']} transform='left-5.4'/>,
-        <FontAwesomeIcon key='times' icon={['fas', 'times']} transform='shrink-7 right-3.4'/>
+        <FontAwesomeIcon key='volume-off' icon={['fas', 'volume-off']} transform='left-5'/>,
+        <FontAwesomeIcon key='times' icon={['fas', 'times']} transform='shrink-7 right-4'/>
       ];
     }
 
     return (
       <Fragment>
-        <Container className='flex flex-align-center flex-space-around fixed' showControls={showControls}>
+        <Container className='flex flex-align-center flex-space-around absolute' showControls={showControls}>
           <ControlsBtns onClick={togglePlay} className='flex flex-center'>
             <FontAwesomeIcon icon={['fas', paused ? 'play' : 'pause']}/>
           </ControlsBtns>
@@ -133,7 +132,7 @@ class VideoControls extends Component {
             <Bridge className='relative' showVolumeRange={showVolumeRange}></Bridge>
           </VolumeContainer>
           <ControlsBtns className='flex flex-center' onClick={this.onSubClick}>
-            <Sub>SUB</Sub>
+            <FontAwesomeIcon icon={['fas', 'language']} size='lg'/>
           </ControlsBtns>
           <ControlsBtns className='flex flex-center' onClick={toggleFullscreen}>
             <FontAwesomeIcon icon={['fas', fullscreen ? 'compress' : 'expand']}/>

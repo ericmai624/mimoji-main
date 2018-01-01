@@ -73,23 +73,22 @@ class App extends Component {
   }
   
   render() {
-    const { player, fileBrowser, toggleFileBrowserDialog } = this.props;
+    const { player, toggleFileBrowserDialog } = this.props;
     
     return (
       <Fragment>
         <Cast/>
-        {fileBrowser.showDialog ? null : 
+        {player.showPlayer ? (<VideoPlayer />) : 
           (<LabelWrapper className='flex flex-center'>
             <Label onClick={toggleFileBrowserDialog}>Choose a Video</Label>
           </LabelWrapper>)}
-        {player.showPlayer ? (<VideoPlayer />) : null}
         <FileBrowser />
       </Fragment>
     );
   }
 }
 
-const mapStateToProps = (state) => ({ cast: state.cast, player: state.player, fileBrowser: state.fileBrowser });
+const mapStateToProps = (state) => ({ cast: state.cast, player: state.player });
 
 const mapDispatchToProps = (dispatch) => ({ 
   updateCastPlayer: bindActionCreators(updateCastPlayer, dispatch),

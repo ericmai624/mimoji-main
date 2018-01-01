@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import _ from 'lodash';
-import axios from 'axios';
 import Hls from 'hls.js';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -17,7 +16,7 @@ import {
 
 import { togglePlayerProps } from '../../actions/player';
 
-import { Wrapper } from './video-player-styles';
+import { VideoContainer } from './video-player-styles';
 
 class VideoPlayer extends Component {
   constructor(props) {
@@ -37,8 +36,14 @@ class VideoPlayer extends Component {
   }
 
   componentDidMount() {
-    const { stream } = this.props;
+    const { stream, toggleStreamProps } = this.props;
+
     if (stream.source !== '') this.initHls();
+
+    document.addEventListener('fullscreenchange', (e) => toggleStreamProps('fullscreen'));
+    document.addEventListener('webkitfullscreenchange', (e) => toggleStreamProps('fullscreen'));
+    document.addEventListener('mozfullscreenchange', (e) => toggleStreamProps('fullscreen'));
+    document.addEventListener('msfullscreenchange', (e) => toggleStreamProps('fullscreen'));
   }
 
   initHls() {
@@ -134,7 +139,7 @@ class VideoPlayer extends Component {
 
   toggleFullscreen(e) {
     const { videoEl } = this;
-    const { stream, toggleStreamProps } = this.props;
+    const { stream } = this.props;
     const requestFullscreen = videoEl.requestFullscreen ||
                               videoEl.mozRequestFullScreen ||
                               videoEl.webkitRequestFullScreen ||
@@ -145,16 +150,26 @@ class VideoPlayer extends Component {
                            document.webkitCancelFullScreen ||
                            document.msExitFullscreen;
 
-    if (!stream.fullscreen) requestFullscreen.call(videoEl); // use call to bind to the videoEl when invoked
+    /*
+    use call to bind to the video container when invoked
+    bind to the parent node instead of the video itself
+    to enable custom controls in fullscreen mode
+    */
+    if (!stream.fullscreen) requestFullscreen.call(videoEl.parentNode);
     else exitFullscreen.call(document);
-
-    toggleStreamProps('fullscreen');
   }
 
   killSwitch() {
     const { togglePlayerProps, stream } = this.props;
     if (this.hls) this.hls.destroy();
-    axios.post('/api/stream/terminate', { id: stream.id });
+
+    const method = 'post';
+    const headers = new Headers();
+    const body = JSON.stringify({ id: stream.id });
+    headers.append('Content-Type', 'application/json');
+
+    fetch('/api/stream/terminate', { method, headers, body });
+
     return togglePlayerProps('main');
   }
   
@@ -162,7 +177,10 @@ class VideoPlayer extends Component {
     const { stream, player, togglePlayerProps } = this.props;
 
     return (
-      <Wrapper id='video-player' className='flex flex-center fixed' onMouseMove={this._toggleControls}>
+      <VideoContainer
+        id='video-player'
+        className='flex flex-center fixed'
+      >
         <video
           autoPlay={true}
           playsInline={true}
@@ -172,6 +190,7 @@ class VideoPlayer extends Component {
           onPlaying={this.onVideoPlaying}
           onTimeUpdate={this.onVideoTimeUpdate}
           onEnded={this.onVideoEnded}
+          onMouseMove={this._toggleControls}
           ref={(el) => this.videoEl = el}
         >
           {stream.subtitle.enabled ? 
@@ -195,7 +214,7 @@ class VideoPlayer extends Component {
           stream={stream}
           toggleFullscreen={this.toggleFullscreen}
         />
-      </Wrapper>
+      </VideoContainer>
     );
   }
 }

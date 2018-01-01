@@ -11,9 +11,10 @@ const initState = {
   muted: false,
   subtitle: {
     enabled: false,
+    title: null,
     path: '',
     offset: 0,
-    encoding: 'gbk'
+    encoding: ''
   },
   fetching: false,
   fetched: false,

@@ -1,6 +1,6 @@
 const initState = {
   showPlayer: false,
-  showControls: true,
+  showControls: false,
   showSubSettings: false
 };
 

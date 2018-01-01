@@ -1,7 +1,7 @@
 body {
   margin: 0;
   padding: 0;
-  font-family: sans-serif;
+  font-family: 'Roboto', sans-serif;
 }
 
 * {
@@ -61,6 +61,14 @@ body {
 
 .fixed {
   position: fixed;
+}
+
+.no-select {
+  user-select: none;
+}
+
+.white-font {
+  color: rgb(255, 255, 255);
 }
 
 video::-webkit-media-controls {

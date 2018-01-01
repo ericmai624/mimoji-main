@@ -1,19 +1,23 @@
-import axios from 'axios';
 import { toUpper } from 'lodash';
+
 export const getStreamInfo = (path, seek) => {
   return (dispatch) => {
     dispatch({ type: 'GET_STREAM_INFO_PENDING' });
-    return axios.get(`/api/stream/process?v=${path}&s=${seek}`)
+    return fetch(`/api/stream/process?v=${path}&s=${seek}`)
       .then((response) => {
-        const { id, source, duration } = response.data;
+        if (response.ok) return response.json();
+        throw response;
+      })
+      .then((data) => {
+        const { id, source, duration } = data;
         dispatch({ type: 'GET_STREAM_INFO_FULFILLED', payload: { id, source, duration, path, seek } });
-        return response.data;
+        return data;
       })
       .catch((err) => {
         dispatch({ type: 'GET_STREAM_INFO_REJECTED', payload: err });
         return err;
       });
-  }
+  };
 };
 
 export const toggleStreamProps = (prop) => ({

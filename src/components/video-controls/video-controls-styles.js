@@ -1,18 +1,19 @@
 import styled from 'styled-components';
 
-const ctrlBg = 'rgba(65, 68, 86, 0.5)';
+const ctrlBg = 'rgba(65, 68, 86, 0.8)';
 const orange = 'rgba(228, 75, 54, 0.9)';
+const borderRadius = '4px';
+const progressHeight = '8px';
 
 export const Container = styled.div.attrs({
   opacity: ({ showControls }) => showControls ? 1 : 0
 })`
   width: 800px;
-  height: 3em;
+  height: 48px;
   padding: 0 45px;
   border-radius: 10px;
   background: ${ctrlBg};
   opacity: ${({ opacity }) => opacity};
-  z-index: 2147483647;
   left: 50%;
   bottom: 5%;
   margin-left: -400px;
@@ -29,13 +30,14 @@ export const Showtime = styled.div`
 export const ProgressContainer = styled.div`
   display: block;
   width: 320px;
-  height: 8px;
+  height: ${progressHeight};
   border: none;
-  border-radius: 4px;
+  border-radius: ${borderRadius};
   overflow: hidden;
   cursor: pointer;
   line-height: 0;
   transition: transform 0.25s ease-in-out;
+  background: transparent;
 
   &:hover {
     transform: scaleY(2);
@@ -46,16 +48,20 @@ export const ProgressContainer = styled.div`
 export const Progress = styled.progress`
   display: block;
   width: 100%;
-  height: 8px;
+  height: ${progressHeight};
   border: none;
-  border-radius: 4px;
+  border-radius: ${borderRadius};
   color: ${orange};
 
   &::-webkit-progress-value {
     background: ${orange};
+    border: none;
+    border-radius: ${borderRadius};
   }
   &::-moz-progress-bar {
     background: ${orange};
+    border: none;
+    border-radius: ${borderRadius};
   }
 `;
 
@@ -79,7 +85,8 @@ export const Bridge = styled.div.attrs({
   display: ${({ display }) => display};
   background: transparent;
   width: 42px;
-  height: 25px;
+  height: 35px;
+  z-index: -1;
   transform: translateY(-50px);
 `;
 
@@ -144,8 +151,13 @@ export const VolumeRange = styled.input.attrs({
   }
 
   &::-moz-range-track {
+    outline: none;
     background: transparent;
     cursor: pointer;
+  }
+
+  &::-moz-focus-outer {
+    border: 0;
   }
 
   &::-ms-thumb {
@@ -170,16 +182,18 @@ export const VolumeRange = styled.input.attrs({
   }
 `;
 
+/*
 export const Sub = styled.div`
-  width: 24px;
+  width: 26px;
   height: 20px;
   line-height: 20px;
+  padding: 0px 1px;
   vertical-align: middle;
   text-align: center;
   background: rgb(255, 255, 255);
   color: rgba(48, 47, 42, 1);
   font-size: 10px;
-  font-weight: 900;
+  font-weight: bold;
   border-radius: 2px;
   transition: background 0.25s ease-out;
 
@@ -189,3 +203,4 @@ export const Sub = styled.div`
     transition: background 0.25s ease-in;
   }
 `;
+*/

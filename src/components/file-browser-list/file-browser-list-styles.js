@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 
-const iconSize = '${iconSize}';
+const iconSize = '24px';
 
 export const List = styled.ul`
   list-style: none;

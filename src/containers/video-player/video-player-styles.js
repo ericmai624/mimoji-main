@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 
-export const Wrapper = styled.div`
+export const VideoContainer = styled.div`
   left: 0;
   top: 0;
   width: 100%;

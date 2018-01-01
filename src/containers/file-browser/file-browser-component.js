@@ -41,21 +41,21 @@ class FileBrowser extends Component {
     return fetchContent(dir, nav);
   }
 
-  onDoubleClickDirectory(e, dir) {
+  onDoubleClickDirectory(e, file) {
     e.preventDefault();
-    this.fetch(dir);
+    this.fetch(file.filePath);
   }
 
   onDoubleClickFile(e, file) {
     e.preventDefault();
-    let ext = file.slice(-3);
-    if (ext === 'srt' || ext === 'vtt') return this.addSubtitle(file, 'utf8', 0);
-    return this.castSelectedFile(file);
+    let ext = file.name.slice(-3);
+    if (ext === 'srt' || ext === 'vtt') return this.addSubtitle(file.filePath, file.name, '', 0);
+    return this.castSelectedFile(file.filePath);
   }
 
-  addSubtitle(path, encoding, offset) {
+  addSubtitle(path, title, encoding, offset) {
     const { updateStreamSub, toggleFileBrowserDialog } = this.props;
-    updateStreamSub({ path, encoding, offset, enabled: true });
+    updateStreamSub({ path, title, encoding, offset, enabled: true });
     toggleFileBrowserDialog();
   }
 

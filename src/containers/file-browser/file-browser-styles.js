@@ -17,6 +17,7 @@ export const Dimmer = styled.div.attrs({
   overflow: hidden;
   background ${overlay};
   transition: opacity 0.2s ease, visibility 0.2s ease;
+  z-index: 2147483647;
 `;
 
 export const Container = styled.div`
@@ -24,7 +25,8 @@ export const Container = styled.div`
   grid-column-gap: 20px;
   border-radius: 5px;
   width: 900px;
-  height: 480px;
+  height: 80%;
+  max-height: 480px;
   transition: opacity 0.25s ease;
 `;
 

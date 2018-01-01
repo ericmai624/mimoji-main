@@ -6,7 +6,7 @@ const app = express();
 const middleware = require('./middleware');
 const routes = require('./routes');
 
-const build = path.join(__dirname + '/../build');
+const build = path.join(__dirname, '..', 'build');
 
 app.use(middleware.bodyParser.json());
 app.use(middleware.bodyParser.urlencoded({ extended: true }));

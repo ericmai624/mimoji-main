@@ -211,11 +211,14 @@ module.exports.serveFiles = (req, res) => {
 };
 
 module.exports.loadSubtitle = (req, res) => {
-  let { sub, offset } = req.query;
+  let { sub, offset, encoding } = req.query;
   if (!sub || sub === '') return res.end();
   offset = parseFloat(offset);
   let ext = path.extname(sub);
   
+  console.log(chalk.white('loading subtitle...'));
+  console.log(encoding);
+
   fs.readFileAsync(sub)
     .then(buffer => {
       let charset = jschardet.detect(buffer);

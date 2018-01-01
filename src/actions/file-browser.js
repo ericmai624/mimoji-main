@@ -1,14 +1,16 @@
-import axios from 'axios';
-
 export const toggleFileBrowserDialog = () => ({ type: 'TOGGLE_FILEBROWSER_DIALOG' });
 
 export const fetchContent = (dir, nav = '') => {
   return (dispatch) => {
     dispatch({ type: 'FETCH_DIR_PENDING' });
-    return axios.get(`/api/navigation?dir=${dir}&nav=${nav}`)
+    return fetch(`/api/navigation?dir=${dir}&nav=${nav}`)
       .then((response) => {
-        dispatch({ type: 'FETCH_DIR_FULFILLED', payload: response.data });
-        return response;
+        if (response.ok) return response.json();
+        throw new Error('Failed to fetch directory content');
+      })
+      .then((data) => {
+        dispatch({ type: 'FETCH_DIR_FULFILLED', payload: data });
+        return data;
       })
       .catch((err) => {
         dispatch({ type: 'FETCH_DIR_REJECTED', payload: err });

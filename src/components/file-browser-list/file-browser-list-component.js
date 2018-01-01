@@ -18,7 +18,7 @@ const FileBrowserList = ({ content, onDoubleClickDirectory, onDoubleClickFile, n
         <Span>..</Span>
       </Entry>
       {content.map((entry, i) => {
-        let { name, filePath, type } = entry;
+        let { name, type } = entry;
         let icon;
         if (type === 'directory') icon = ['far', 'folder'];
         else if (type === 'video') icon = ['fas', 'film'];
@@ -28,7 +28,7 @@ const FileBrowserList = ({ content, onDoubleClickDirectory, onDoubleClickFile, n
         return (
           <Entry className='flex'
             key={i} 
-            onDoubleClick={type === 'directory' ? (e) => onDoubleClickDirectory(e, filePath) : (e) => onDoubleClickFile(e, filePath)}
+            onDoubleClick={type === 'directory' ? (e) => onDoubleClickDirectory(e, entry) : (e) => onDoubleClickFile(e, entry)}
           >
             <Icon>
               <FontAwesomeIcon icon={icon}/>
