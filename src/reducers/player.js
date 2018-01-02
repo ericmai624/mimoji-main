@@ -1,7 +1,8 @@
 const initState = {
   showPlayer: false,
-  showControls: false,
-  showSubSettings: false
+  showControls: true,
+  showSubSettings: false,
+  isFullscreenEnabled: false
 };
 
 export const playerReducer = (state = initState, action) => {
@@ -12,6 +13,8 @@ export const playerReducer = (state = initState, action) => {
     return { ...state, showControls: !state.showControls };
   case 'TOGGLE_PLAYER_SUBSETTINGS':
     return { ...state, showSubSettings: !state.showSubSettings };
+  case 'TOGGLE_PLAYER_FULLSCREEN':
+    return { ...state, isFullscreenEnabled: !state.isFullscreenEnabled };
   default:
     return state;
   }

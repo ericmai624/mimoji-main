@@ -55,17 +55,21 @@ class FileBrowser extends Component {
 
   addSubtitle(path, title, encoding, offset) {
     const { updateStreamSub, toggleFileBrowserDialog } = this.props;
+    const { showDialog } = this.props.fileBrowser;
+
     updateStreamSub({ path, title, encoding, offset, enabled: true });
-    toggleFileBrowserDialog();
+    if (showDialog) return toggleFileBrowserDialog();
   }
 
   castSelectedFile(path) {
     const { toggleFileBrowserDialog, togglePlayerProps, getStreamInfo } = this.props;
+    const { showPlayer } = this.props.player;
+    const { showDialog } = this.props.fileBrowser;
 
     return getStreamInfo(path, 0)
       .then(() => {
-        toggleFileBrowserDialog();
-        togglePlayerProps('main');
+        if (showDialog) toggleFileBrowserDialog();
+        if (!showPlayer) togglePlayerProps('main');
       })
       .catch((err) => {
         console.log(err);
@@ -84,7 +88,9 @@ class FileBrowser extends Component {
     return (
       <Dimmer className='flex flex-center absolute' hidden={!fileBrowser.showDialog}>
         <Container className='grid'>
-          <Side></Side>
+          <Side className='flex flex-center'>
+            <h2>File Browser</h2>
+          </Side>
           <Main>
             <Nav className='flex flex-align-center flex-space-between'>
               <CurrDirectory className='ellipsis'>
@@ -116,7 +122,7 @@ class FileBrowser extends Component {
   }
 }
 
-const mapStateToProps = (state) => ({ fileBrowser: state.fileBrowser });
+const mapStateToProps = (state) => ({ fileBrowser: state.fileBrowser, player: state.player });
 
 const mapDispatchToProps = (dispatch) => ({ 
   fetchContent: bindActionCreators(fetchContent, dispatch),

@@ -64,8 +64,9 @@ class VideoControls extends Component {
   }
 
   render() {
-    const { toggleFullscreen, togglePlay, toggleMute, changeVolume, killSwitch, stream, showControls, showSubSettings } = this.props;
-    const { paused, currentTime, duration, fullscreen, muted, volume } = stream;
+    const { toggleFullscreen, togglePlay, toggleMute, changeVolume, killSwitch, stream, player } = this.props;
+    const { paused, currentTime, duration, isMuted, volume } = stream;
+    const { showControls, showSubSettings, isFullscreenEnabled } = player;
     const { showVolumeRange } = this.state;
 
     const format = duration > 3599 ? 'hh:mm:ss' : 'mm:ss';
@@ -74,7 +75,7 @@ class VideoControls extends Component {
 
     let volumeIcon = (<FontAwesomeIcon icon={['fas', 'volume-up']}/>);
     if (volume < 0.5) volumeIcon = (<FontAwesomeIcon icon={['fas', 'volume-down']}/>);
-    if (volume === 0 || muted) {
+    if (volume === 0 || isMuted) {
       volumeIcon = [
         <FontAwesomeIcon key='volume-off' icon={['fas', 'volume-off']} transform='left-5'/>,
         <FontAwesomeIcon key='times' icon={['fas', 'times']} transform='shrink-7 right-4'/>
@@ -135,7 +136,7 @@ class VideoControls extends Component {
             <FontAwesomeIcon icon={['fas', 'language']} size='lg'/>
           </ControlsBtns>
           <ControlsBtns className='flex flex-center' onClick={toggleFullscreen}>
-            <FontAwesomeIcon icon={['fas', fullscreen ? 'compress' : 'expand']}/>
+            <FontAwesomeIcon icon={['fas', isFullscreenEnabled ? 'compress' : 'expand']}/>
           </ControlsBtns>
         </Container>
         {showSubSettings ? <SubSettings /> : null}

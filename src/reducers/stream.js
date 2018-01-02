@@ -6,9 +6,8 @@ const initState = {
   currentTime: 0,
   duration: 0,
   paused: false,
-  fullscreen: false,
   volume: 1,
-  muted: false,
+  isMuted: false,
   subtitle: {
     enabled: false,
     title: null,
@@ -34,10 +33,8 @@ export const streamReducer = (state = initState, action) => {
     return { ...state, currentTime: action.payload };
   case 'TOGGLE_STREAM_PAUSE':
     return { ...state, paused: !state.paused };
-  case 'TOGGLE_STREAM_FULLSCREEN':
-    return { ...state, fullscreen: !state.fullscreen };
   case 'TOGGLE_STREAM_MUTED':
-    return { ...state, muted: !state.muted };
+    return { ...state, isMuted: !state.isMuted };
   case 'UPDATE_STREAM_VOLUME':
     return { ...state, volume: action.payload };
   case 'UPDATE_STREAM_SUBTITLE':

@@ -27,6 +27,7 @@ class VideoPlayer extends Component {
     this._toggleControls = _.throttle(this.toggleControls.bind(this), 4000);
     this.seek = this.seek.bind(this);
     this.onVideoPlaying = this.onVideoPlaying.bind(this);
+    this.onVideoPaused = this.onVideoPaused.bind(this);
     this.onVideoTimeUpdate = this.onVideoTimeUpdate.bind(this);
     this.onVideoEnded = this.onVideoEnded.bind(this);
     this.changeVolume = this.changeVolume.bind(this);
@@ -36,16 +37,24 @@ class VideoPlayer extends Component {
   }
 
   componentDidMount() {
-    const { stream, toggleStreamProps } = this.props;
-
+    const { stream } = this.props;
     if (stream.source !== '') this.initHls();
+  }
+  
 
-    document.addEventListener('fullscreenchange', (e) => toggleStreamProps('fullscreen'));
-    document.addEventListener('webkitfullscreenchange', (e) => toggleStreamProps('fullscreen'));
-    document.addEventListener('mozfullscreenchange', (e) => toggleStreamProps('fullscreen'));
-    document.addEventListener('msfullscreenchange', (e) => toggleStreamProps('fullscreen'));
+  componentDidUpdate(prevProps, prevState) {
+    let prevStream = prevProps.stream;
+    let currStream = this.props.stream;
+
+    if (prevStream.source !== currStream.source || prevStream.seek !== currStream.seek) {
+      return this.initHls();
+    }
   }
 
+  componentWillUnmount() {
+    if (this.hls) this.hls.destroy();
+  }
+  
   initHls() {
     const { videoEl } = this;
     const { stream } = this.props;
@@ -81,10 +90,8 @@ class VideoPlayer extends Component {
 
   togglePlay(e) {
     e.preventDefault();
-    const { stream, toggleStreamProps } = this.props;
     const { videoEl } = this;
-    stream.paused ? videoEl.play() : videoEl.pause();
-    return toggleStreamProps('pause');
+    videoEl.paused ? videoEl.play() : videoEl.pause();
   }
 
   toggleControls(e) {
@@ -95,11 +102,13 @@ class VideoPlayer extends Component {
   seek(seekTime) {
     const { stream, updateStreamTime, getStreamInfo } = this.props;
     const { path } = stream;
-    if (this.hls) this.hls.destroy();
+
+    if (this.hls) this.hls.destroy(); // destroy current hls stream
+
     return getStreamInfo(path, seekTime)
       .then((data) => {
         updateStreamTime(seekTime);
-        this.initHls();
+        // this.initHls();
       })
       .catch((err) => {
         console.log(err);
@@ -109,6 +118,11 @@ class VideoPlayer extends Component {
   onVideoPlaying() {
     const { stream, toggleStreamProps } = this.props;
     if (stream.paused) toggleStreamProps('pause');
+  }
+
+  onVideoPaused() {
+    const { stream, toggleStreamProps } = this.props;
+    if (!stream.paused) toggleStreamProps('pause');
   }
 
   onVideoTimeUpdate() {
@@ -138,12 +152,13 @@ class VideoPlayer extends Component {
   }
 
   toggleFullscreen(e) {
-    const { videoEl } = this;
-    const { stream } = this.props;
-    const requestFullscreen = videoEl.requestFullscreen ||
-                              videoEl.mozRequestFullScreen ||
-                              videoEl.webkitRequestFullScreen ||
-                              videoEl.msRequestFullscreen;
+    const { player } = this.props;
+    const rootNode = document.querySelector('#root');
+
+    const requestFullscreen = rootNode.requestFullscreen ||
+                              rootNode.mozRequestFullScreen ||
+                              rootNode.webkitRequestFullScreen ||
+                              rootNode.msRequestFullscreen;
 
     const exitFullscreen = document.exitFullscreen ||
                            document.mozCancelFullScreen ||
@@ -152,10 +167,10 @@ class VideoPlayer extends Component {
 
     /*
     use call to bind to the video container when invoked
-    bind to the parent node instead of the video itself
+    bind to the #root node instead of the video itself
     to enable custom controls in fullscreen mode
     */
-    if (!stream.fullscreen) requestFullscreen.call(videoEl.parentNode);
+    if (!player.isFullscreenEnabled) requestFullscreen.call(rootNode);
     else exitFullscreen.call(document);
   }
 
@@ -179,7 +194,7 @@ class VideoPlayer extends Component {
     return (
       <VideoContainer
         id='video-player'
-        className='flex flex-center fixed'
+        className='flex flex-center absolute'
       >
         <video
           autoPlay={true}
@@ -188,6 +203,7 @@ class VideoPlayer extends Component {
           height='100%'
           crossOrigin='anonymous'
           onPlaying={this.onVideoPlaying}
+          onPause={this.onVideoPaused}
           onTimeUpdate={this.onVideoTimeUpdate}
           onEnded={this.onVideoEnded}
           onMouseMove={this._toggleControls}
@@ -203,8 +219,6 @@ class VideoPlayer extends Component {
             /> : null}
         </video>
         <VideoControls
-          showControls={player.showControls}
-          showSubSettings={player.showSubSettings}
           togglePlayerProps={togglePlayerProps}
           togglePlay={this.togglePlay}
           toggleMute={this.toggleMute}
@@ -212,6 +226,7 @@ class VideoPlayer extends Component {
           killSwitch={this.killSwitch}
           seek={this.seek}
           stream={stream}
+          player={player}
           toggleFullscreen={this.toggleFullscreen}
         />
       </VideoContainer>
@@ -219,7 +234,7 @@ class VideoPlayer extends Component {
   }
 }
 
-const mapStateToProps = (state) => ({ stream: state.stream, player: state.player });
+const mapStateToProps = (state) => ({ stream: state.stream, player: state.player, fileBrowser: state.fileBrowser });
 
 const mapDispatchToProps = (dispatch) => ({ 
   getStreamInfo: bindActionCreators(getStreamInfo, dispatch),
