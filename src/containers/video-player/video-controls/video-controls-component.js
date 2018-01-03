@@ -16,7 +16,7 @@ import {
   VolumeRange
 } from './video-controls-styles';
 
-import SubSettings from '../../containers/subtitle-settings/subtitle-settings-component';
+import SubSettings from './subtitle-settings/subtitle-settings-component';
 
 momentDurationSetup(moment);
 
@@ -24,16 +24,20 @@ class VideoControls extends Component {
   constructor(props) {
     super(props);
 
-    this.state = { showVolumeRange: false };
+    this.state = { 
+      showVolumeRange: false,
+      showSubSettings: false
+    };
+
     this.handleSeek = this.handleSeek.bind(this);
     this.onVolumeMouseEnter = this.onVolumeMouseEnter.bind(this);
     this.onVolumeMouseLeave = this.onVolumeMouseLeave.bind(this);
-    this.onSubClick = this.onSubClick.bind(this);
+    this.toggleSubSettings = this.toggleSubSettings.bind(this);
   }
   
   handleSeek(e) {
     e.stopPropagation();
-    const { stream, seek } = this.props;
+    const { duration, seek } = this.props;
     const { progress } = this;
 
     let offsetLeft = 0;
@@ -46,7 +50,7 @@ class VideoControls extends Component {
     }
 
     const pos = (e.pageX - offsetLeft) / progress.clientWidth;
-    seek(_.floor(pos * stream.duration));
+    seek(_.floor(pos * duration));
   }
 
   onVolumeMouseEnter(e) {
@@ -57,17 +61,29 @@ class VideoControls extends Component {
     this.setState({ showVolumeRange: false });
   }
 
-  onSubClick(e) {
+  toggleSubSettings(e) {
     e.preventDefault();
-    const { togglePlayerProps } = this.props;
-    togglePlayerProps('subsettings');
+    const { showSubSettings } = this.state;
+    this.setState({ showSubSettings: !showSubSettings });
   }
 
   render() {
-    const { toggleFullscreen, togglePlay, toggleMute, changeVolume, killSwitch, stream, player } = this.props;
-    const { paused, currentTime, duration, isMuted, volume } = stream;
-    const { showControls, showSubSettings, isFullscreenEnabled } = player;
-    const { showVolumeRange } = this.state;
+    const { 
+      toggleFileBrowserDialog, 
+      togglePlay, 
+      toggleMute, 
+      toggleFullscreen, 
+      changeVolume, 
+      killSwitch, 
+      showControls,
+      isPaused,
+      isMuted,
+      isFullscreenEnabled,
+      volume,
+      currentTime,
+      duration
+    } = this.props;
+    const { showVolumeRange, showSubSettings } = this.state;
 
     const format = duration > 3599 ? 'hh:mm:ss' : 'mm:ss';
     const displayedTime = moment.duration(currentTime, 'seconds').format(format, { trim: false });
@@ -86,7 +102,7 @@ class VideoControls extends Component {
       <Fragment>
         <Container className='flex flex-align-center flex-space-around absolute' showControls={showControls}>
           <ControlsBtns onClick={togglePlay} className='flex flex-center'>
-            <FontAwesomeIcon icon={['fas', paused ? 'play' : 'pause']}/>
+            <FontAwesomeIcon icon={['fas', isPaused ? 'play' : 'pause']}/>
           </ControlsBtns>
           <ControlsBtns onClick={killSwitch} className='flex flex-center'>
             <FontAwesomeIcon icon={['fas', 'stop']}/>
@@ -132,14 +148,18 @@ class VideoControls extends Component {
             </VolumeRangeWrapper>
             <Bridge className='relative' showVolumeRange={showVolumeRange}></Bridge>
           </VolumeContainer>
-          <ControlsBtns className='flex flex-center' onClick={this.onSubClick}>
+          <ControlsBtns className='flex flex-center' onClick={this.toggleSubSettings}>
             <FontAwesomeIcon icon={['fas', 'language']} size='lg'/>
           </ControlsBtns>
           <ControlsBtns className='flex flex-center' onClick={toggleFullscreen}>
             <FontAwesomeIcon icon={['fas', isFullscreenEnabled ? 'compress' : 'expand']}/>
           </ControlsBtns>
         </Container>
-        {showSubSettings ? <SubSettings /> : null}
+        {showSubSettings ? 
+          <SubSettings
+            toggleFileBrowserDialog={toggleFileBrowserDialog} 
+            toggleSubSettings={this.toggleSubSettings}
+          /> : null}
       </Fragment>
     );
   }

@@ -72,6 +72,7 @@ export const ControlsBtns = styled.div`
   color: rgb(255, 255, 255);
   cursor: pointer;
   transition: color 0.25s ease-out;
+  z-index: 50;
 
   &:hover {
     color: ${orange};
@@ -86,7 +87,7 @@ export const Bridge = styled.div.attrs({
   background: transparent;
   width: 42px;
   height: 35px;
-  z-index: -1;
+  z-index: 1;
   transform: translateY(-50px);
 `;
 
@@ -96,6 +97,7 @@ export const VolumeContainer = styled.div`
   font-size: 24px;
   color: rgb(255, 255, 255);
   box-sizing: border-box;
+  z-index: 50;
 `;
 
 export const VolumeRangeWrapper = styled.div.attrs({

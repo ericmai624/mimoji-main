@@ -3,14 +3,16 @@ import thunk from 'redux-thunk';
 
 import { castPlayerReducer, castControllerReducer } from './cast';
 import { streamReducer } from './stream';
-import { playerReducer } from './player';
+import { appReducer } from './app';
 import { fileBrowserReducer } from './file-browser';
+import { subtitleReducer } from './subtitle';
 
 const reducer = combineReducers({
+  app: appReducer,
   cast: castPlayerReducer,
   controller: castControllerReducer,
   stream: streamReducer,
-  player: playerReducer,
+  subtitle: subtitleReducer,
   fileBrowser: fileBrowserReducer,
 });
 

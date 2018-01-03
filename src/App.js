@@ -6,13 +6,13 @@ import styled from 'styled-components';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 
-import { updateCastPlayer, updateCastController } from './actions/cast';
-import { toggleFileBrowserDialog } from './actions/file-browser';
-import { togglePlayerProps } from './actions/player';
+import { updateCastPlayer, updateCastController } from 'stores/cast';
+import { toggleFileBrowserDialog } from 'stores/file-browser';
+import { toggleFullscreen } from 'stores/app';
 
-import Cast from './components/cast';
-import FileBrowser from './containers/file-browser/file-browser-component';
-import VideoPlayer from './containers/video-player/video-player-component';
+import Cast from 'components/cast';
+import FileBrowser from 'containers/file-browser/file-browser-component';
+import VideoPlayer from 'containers/video-player/video-player-component';
 
 fontawesome.library.add(solid, regular);
 
@@ -45,12 +45,12 @@ class App extends Component {
   }
   
   componentDidMount() {
-    const { togglePlayerProps } = this.props;
+    const { toggleFullscreen } = this.props;
 
-    document.addEventListener('fullscreenchange', (e) => togglePlayerProps('fullscreen'));
-    document.addEventListener('webkitfullscreenchange', (e) => togglePlayerProps('fullscreen'));
-    document.addEventListener('mozfullscreenchange', (e) => togglePlayerProps('fullscreen'));
-    document.addEventListener('msfullscreenchange', (e) => togglePlayerProps('fullscreen'));
+    document.addEventListener('fullscreenchange', (e) => toggleFullscreen('fullscreen'));
+    document.addEventListener('webkitfullscreenchange', (e) => toggleFullscreen('fullscreen'));
+    document.addEventListener('mozfullscreenchange', (e) => toggleFullscreen('fullscreen'));
+    document.addEventListener('msfullscreenchange', (e) => toggleFullscreen('fullscreen'));
 
     window['__onGCastApiAvailable'] = (isAvailable) => {
       if (isAvailable) {
@@ -81,12 +81,12 @@ class App extends Component {
   }
   
   render() {
-    const { player, toggleFileBrowserDialog } = this.props;
+    const { app, toggleFileBrowserDialog } = this.props;
     
     return (
       <Fragment>
         <Cast/>
-        {player.showPlayer ? (<VideoPlayer />) : 
+        {app.showPlayer ? (<VideoPlayer />) : 
           (<LabelWrapper className='flex flex-center'>
             <Label onClick={toggleFileBrowserDialog}>Choose a Video</Label>
           </LabelWrapper>)}
@@ -96,13 +96,13 @@ class App extends Component {
   }
 }
 
-const mapStateToProps = (state) => ({ cast: state.cast, player: state.player });
+const mapStateToProps = (state) => ({ cast: state.cast, app: state.app });
 
 const mapDispatchToProps = (dispatch) => ({ 
   updateCastPlayer: bindActionCreators(updateCastPlayer, dispatch),
   updateCastController: bindActionCreators(updateCastController, dispatch),
   toggleFileBrowserDialog: bindActionCreators(toggleFileBrowserDialog, dispatch),
-  togglePlayerProps: bindActionCreators(togglePlayerProps, dispatch)
+  toggleFullscreen: bindActionCreators(toggleFullscreen, dispatch)
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(App);

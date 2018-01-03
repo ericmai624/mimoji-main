@@ -3,11 +3,12 @@ import FontAwesomeIcon from '@fortawesome/react-fontawesome';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
-import FileBrowserList from '../../components/file-browser-list/file-browser-list-component';
+import FileBrowserList from './file-browser-list/file-browser-list-component';
 
-import { toggleFileBrowserDialog, fetchContent } from '../../actions/file-browser';
-import { getStreamInfo, updateStreamSub } from '../../actions/stream';
-import { togglePlayerProps } from '../../actions/player';
+import { togglePlayer } from 'stores/app';
+import { toggleFileBrowserDialog, fetchContent } from 'stores/file-browser';
+import { fetchStreamInfo } from 'stores/stream';
+import { changeSubtitle } from 'stores/subtitle';
 
 import {
   Dimmer,
@@ -48,28 +49,27 @@ class FileBrowser extends Component {
 
   onDoubleClickFile(e, file) {
     e.preventDefault();
-    let ext = file.name.slice(-3);
-    if (ext === 'srt' || ext === 'vtt') return this.addSubtitle(file.filePath, file.name, '', 0);
+    if (file.type === 'subtitle') return this.addSubtitle(file.filePath, file.name, 'auto', 0);
     return this.castSelectedFile(file.filePath);
   }
 
-  addSubtitle(path, title, encoding, offset) {
-    const { updateStreamSub, toggleFileBrowserDialog } = this.props;
+  addSubtitle(path, label, encoding, offset) {
+    const { toggleFileBrowserDialog, changeSubtitle } = this.props;
     const { showDialog } = this.props.fileBrowser;
 
-    updateStreamSub({ path, title, encoding, offset, enabled: true });
+    changeSubtitle({ path, label, encoding, offset, isEnabled: true });
     if (showDialog) return toggleFileBrowserDialog();
   }
 
   castSelectedFile(path) {
-    const { toggleFileBrowserDialog, togglePlayerProps, getStreamInfo } = this.props;
-    const { showPlayer } = this.props.player;
+    const { toggleFileBrowserDialog, togglePlayer, fetchStreamInfo } = this.props;
+    const { showPlayer } = this.props.app;
     const { showDialog } = this.props.fileBrowser;
 
-    return getStreamInfo(path, 0)
+    return fetchStreamInfo(path)
       .then(() => {
         if (showDialog) toggleFileBrowserDialog();
-        if (!showPlayer) togglePlayerProps('main');
+        if (!showPlayer) togglePlayer();
       })
       .catch((err) => {
         console.log(err);
@@ -122,14 +122,14 @@ class FileBrowser extends Component {
   }
 }
 
-const mapStateToProps = (state) => ({ fileBrowser: state.fileBrowser, player: state.player });
+const mapStateToProps = (state) => ({ fileBrowser: state.fileBrowser, app: state.app });
 
 const mapDispatchToProps = (dispatch) => ({ 
   fetchContent: bindActionCreators(fetchContent, dispatch),
   toggleFileBrowserDialog: bindActionCreators(toggleFileBrowserDialog, dispatch),
-  togglePlayerProps: bindActionCreators(togglePlayerProps, dispatch),
-  getStreamInfo: bindActionCreators(getStreamInfo, dispatch),
-  updateStreamSub: bindActionCreators(updateStreamSub, dispatch)
+  togglePlayer: bindActionCreators(togglePlayer, dispatch),
+  fetchStreamInfo: bindActionCreators(fetchStreamInfo, dispatch),
+  changeSubtitle: bindActionCreators(changeSubtitle, dispatch)
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(FileBrowser);

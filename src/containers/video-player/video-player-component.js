@@ -4,17 +4,11 @@ import Hls from 'hls.js';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
-import VideoControls from '../../components/video-controls/video-controls-component';
+import VideoControls from './video-controls/video-controls-component';
 
-import { 
-  getStreamInfo,
-  updateStreamTime,
-  updateStreamSub,
-  updateStreamVolume,
-  toggleStreamProps
-} from '../../actions/stream';
-
-import { togglePlayerProps } from '../../actions/player';
+import { fetchStreamInfo, updateStreamTime } from 'stores/stream';
+import { togglePlayer } from 'stores/app';
+import { toggleFileBrowserDialog } from 'stores/file-browser';
 
 import { VideoContainer } from './video-player-styles';
 
@@ -22,6 +16,14 @@ class VideoPlayer extends Component {
   constructor(props) {
     super(props);
 
+    this.state = {
+      showControls: true,
+      volume: 1,
+      currTimeOffset: 0,
+      isPaused: false,
+      isMuted: false,
+    };
+  
     this.initHls = this.initHls.bind(this);
     this.togglePlay = this.togglePlay.bind(this);
     this._toggleControls = _.throttle(this.toggleControls.bind(this), 4000);
@@ -38,17 +40,7 @@ class VideoPlayer extends Component {
 
   componentDidMount() {
     const { stream } = this.props;
-    if (stream.source !== '') this.initHls();
-  }
-  
-
-  componentDidUpdate(prevProps, prevState) {
-    let prevStream = prevProps.stream;
-    let currStream = this.props.stream;
-
-    if (prevStream.source !== currStream.source || prevStream.seek !== currStream.seek) {
-      return this.initHls();
-    }
+    if (stream.source !== '' && !stream.hasError) this.initHls();
   }
 
   componentWillUnmount() {
@@ -56,7 +48,7 @@ class VideoPlayer extends Component {
   }
   
   initHls() {
-    const { videoEl } = this;
+    const { video } = this;
     const { stream } = this.props;
 
     this.hls = new Hls({ 
@@ -64,12 +56,12 @@ class VideoPlayer extends Component {
       maxBufferSize: 150 * 1000 * 1000,
       manifestLoadingMaxRetry: 3
     });
-    this.hls.attachMedia(videoEl);
+    this.hls.attachMedia(video);
     // load source when hls is attached to video element
     this.hls.on(Hls.Events.MEDIA_ATTACHED, () => {
       return this.hls.loadSource(`/api/stream/video/${stream.source}/index.m3u8`);
     });
-    this.hls.on(Hls.Events.MANIFEST_PARSED, (evt, data) => videoEl.play());
+    this.hls.on(Hls.Events.MANIFEST_PARSED, (evt, data) => video.play());
     // hls error handling
     this.hls.on(Hls.Events.ERROR, (evt, data) => { 
       if (data.fatal) {
@@ -90,45 +82,47 @@ class VideoPlayer extends Component {
 
   togglePlay(e) {
     e.preventDefault();
-    const { videoEl } = this;
-    videoEl.paused ? videoEl.play() : videoEl.pause();
+    const { video } = this;
+    if (video.paused) {
+      this.setState({ isPaused: false }, () => video.play());
+    } else {
+      this.setState({ isPaused: true }, () => video.pause());
+    }
   }
 
   toggleControls(e) {
-    const { togglePlayerProps, player } = this.props;
-    if (!player.showControls) togglePlayerProps('controls');
+    let { showControls } = this.state;
+    if (!showControls) this.setState({ showControls: true });
   } 
 
   seek(seekTime) {
-    const { stream, updateStreamTime, getStreamInfo } = this.props;
-    const { path } = stream;
+    const { stream, fetchStreamInfo } = this.props;
 
     if (this.hls) this.hls.destroy(); // destroy current hls stream
 
-    return getStreamInfo(path, seekTime)
-      .then((data) => {
-        updateStreamTime(seekTime);
-        // this.initHls();
-      })
-      .catch((err) => {
-        console.log(err);
+    this.setState({ currTimeOffset: seekTime }, () => {
+      fetchStreamInfo(stream.path, seekTime).then(() => {
+        if (!stream.hasError) this.initHls();
       });
+    });
   }
 
   onVideoPlaying() {
-    const { stream, toggleStreamProps } = this.props;
-    if (stream.paused) toggleStreamProps('pause');
+    const { isPaused } = this.state;
+    if (isPaused) this.setState({ isPaused: false });
   }
 
   onVideoPaused() {
-    const { stream, toggleStreamProps } = this.props;
-    if (!stream.paused) toggleStreamProps('pause');
+    const { isPaused } = this.state;
+    if (!isPaused) this.setState({ isPaused: true });
   }
 
   onVideoTimeUpdate() {
-    const { stream, player, updateStreamTime } = this.props;
-    const { videoEl } = this;
-    if (player.showControls) updateStreamTime(stream.seek + videoEl.currentTime);
+    const { updateStreamTime } = this.props;
+    const { showControls, currTimeOffset } = this.state;
+    const { video } = this;
+
+    if (showControls) updateStreamTime(video.currentTime + currTimeOffset);
   }
 
   onVideoEnded() {
@@ -137,22 +131,21 @@ class VideoPlayer extends Component {
   }
 
   changeVolume(e) {
-    const { updateStreamVolume } = this.props;
-    const { videoEl } = this;
+    const { video } = this;
     const volume = parseFloat(e.target.value);
-    updateStreamVolume(volume);
-    videoEl.volume = volume;
+
+    this.setState({ volume }, () => video.volume = volume);
   }
 
   toggleMute() {
-    const { toggleStreamProps, stream } = this.props;
-    const { videoEl } = this;
-    videoEl.muted = !stream.muted;
-    toggleStreamProps('muted');
+    const { isMuted } = this.state;
+    const { video } = this;
+
+    this.setState({ isMuted: !isMuted }, () => video.muted = !isMuted);
   }
 
   toggleFullscreen(e) {
-    const { player } = this.props;
+    const { app } = this.props;
     const rootNode = document.querySelector('#root');
 
     const requestFullscreen = rootNode.requestFullscreen ||
@@ -170,12 +163,12 @@ class VideoPlayer extends Component {
     bind to the #root node instead of the video itself
     to enable custom controls in fullscreen mode
     */
-    if (!player.isFullscreenEnabled) requestFullscreen.call(rootNode);
+    if (!app.isFullscreenEnabled) requestFullscreen.call(rootNode);
     else exitFullscreen.call(document);
   }
 
   killSwitch() {
-    const { togglePlayerProps, stream } = this.props;
+    const { togglePlayer, stream } = this.props;
     if (this.hls) this.hls.destroy();
 
     const method = 'post';
@@ -185,11 +178,21 @@ class VideoPlayer extends Component {
 
     fetch('/api/stream/terminate', { method, headers, body });
 
-    return togglePlayerProps('main');
+    this.toggleFullscreen();
+    return togglePlayer();
   }
   
   render() {
-    const { stream, player, togglePlayerProps } = this.props;
+    const { app, stream, toggleFileBrowserDialog } = this.props;
+    const { showControls, isPaused, isMuted, volume } = this.state;
+
+    if (stream.hasError) {
+      return (
+        <VideoContainer className='flex flex-center absolute'>
+          <span style={{color: 'white'}}>Something went wrong...</span>
+        </VideoContainer>
+      );
+    }
 
     return (
       <VideoContainer
@@ -207,41 +210,48 @@ class VideoPlayer extends Component {
           onTimeUpdate={this.onVideoTimeUpdate}
           onEnded={this.onVideoEnded}
           onMouseMove={this._toggleControls}
-          ref={(el) => this.videoEl = el}
+          ref={(el) => this.video = el}
         >
-          {stream.subtitle.enabled ? 
-            <track
-              kind='subtitles'
-              src={`/api/stream/subtitle?sub=${stream.subtitle.path}&`
-                  + `offset=${stream.subtitle.offset - stream.seek}&`
-                  + `encoding=${stream.subtitle.encoding}`}
-              default={true}
-            /> : null}
+          {/* <track
+            kind='subtitles'
+            src={`/api/stream/subtitle?sub=${stream.subtitle.path}&`
+                + `offset=${stream.subtitle.offset - stream.seek}&`
+                + `encoding=${stream.subtitle.encoding}`}
+            label={stream.subtitle.title}
+            default={true}
+          /> */}
         </video>
         <VideoControls
-          togglePlayerProps={togglePlayerProps}
+          seek={this.seek}
+          toggleFileBrowserDialog={toggleFileBrowserDialog}
           togglePlay={this.togglePlay}
           toggleMute={this.toggleMute}
+          toggleFullscreen={this.toggleFullscreen}
           changeVolume={this.changeVolume}
           killSwitch={this.killSwitch}
-          seek={this.seek}
-          stream={stream}
-          player={player}
-          toggleFullscreen={this.toggleFullscreen}
+          showControls={showControls}
+          isPaused={isPaused}
+          isMuted={isMuted}
+          isFullscreenEnabled={app.isFullscreenEnabled}
+          volume={volume}
+          currentTime={stream.currentTime}
+          duration={stream.duration}
         />
       </VideoContainer>
     );
   }
 }
 
-const mapStateToProps = (state) => ({ stream: state.stream, player: state.player, fileBrowser: state.fileBrowser });
+const mapStateToProps = (state) => ({ 
+  app: state.app,
+  stream: state.stream,
+  subtitle: state.subtitle
+});
 
 const mapDispatchToProps = (dispatch) => ({ 
-  getStreamInfo: bindActionCreators(getStreamInfo, dispatch),
-  togglePlayerProps: bindActionCreators(togglePlayerProps, dispatch),
-  toggleStreamProps: bindActionCreators(toggleStreamProps, dispatch),
-  updateStreamSub: bindActionCreators(updateStreamSub, dispatch),
-  updateStreamVolume: bindActionCreators(updateStreamVolume, dispatch),
+  fetchStreamInfo: bindActionCreators(fetchStreamInfo, dispatch),
+  togglePlayer: bindActionCreators(togglePlayer, dispatch),
+  toggleFileBrowserDialog: bindActionCreators(toggleFileBrowserDialog, dispatch),
   updateStreamTime: bindActionCreators(updateStreamTime, dispatch),
 });
 
