@@ -20,11 +20,6 @@ body {
   overflow: hidden;
 }
 
-.flex-center {
-  align-items: center;
-  justify-content: center;
-}
-
 .ellipsis {
   text-overflow: ellipsis;
   overflow: hidden;
@@ -37,6 +32,11 @@ body {
 
 .flex {
   display: flex;
+}
+
+.flex-center {
+  align-items: center;
+  justify-content: center;
 }
 
 .flex-align-center {

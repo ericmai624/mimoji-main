@@ -10,7 +10,7 @@
     "build": "react-scripts build",
     "electron": "electron ."
   },
-  "proxy": "http://172.16.1.11:6300",
+  "proxy": "http://localhost:6300",
   "dependencies": {
     "@fortawesome/fontawesome": "^1.1.0",
     "@fortawesome/fontawesome-free-regular": "^5.0.2",

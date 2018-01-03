@@ -5,9 +5,10 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
 import VideoControls from './video-controls/video-controls-component';
+import Loader from 'components/loader/loader-component';
 
-import { fetchStreamInfo, updateStreamTime } from 'stores/stream';
 import { togglePlayer } from 'stores/app';
+import { fetchStreamInfo, updateStreamTime } from 'stores/stream';
 import { toggleFileBrowserDialog } from 'stores/file-browser';
 
 import { VideoContainer } from './video-player-styles';
@@ -18,16 +19,18 @@ class VideoPlayer extends Component {
 
     this.state = {
       showControls: true,
-      volume: 1,
-      currTimeOffset: 0,
+      loading: false,
       isPaused: false,
       isMuted: false,
+      volume: 1,
+      currTimeOffset: 0,
     };
   
     this.initHls = this.initHls.bind(this);
     this.togglePlay = this.togglePlay.bind(this);
     this._toggleControls = _.throttle(this.toggleControls.bind(this), 4000);
     this.seek = this.seek.bind(this);
+    this.updateTextTrack = this.updateTextTrack.bind(this);
     this.onVideoPlaying = this.onVideoPlaying.bind(this);
     this.onVideoPaused = this.onVideoPaused.bind(this);
     this.onVideoTimeUpdate = this.onVideoTimeUpdate.bind(this);
@@ -43,8 +46,20 @@ class VideoPlayer extends Component {
     if (stream.source !== '' && !stream.hasError) this.initHls();
   }
 
+  componentDidUpdate(prevProps, prevState) {
+    const prevSub = prevProps.subtitle;
+    const currSub = this.props.subtitle;
+
+    _.each(prevSub, (value, key) => {
+      if (currSub[key] !== value) {
+        this.updateTextTrack();
+      }
+    });
+  }
+  
   componentWillUnmount() {
     if (this.hls) this.hls.destroy();
+    if (this.timeout) clearTimeout(this.timeout);
   }
   
   initHls() {
@@ -53,15 +68,19 @@ class VideoPlayer extends Component {
 
     this.hls = new Hls({ 
       maxBufferLength: 10,
-      maxBufferSize: 150 * 1000 * 1000,
+      maxBufferSize: 150 * 1000 * 1000, /* Chrome max buffer size 150MB */
       manifestLoadingMaxRetry: 3
     });
     this.hls.attachMedia(video);
     // load source when hls is attached to video element
     this.hls.on(Hls.Events.MEDIA_ATTACHED, () => {
-      return this.hls.loadSource(`/api/stream/video/${stream.source}/index.m3u8`);
+      this.setState({ loading: true }, () => {
+        this.hls.loadSource(`/api/stream/video/${stream.source}/index.m3u8`);
+      });
     });
-    this.hls.on(Hls.Events.MANIFEST_PARSED, (evt, data) => video.play());
+    this.hls.on(Hls.Events.MANIFEST_PARSED, (evt, data) => {
+      this.setState({ loading: false }, () => video.play());
+    });
     // hls error handling
     this.hls.on(Hls.Events.ERROR, (evt, data) => { 
       if (data.fatal) {
@@ -92,7 +111,15 @@ class VideoPlayer extends Component {
 
   toggleControls(e) {
     let { showControls } = this.state;
+
+    if (this.timeout) clearTimeout(this.timeout);
+
     if (!showControls) this.setState({ showControls: true });
+
+    this.timeout = setTimeout(() => {
+      this.timeout = null;
+      this.setState({ showControls: false });
+    }, 5000);
   } 
 
   seek(seekTime) {
@@ -105,6 +132,24 @@ class VideoPlayer extends Component {
         if (!stream.hasError) this.initHls();
       });
     });
+  }
+
+  updateTextTrack() {
+    const { video } = this;
+    const { subtitle } = this.props;
+    const { currTimeOffset } = this.state;
+
+    if (this.textTrack) video.removeChild(this.textTrack);
+    this.textTrack = document.createElement('track');
+    this.textTrack.src = `/api/stream/subtitle?sub=${subtitle.path}&`
+                         + `offset=${subtitle.offset - currTimeOffset}&`
+                         + `encoding=${subtitle.encoding}`;
+    this.textTrack.kind = 'subtitles';
+    this.textTrack.srclang = 'zh';
+    this.textTrack.label = 'Sub';
+    this.textTrack.default = true;
+    video.appendChild(this.textTrack);
+    // this.textTrack.setAttribute('default', true);
   }
 
   onVideoPlaying() {
@@ -168,7 +213,7 @@ class VideoPlayer extends Component {
   }
 
   killSwitch() {
-    const { togglePlayer, stream } = this.props;
+    const { app, stream, togglePlayer } = this.props;
     if (this.hls) this.hls.destroy();
 
     const method = 'post';
@@ -178,13 +223,13 @@ class VideoPlayer extends Component {
 
     fetch('/api/stream/terminate', { method, headers, body });
 
-    this.toggleFullscreen();
-    return togglePlayer();
+    if (app.isFullscreenEnabled) this.toggleFullscreen();
+    togglePlayer();
   }
   
   render() {
-    const { app, stream, toggleFileBrowserDialog } = this.props;
-    const { showControls, isPaused, isMuted, volume } = this.state;
+    const { app, stream, subtitle, toggleFileBrowserDialog } = this.props;
+    const { showControls, loading, isPaused, isMuted, volume, currTimeOffset } = this.state;
 
     if (stream.hasError) {
       return (
@@ -198,7 +243,9 @@ class VideoPlayer extends Component {
       <VideoContainer
         id='video-player'
         className='flex flex-center absolute'
+        onMouseMove={this._toggleControls}
       >
+        {loading ? <Loader size={42} /> : null}
         <video
           autoPlay={true}
           playsInline={true}
@@ -209,17 +256,18 @@ class VideoPlayer extends Component {
           onPause={this.onVideoPaused}
           onTimeUpdate={this.onVideoTimeUpdate}
           onEnded={this.onVideoEnded}
-          onMouseMove={this._toggleControls}
           ref={(el) => this.video = el}
         >
-          {/* <track
+          <track
             kind='subtitles'
-            src={`/api/stream/subtitle?sub=${stream.subtitle.path}&`
-                + `offset=${stream.subtitle.offset - stream.seek}&`
-                + `encoding=${stream.subtitle.encoding}`}
-            label={stream.subtitle.title}
+            src={`/api/stream/subtitle?sub=${subtitle.path}&`
+                + `offset=${subtitle.offset - currTimeOffset}&`
+                + `encoding=${subtitle.encoding}`}
+            label={subtitle.label}
+            srcLang='zh'
             default={true}
-          /> */}
+            ref={(el) => this.textTrack = el}
+          />
         </video>
         <VideoControls
           seek={this.seek}
