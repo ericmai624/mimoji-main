@@ -19,7 +19,9 @@ export const fetchStreamInfo = (path, seek = 0) => {
   };
 };
 
-export const updateStreamTime = (currentTime) => ({ type: 'UPDATE_STREAM_TIME', currentTime });
+export const updateStreamTime = (currentTime) => ({ type: 'STREAM_TIME_UPDATES', currentTime });
+
+export const resetStream = () => ({ type: 'STREAM_RESETS' });
 
 const initState = {
   id: '',
@@ -39,7 +41,8 @@ const handlers = {
     return { ...state, id, source, duration, path, seek, fetched: true, fetching: false };
   },
   FETCH_STREAMINFO_REJECTED: (state, action) => ({ ...state, fetching: false, fetched: false, hasError: true }),
-  UPDATE_STREAM_TIME: (state, action) => ({ ...state, currentTime: action.currentTime })
+  STREAM_TIME_UPDATES: (state, action) => ({ ...state, currentTime: action.currentTime }),
+  STREAM_RESETS: () => initState
 };
 
 export const streamReducer = createReducer(initState, handlers);

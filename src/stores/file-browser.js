@@ -21,8 +21,8 @@ export const fetchContent = (dir, nav = '') => {
 export const toggleFileBrowserDialog = () => ({ type: 'FILEBROWSER_DIALOG_TOGGLED' });
 
 const initState = {
-  showDialog: false,
-  currDir: '',
+  isVisible: false,
+  directory: '',
   content: [],
   fetching: false,
   fetched: false,
@@ -32,11 +32,11 @@ const initState = {
 const handlers = {
   FETCH_CONTENT_PENDING: (state, action) => ({ ...state, fetching: true, hasError: false }),
   FETCH_CONTENT_FULFILLED: (state, action) => {
-    const { currDir, content } = action.payload; 
-    return { ...state, fetching: false, fetched: true, currDir, content };
+    const { directory, content } = action.payload;
+    return { ...state, fetching: false, fetched: true, directory, content };
   },
   FETCH_CONTENT_REJECTED: (state, action) => ({ ...state, fetching: false, fetched: false, hasError: true }),
-  FILEBROWSER_DIALOG_TOGGLED: (state) => ({ ...state, showDialog: !state.showDialog })
+  FILEBROWSER_DIALOG_TOGGLED: (state) => ({ ...state, isVisible: !state.isVisible })
 };
 
 export const fileBrowserReducer = createReducer(initState, handlers);

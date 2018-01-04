@@ -40,13 +40,13 @@ const arrangeContent = (input, dir) => {
 
 module.exports.readDir = (req, res) => {
   let { dir, nav } = req.query;
-  let currDir = dir === '' ? homedir() : dir;
-  if (nav === '..') currDir = path.join(currDir, nav);
+  let directory = dir === '' ? homedir() : dir;
+  if (nav === '..') directory = path.join(directory, nav);
 
-  fs.readdirAsync(currDir)
+  fs.readdirAsync(directory)
     .then((items) => {
-      let content = arrangeContent(items, currDir);
-      return res.json({ currDir, content });
+      let content = arrangeContent(items, directory);
+      return res.json({ directory, content });
     })
     .catch((err) => {
       console.log(err);

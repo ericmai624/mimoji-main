@@ -46,7 +46,7 @@ export const Main = styled.div`
   background: ${bg};
 `;
 
-export const CurrDirectory = styled.div`
+export const Directory = styled.div`
   border: 1px solid ${fontColor};
   padding: 8px 16px;
   width: 60%;

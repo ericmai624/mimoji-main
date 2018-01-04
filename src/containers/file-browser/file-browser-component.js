@@ -8,7 +8,7 @@ import FileBrowserList from './file-browser-list/file-browser-list-component';
 import { togglePlayer } from 'stores/app';
 import { toggleFileBrowserDialog, fetchContent } from 'stores/file-browser';
 import { fetchStreamInfo } from 'stores/stream';
-import { changeSubtitle } from 'stores/subtitle';
+import { updateTextTrack } from 'stores/text-track';
 
 import {
   Dimmer,
@@ -17,7 +17,7 @@ import {
   Main,
   Nav,
   NaviBtns,
-  CurrDirectory
+  Directory
 } from './file-browser-styles';
 
 class FileBrowser extends Component {
@@ -34,7 +34,7 @@ class FileBrowser extends Component {
   
   componentDidMount() {
     const { fileBrowser } = this.props;
-    this.fetch(fileBrowser.currDir);
+    this.fetch(fileBrowser.directory);
   }
 
   fetch(dir, nav) {
@@ -54,22 +54,20 @@ class FileBrowser extends Component {
   }
 
   addSubtitle(path, label, encoding, offset) {
-    const { toggleFileBrowserDialog, changeSubtitle } = this.props;
-    const { showDialog } = this.props.fileBrowser;
+    const { fileBrowser, toggleFileBrowserDialog, updateTextTrack } = this.props;
 
-    changeSubtitle({ path, label, encoding, offset, isEnabled: true });
-    if (showDialog) return toggleFileBrowserDialog();
+    updateTextTrack({ path, label, encoding, offset, isEnabled: true });
+    if (fileBrowser.isVisible) return toggleFileBrowserDialog();
   }
 
   castSelectedFile(path) {
     const { toggleFileBrowserDialog, togglePlayer, fetchStreamInfo } = this.props;
-    const { showPlayer } = this.props.app;
-    const { showDialog } = this.props.fileBrowser;
+    const { app, fileBrowser } = this.props;
 
     return fetchStreamInfo(path)
       .then(() => {
-        if (showDialog) toggleFileBrowserDialog();
-        if (!showPlayer) togglePlayer();
+        if (fileBrowser.isVisible) toggleFileBrowserDialog();
+        if (!app.isPlayerEnabled) togglePlayer();
       })
       .catch((err) => {
         console.log(err);
@@ -79,23 +77,23 @@ class FileBrowser extends Component {
   navigateUpDir(e) {
     e.preventDefault();
     const { fileBrowser } = this.props;
-    this.fetch(fileBrowser.currDir, '..');
+    this.fetch(fileBrowser.directory, '..');
   }
 
   render() {
     const { fileBrowser, toggleFileBrowserDialog } = this.props;
 
     return (
-      <Dimmer className='flex flex-center absolute' hidden={!fileBrowser.showDialog}>
+      <Dimmer className='flex flex-center absolute' hidden={!fileBrowser.isVisible}>
         <Container className='grid'>
           <Side className='flex flex-center'>
             <h2>File Browser</h2>
           </Side>
           <Main>
             <Nav className='flex flex-align-center flex-space-between'>
-              <CurrDirectory className='ellipsis'>
-                <span>{fileBrowser.currDir}</span>
-              </CurrDirectory>
+              <Directory className='ellipsis'>
+                <span>{fileBrowser.directory}</span>
+              </Directory>
               <NaviBtns className='flex flex-center' onClick={this.navigateUpDir}>
                 <FontAwesomeIcon icon={['fas', 'chevron-up']}/>
               </NaviBtns>
@@ -129,7 +127,7 @@ const mapDispatchToProps = (dispatch) => ({
   toggleFileBrowserDialog: bindActionCreators(toggleFileBrowserDialog, dispatch),
   togglePlayer: bindActionCreators(togglePlayer, dispatch),
   fetchStreamInfo: bindActionCreators(fetchStreamInfo, dispatch),
-  changeSubtitle: bindActionCreators(changeSubtitle, dispatch)
+  updateTextTrack: bindActionCreators(updateTextTrack, dispatch)
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(FileBrowser);

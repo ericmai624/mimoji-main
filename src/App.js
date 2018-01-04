@@ -86,7 +86,7 @@ class App extends Component {
     return (
       <Fragment>
         <Cast/>
-        {app.showPlayer ? (<VideoPlayer />) : 
+        {app.isPlayerEnabled ? (<VideoPlayer />) : 
           (<LabelWrapper className='flex flex-center'>
             <Label onClick={toggleFileBrowserDialog}>Choose a Video</Label>
           </LabelWrapper>)}

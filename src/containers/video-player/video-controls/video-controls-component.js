@@ -74,8 +74,8 @@ class VideoControls extends Component {
       toggleMute, 
       toggleFullscreen, 
       changeVolume, 
-      killSwitch, 
-      showControls,
+      cleanup, 
+      isControlsVisible,
       isPaused,
       isMuted,
       isFullscreenEnabled,
@@ -100,11 +100,14 @@ class VideoControls extends Component {
 
     return (
       <Fragment>
-        <Container className='flex flex-align-center flex-space-around absolute' showControls={showControls}>
+        <Container 
+          className='flex flex-align-center flex-space-around absolute'
+          isControlsVisible={isControlsVisible}
+        >
           <ControlsBtns onClick={togglePlay} className='flex flex-center'>
             <FontAwesomeIcon icon={['fas', isPaused ? 'play' : 'pause']}/>
           </ControlsBtns>
-          <ControlsBtns onClick={killSwitch} className='flex flex-center'>
+          <ControlsBtns onClick={cleanup} className='flex flex-center'>
             <FontAwesomeIcon icon={['fas', 'stop']}/>
           </ControlsBtns>
           <ProgressContainer onClick={this.handleSeek}>

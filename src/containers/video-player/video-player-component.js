@@ -1,15 +1,16 @@
 import React, { Component } from 'react';
-import _ from 'lodash';
 import Hls from 'hls.js';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
-import VideoControls from './video-controls/video-controls-component';
 import Loader from 'components/loader/loader-component';
+import VideoControls from './video-controls/video-controls-component';
+import TextTrack from './text-track/text-track-component';
 
 import { togglePlayer } from 'stores/app';
-import { fetchStreamInfo, updateStreamTime } from 'stores/stream';
+import { fetchStreamInfo, updateStreamTime, resetStream } from 'stores/stream';
 import { toggleFileBrowserDialog } from 'stores/file-browser';
+import { resetTextTrack } from 'stores/text-track';
 
 import { VideoContainer } from './video-player-styles';
 
@@ -18,19 +19,21 @@ class VideoPlayer extends Component {
     super(props);
 
     this.state = {
-      showControls: true,
-      loading: false,
+      isLoading: false,
       isPaused: false,
       isMuted: false,
+      isControlsVisible: true,
+      isTextTrackEnabled: false,
       volume: 1,
-      currTimeOffset: 0,
+      currTimeOffset: 0
     };
   
     this.initHls = this.initHls.bind(this);
     this.togglePlay = this.togglePlay.bind(this);
-    this._toggleControls = _.throttle(this.toggleControls.bind(this), 4000);
+    this.showControls = this.showControls.bind(this);
+    this.hideControls = this.hideControls.bind(this);
+    this.onVideoMouseMove = this.onVideoMouseMove.bind(this);
     this.seek = this.seek.bind(this);
-    this.updateTextTrack = this.updateTextTrack.bind(this);
     this.onVideoPlaying = this.onVideoPlaying.bind(this);
     this.onVideoPaused = this.onVideoPaused.bind(this);
     this.onVideoTimeUpdate = this.onVideoTimeUpdate.bind(this);
@@ -38,7 +41,8 @@ class VideoPlayer extends Component {
     this.changeVolume = this.changeVolume.bind(this);
     this.toggleMute = this.toggleMute.bind(this);
     this.toggleFullscreen = this.toggleFullscreen.bind(this);
-    this.killSwitch = this.killSwitch.bind(this);
+    this.stopTimer = this.stopTimer.bind(this);
+    this.cleanup = this.cleanup.bind(this);
   }
 
   componentDidMount() {
@@ -46,20 +50,9 @@ class VideoPlayer extends Component {
     if (stream.source !== '' && !stream.hasError) this.initHls();
   }
 
-  componentDidUpdate(prevProps, prevState) {
-    const prevSub = prevProps.subtitle;
-    const currSub = this.props.subtitle;
-
-    _.each(prevSub, (value, key) => {
-      if (currSub[key] !== value) {
-        this.updateTextTrack();
-      }
-    });
-  }
-  
   componentWillUnmount() {
     if (this.hls) this.hls.destroy();
-    if (this.timeout) clearTimeout(this.timeout);
+    if (this.timerId !== undefined) this.stopTimer();
   }
   
   initHls() {
@@ -74,12 +67,12 @@ class VideoPlayer extends Component {
     this.hls.attachMedia(video);
     // load source when hls is attached to video element
     this.hls.on(Hls.Events.MEDIA_ATTACHED, () => {
-      this.setState({ loading: true }, () => {
+      this.setState({ isLoading: true, isTextTrackEnabled: false }, () => {
         this.hls.loadSource(`/api/stream/video/${stream.source}/index.m3u8`);
       });
     });
     this.hls.on(Hls.Events.MANIFEST_PARSED, (evt, data) => {
-      this.setState({ loading: false }, () => video.play());
+      this.setState({ isLoading: false, isTextTrackEnabled: true }, () => video.play());
     });
     // hls error handling
     this.hls.on(Hls.Events.ERROR, (evt, data) => { 
@@ -102,25 +95,29 @@ class VideoPlayer extends Component {
   togglePlay(e) {
     e.preventDefault();
     const { video } = this;
-    if (video.paused) {
-      this.setState({ isPaused: false }, () => video.play());
-    } else {
-      this.setState({ isPaused: true }, () => video.pause());
-    }
+
+    if (video.paused) this.setState({ isPaused: false }, () => video.play());
+    else this.setState({ isPaused: true }, () => video.pause());
   }
 
-  toggleControls(e) {
-    let { showControls } = this.state;
+  showControls(e) {
+    const { isControlsVisible } = this.state;
+    if (e) e.stopPropagation();
+    if (typeof this.timerId === 'number') this.stopTimer();
+    if (!isControlsVisible) this.setState({ isControlsVisible: true });
+  }
 
-    if (this.timeout) clearTimeout(this.timeout);
+  hideControls() {
+    const { isControlsVisible } = this.state;
+    if (isControlsVisible) this.setState({ isControlsVisible: false });
+  }
 
-    if (!showControls) this.setState({ showControls: true });
+  onVideoMouseMove(e) {
+    const { app } = this.props;
+    if (app.isPlayerEnabled) this.showControls(); // show controls
 
-    this.timeout = setTimeout(() => {
-      this.timeout = null;
-      this.setState({ showControls: false });
-    }, 5000);
-  } 
+    this.timerId = setTimeout(this.hideControls, 4000);
+  }
 
   seek(seekTime) {
     const { stream, fetchStreamInfo } = this.props;
@@ -132,24 +129,6 @@ class VideoPlayer extends Component {
         if (!stream.hasError) this.initHls();
       });
     });
-  }
-
-  updateTextTrack() {
-    const { video } = this;
-    const { subtitle } = this.props;
-    const { currTimeOffset } = this.state;
-
-    if (this.textTrack) video.removeChild(this.textTrack);
-    this.textTrack = document.createElement('track');
-    this.textTrack.src = `/api/stream/subtitle?sub=${subtitle.path}&`
-                         + `offset=${subtitle.offset - currTimeOffset}&`
-                         + `encoding=${subtitle.encoding}`;
-    this.textTrack.kind = 'subtitles';
-    this.textTrack.srclang = 'zh';
-    this.textTrack.label = 'Sub';
-    this.textTrack.default = true;
-    video.appendChild(this.textTrack);
-    // this.textTrack.setAttribute('default', true);
   }
 
   onVideoPlaying() {
@@ -164,15 +143,15 @@ class VideoPlayer extends Component {
 
   onVideoTimeUpdate() {
     const { updateStreamTime } = this.props;
-    const { showControls, currTimeOffset } = this.state;
+    const { isControlsVisible, currTimeOffset } = this.state;
     const { video } = this;
 
-    if (showControls) updateStreamTime(video.currentTime + currTimeOffset);
+    if (isControlsVisible) updateStreamTime(video.currentTime + currTimeOffset);
   }
 
   onVideoEnded() {
     console.log('the video has ended');
-    return this.killSwitch();
+    return this.cleanup();
   }
 
   changeVolume(e) {
@@ -212,8 +191,13 @@ class VideoPlayer extends Component {
     else exitFullscreen.call(document);
   }
 
-  killSwitch() {
-    const { app, stream, togglePlayer } = this.props;
+  stopTimer() { 
+    clearTimeout(this.timerId);
+    this.timerId = undefined;
+  }
+
+  cleanup() {
+    const { app, stream, togglePlayer, resetStream, resetTextTrack } = this.props;
     if (this.hls) this.hls.destroy();
 
     const method = 'post';
@@ -224,12 +208,15 @@ class VideoPlayer extends Component {
     fetch('/api/stream/terminate', { method, headers, body });
 
     if (app.isFullscreenEnabled) this.toggleFullscreen();
+    this.stopTimer();
+    resetStream();
+    resetTextTrack();
     togglePlayer();
   }
   
   render() {
-    const { app, stream, subtitle, toggleFileBrowserDialog } = this.props;
-    const { showControls, loading, isPaused, isMuted, volume, currTimeOffset } = this.state;
+    const { app, stream, toggleFileBrowserDialog } = this.props;
+    const { isLoading, isPaused, isMuted, isControlsVisible, isTextTrackEnabled, volume, currTimeOffset } = this.state;
 
     if (stream.hasError) {
       return (
@@ -243,9 +230,9 @@ class VideoPlayer extends Component {
       <VideoContainer
         id='video-player'
         className='flex flex-center absolute'
-        onMouseMove={this._toggleControls}
+        onMouseMove={this.onVideoMouseMove}
       >
-        {loading ? <Loader size={42} /> : null}
+        {isLoading ? <Loader size={42} /> : null}
         <video
           autoPlay={true}
           playsInline={true}
@@ -258,16 +245,7 @@ class VideoPlayer extends Component {
           onEnded={this.onVideoEnded}
           ref={(el) => this.video = el}
         >
-          <track
-            kind='subtitles'
-            src={`/api/stream/subtitle?sub=${subtitle.path}&`
-                + `offset=${subtitle.offset - currTimeOffset}&`
-                + `encoding=${subtitle.encoding}`}
-            label={subtitle.label}
-            srcLang='zh'
-            default={true}
-            ref={(el) => this.textTrack = el}
-          />
+          <TextTrack currTimeOffset={currTimeOffset} isTextTrackEnabled={isTextTrackEnabled}/>
         </video>
         <VideoControls
           seek={this.seek}
@@ -276,8 +254,8 @@ class VideoPlayer extends Component {
           toggleMute={this.toggleMute}
           toggleFullscreen={this.toggleFullscreen}
           changeVolume={this.changeVolume}
-          killSwitch={this.killSwitch}
-          showControls={showControls}
+          cleanup={this.cleanup}
+          isControlsVisible={isControlsVisible}
           isPaused={isPaused}
           isMuted={isMuted}
           isFullscreenEnabled={app.isFullscreenEnabled}
@@ -292,8 +270,7 @@ class VideoPlayer extends Component {
 
 const mapStateToProps = (state) => ({ 
   app: state.app,
-  stream: state.stream,
-  subtitle: state.subtitle
+  stream: state.stream
 });
 
 const mapDispatchToProps = (dispatch) => ({ 
@@ -301,6 +278,8 @@ const mapDispatchToProps = (dispatch) => ({
   togglePlayer: bindActionCreators(togglePlayer, dispatch),
   toggleFileBrowserDialog: bindActionCreators(toggleFileBrowserDialog, dispatch),
   updateStreamTime: bindActionCreators(updateStreamTime, dispatch),
+  resetStream: bindActionCreators(resetStream, dispatch),
+  resetTextTrack: bindActionCreators(resetTextTrack, dispatch)
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(VideoPlayer);

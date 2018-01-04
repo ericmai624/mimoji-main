@@ -5,14 +5,14 @@ import { castPlayerReducer, castControllerReducer } from './cast';
 import { streamReducer } from './stream';
 import { appReducer } from './app';
 import { fileBrowserReducer } from './file-browser';
-import { subtitleReducer } from './subtitle';
+import { textTrackReducer } from './text-track';
 
 const reducer = combineReducers({
   app: appReducer,
   cast: castPlayerReducer,
   controller: castControllerReducer,
   stream: streamReducer,
-  subtitle: subtitleReducer,
+  textTrack: textTrackReducer,
   fileBrowser: fileBrowserReducer,
 });
 

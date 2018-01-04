@@ -6,7 +6,7 @@ const borderRadius = '4px';
 const progressHeight = '8px';
 
 export const Container = styled.div.attrs({
-  opacity: ({ showControls }) => showControls ? 1 : 0
+  opacity: ({ isControlsVisible }) => isControlsVisible ? 1 : 0
 })`
   width: 800px;
   height: 48px;
