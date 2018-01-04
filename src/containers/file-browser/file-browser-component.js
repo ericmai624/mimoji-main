@@ -27,8 +27,9 @@ class FileBrowser extends Component {
     this.fetch = this.fetch.bind(this);
     this.onDoubleClickDirectory = this.onDoubleClickDirectory.bind(this);
     this.onDoubleClickFile = this.onDoubleClickFile.bind(this);
-    this.addSubtitle = this.addSubtitle.bind(this);
-    this.castSelectedFile = this.castSelectedFile.bind(this);
+    this.stream = this.stream.bind(this);
+    this.cast = this.cast.bind(this);
+    this.addTextTrack = this.addTextTrack.bind(this);
     this.navigateUpDir = this.navigateUpDir.bind(this);
   }
   
@@ -49,18 +50,15 @@ class FileBrowser extends Component {
 
   onDoubleClickFile(e, file) {
     e.preventDefault();
-    if (file.type === 'subtitle') return this.addSubtitle(file.filePath, file.name, 'auto', 0);
-    return this.castSelectedFile(file.filePath);
+    if (file.type === 'subtitle') return this.addTextTrack(file.filePath, file.name, 'auto', 0);
+    return this.stream(file.filePath);
   }
 
-  addSubtitle(path, label, encoding, offset) {
-    const { fileBrowser, toggleFileBrowserDialog, updateTextTrack } = this.props;
+  cast(path) {
 
-    updateTextTrack({ path, label, encoding, offset, isEnabled: true });
-    if (fileBrowser.isVisible) return toggleFileBrowserDialog();
   }
 
-  castSelectedFile(path) {
+  stream(path) {
     const { toggleFileBrowserDialog, togglePlayer, fetchStreamInfo } = this.props;
     const { app, fileBrowser } = this.props;
 
@@ -72,6 +70,13 @@ class FileBrowser extends Component {
       .catch((err) => {
         console.log(err);
       });
+  }
+
+  addTextTrack(path, label, encoding, offset) {
+    const { fileBrowser, toggleFileBrowserDialog, updateTextTrack } = this.props;
+
+    updateTextTrack({ path, label, encoding, offset, isEnabled: true });
+    if (fileBrowser.isVisible) return toggleFileBrowserDialog();
   }
 
   navigateUpDir(e) {
