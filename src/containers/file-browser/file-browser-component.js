@@ -1,29 +1,26 @@
 import React, { Component } from 'react';
-import FontAwesomeIcon from '@fortawesome/react-fontawesome';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
-import FileBrowserList from './file-browser-list/file-browser-list-component';
-
-import { togglePlayer } from 'stores/app';
+import { togglePlayer, playOnChromecast } from 'stores/app';
 import { toggleFileBrowserDialog, fetchContent } from 'stores/file-browser';
 import { fetchStreamInfo } from 'stores/stream';
 import { updateTextTrack } from 'stores/text-track';
 
-import {
-  Dimmer,
-  Container,
-  Side,
-  Main,
-  Nav,
-  NaviBtns,
-  Directory
-} from './file-browser-styles';
+import FileBrowserList from './file-list/file-list-component';
+import CastOptions from './cast-options/cast-options-component';
+
+import { Container } from './file-browser-styles';
 
 class FileBrowser extends Component {
   constructor(props) {
     super(props);
 
+    this.state = {
+      isOptionsVisible: false,
+      file: null
+    };
+    
     this.fetch = this.fetch.bind(this);
     this.onDoubleClickDirectory = this.onDoubleClickDirectory.bind(this);
     this.onDoubleClickFile = this.onDoubleClickFile.bind(this);
@@ -31,6 +28,7 @@ class FileBrowser extends Component {
     this.cast = this.cast.bind(this);
     this.addTextTrack = this.addTextTrack.bind(this);
     this.navigateUpDir = this.navigateUpDir.bind(this);
+    this.toggleCastOptions = this.toggleCastOptions.bind(this);
   }
   
   componentDidMount() {
@@ -50,22 +48,41 @@ class FileBrowser extends Component {
 
   onDoubleClickFile(e, file) {
     e.preventDefault();
+    const { app, toggleCastOptions } = this.props;
     if (file.type === 'subtitle') return this.addTextTrack(file.filePath, file.name, 'auto', 0);
-    return this.stream(file.filePath);
+    this.setState({ file });
+    this.toggleCastOptions();
   }
 
-  cast(path) {
+  cast() {
+    const { cast, chrome } = window;
+    const { fetchStreamInfo, playOnChromecast } = this.props;
+    const { file } = this.state;
+    const castSession = cast.framework.CastContext.getInstance().getCurrentSession();
+    if (!castSession) return console.log('need to connect to Google Cast first');
 
+    fetchStreamInfo(file.filePath)
+      .then((data) => {
+        playOnChromecast(true);
+        const mediaSource = `http://172.16.1.19:3000/api/stream/video/${data.source}/index.m3u8`;
+        const mediaType = 'application/x-mpegURL';
+        const mediaInfo = new chrome.cast.media.MediaInfo(mediaSource, mediaType);
+        const request = new chrome.cast.media.LoadRequest(mediaInfo);
+        return castSession.loadMedia(request);
+      })
+      .then(() => console.log('load success'), (err) => console.log('Error code: ', err));
   }
 
-  stream(path) {
-    const { toggleFileBrowserDialog, togglePlayer, fetchStreamInfo } = this.props;
-    const { app, fileBrowser } = this.props;
-
-    return fetchStreamInfo(path)
+  stream() {
+    const { app, fileBrowser, toggleFileBrowserDialog, togglePlayer, playOnChromecast, fetchStreamInfo } = this.props;
+    const { file } = this.state;
+    
+    fetchStreamInfo(file.filePath)
       .then(() => {
         if (fileBrowser.isVisible) toggleFileBrowserDialog();
         if (!app.isPlayerEnabled) togglePlayer();
+        playOnChromecast(false);
+        this.setState({ isOptionsVisible: false });
       })
       .catch((err) => {
         console.log(err);
@@ -85,52 +102,42 @@ class FileBrowser extends Component {
     this.fetch(fileBrowser.directory, '..');
   }
 
+  toggleCastOptions(e) {
+    const { isOptionsVisible } = this.state;
+    this.setState({ isOptionsVisible: !isOptionsVisible });
+  }
+  
   render() {
-    const { fileBrowser, toggleFileBrowserDialog } = this.props;
+    const { isOptionsVisible } = this.state;
+    const { app, fileBrowser, toggleFileBrowserDialog } = this.props;
 
     return (
-      <Dimmer className='flex flex-center absolute' hidden={!fileBrowser.isVisible}>
-        <Container className='grid'>
-          <Side className='flex flex-center'>
-            <h2>File Browser</h2>
-          </Side>
-          <Main>
-            <Nav className='flex flex-align-center flex-space-between'>
-              <Directory className='ellipsis'>
-                <span>{fileBrowser.directory}</span>
-              </Directory>
-              <NaviBtns className='flex flex-center' onClick={this.navigateUpDir}>
-                <FontAwesomeIcon icon={['fas', 'chevron-up']}/>
-              </NaviBtns>
-              <NaviBtns className='flex flex-center'>
-                <FontAwesomeIcon icon={['fas', 'sort-amount-down']}/>
-              </NaviBtns>
-              <NaviBtns className='flex flex-center'>
-                <FontAwesomeIcon icon={['fas', 'filter']}/>
-              </NaviBtns>
-              <NaviBtns className='flex flex-center' onClick={toggleFileBrowserDialog}>
-                <FontAwesomeIcon icon={['fas', 'times']}/>
-              </NaviBtns>
-            </Nav>
-            <FileBrowserList
-              content={fileBrowser.content} 
-              onDoubleClickDirectory={this.onDoubleClickDirectory} 
-              onDoubleClickFile={this.onDoubleClickFile}
-              navigateUpDir={this.navigateUpDir}
-            />
-          </Main>
-        </Container>
-      </Dimmer>
+      <Container className='flex flex-center absolute' hidden={!fileBrowser.isVisible}>
+        <FileBrowserList 
+          fileBrowser={fileBrowser}
+          isVisible={!isOptionsVisible}
+          onDoubleClickDirectory={this.onDoubleClickDirectory}
+          onDoubleClickFile={this.onDoubleClickFile}
+          toggleFileBrowserDialog={toggleFileBrowserDialog}
+          navigateUpDir={this.navigateUpDir}
+        />
+        <CastOptions
+          isVisible={isOptionsVisible}
+          cast={this.cast}
+          stream={this.stream}
+        />
+      </Container>
     );
   }
 }
 
-const mapStateToProps = (state) => ({ fileBrowser: state.fileBrowser, app: state.app });
+const mapStateToProps = (state) => ({ app: state.app, fileBrowser: state.fileBrowser });
 
 const mapDispatchToProps = (dispatch) => ({ 
   fetchContent: bindActionCreators(fetchContent, dispatch),
   toggleFileBrowserDialog: bindActionCreators(toggleFileBrowserDialog, dispatch),
   togglePlayer: bindActionCreators(togglePlayer, dispatch),
+  playOnChromecast: bindActionCreators(playOnChromecast, dispatch),
   fetchStreamInfo: bindActionCreators(fetchStreamInfo, dispatch),
   updateTextTrack: bindActionCreators(updateTextTrack, dispatch)
 });

@@ -9,7 +9,6 @@ import {
   Showtime,
   ProgressContainer,
   Progress,
-  ControlsBtns,
   Bridge,
   VolumeContainer,
   VolumeRangeWrapper,
@@ -17,6 +16,7 @@ import {
 } from './video-controls-styles';
 
 import SubSettings from './subtitle-settings/subtitle-settings-component';
+import ControlButton from './control-buttons/control-buttons-component';
 
 momentDurationSetup(moment);
 
@@ -93,8 +93,8 @@ class VideoControls extends Component {
     if (volume < 0.5) volumeIcon = (<FontAwesomeIcon icon={['fas', 'volume-down']}/>);
     if (volume === 0 || isMuted) {
       volumeIcon = [
-        <FontAwesomeIcon key='volume-off' icon={['fas', 'volume-off']} transform='left-5'/>,
-        <FontAwesomeIcon key='times' icon={['fas', 'times']} transform='shrink-7 right-4'/>
+        <FontAwesomeIcon key='volume-off' icon={['fas', 'volume-off']} transform='left-4.5' stack />,
+        <FontAwesomeIcon key='times' icon={['fas', 'times']} transform='shrink-7 right-4.5' stack />
       ];
     }
 
@@ -104,12 +104,8 @@ class VideoControls extends Component {
           className='flex flex-align-center flex-space-around absolute'
           isControlsVisible={isControlsVisible}
         >
-          <ControlsBtns onClick={togglePlay} className='flex flex-center'>
-            <FontAwesomeIcon icon={['fas', isPaused ? 'play' : 'pause']}/>
-          </ControlsBtns>
-          <ControlsBtns onClick={cleanup} className='flex flex-center'>
-            <FontAwesomeIcon icon={['fas', 'stop']}/>
-          </ControlsBtns>
+          <ControlButton onClick={togglePlay} icon={['fas', isPaused ? 'play' : 'pause']}/>
+          <ControlButton onClick={cleanup} icon={['fas', 'stop']}/>
           <ProgressContainer onClick={this.handleSeek}>
             <Progress 
               value={currentTime} 
@@ -126,13 +122,10 @@ class VideoControls extends Component {
             onMouseOver={this.onVolumeMouseEnter}
             onMouseLeave={this.onVolumeMouseLeave}
           >
-            <ControlsBtns
-              className='flex flex-center fa-layers fa-fw'
-              onClick={toggleMute}
-            >
+            <ControlButton onClick={toggleMute} className={'fa-layers fa-fw'}>
               {volumeIcon}
-            </ControlsBtns>
-            <VolumeRangeWrapper 
+            </ControlButton>
+            <VolumeRangeWrapper
               className='flex flex-center absolute'
               onClick={(e) => e.stopPropagation()}
               showVolumeRange={showVolumeRange}
@@ -151,12 +144,10 @@ class VideoControls extends Component {
             </VolumeRangeWrapper>
             <Bridge className='relative' showVolumeRange={showVolumeRange}></Bridge>
           </VolumeContainer>
-          <ControlsBtns className='flex flex-center' onClick={this.toggleSubSettings}>
+          <ControlButton onClick={this.toggleSubSettings}>
             <FontAwesomeIcon icon={['fas', 'language']} size='lg'/>
-          </ControlsBtns>
-          <ControlsBtns className='flex flex-center' onClick={toggleFullscreen}>
-            <FontAwesomeIcon icon={['fas', isFullscreenEnabled ? 'compress' : 'expand']}/>
-          </ControlsBtns>
+          </ControlButton>
+          <ControlButton onClick={toggleFullscreen} icon={['fas', isFullscreenEnabled ? 'compress' : 'expand']}/>
         </Container>
         {showSubSettings ? 
           <SubSettings

@@ -65,21 +65,6 @@ export const Progress = styled.progress`
   }
 `;
 
-export const ControlsBtns = styled.div`
-  width: 42px;
-  height: 24px;
-  font-size: 24px;
-  color: rgb(255, 255, 255);
-  cursor: pointer;
-  transition: color 0.25s ease-out;
-  z-index: 50;
-
-  &:hover {
-    color: ${orange};
-    transition: color 0.25s ease-in;
-  }
-`;
-
 export const Bridge = styled.div.attrs({
   display: ({ showVolumeRange }) => showVolumeRange ? 'block' : 'none'
 })`

@@ -67,11 +67,12 @@ class App extends Component {
   }
 
   initializeCastApi() {
-    const { cast, chrome } = window;
+    const { cast } = window;
     const { updateCastPlayer, updateCastController } = this.props;
 
     cast.framework.CastContext.getInstance().setOptions({
-      receiverApplicationId: chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID
+      // receiverApplicationId: chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID
+      receiverApplicationId: '7DDC0933'
     }); 
 
     const player = new cast.framework.RemotePlayer();
@@ -86,7 +87,7 @@ class App extends Component {
     return (
       <Fragment>
         <Cast/>
-        {app.isPlayerEnabled ? (<VideoPlayer />) : 
+        {app.isPlayerEnabled ? (<VideoPlayer isChromecast={app.isChromecast} />) : 
           (<LabelWrapper className='flex flex-center'>
             <Label onClick={toggleFileBrowserDialog}>Choose a Video</Label>
           </LabelWrapper>)}

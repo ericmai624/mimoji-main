@@ -8,6 +8,7 @@
     "dev": "nodemon server",
     "client": "react-scripts start",
     "build": "react-scripts build",
+    "cast": "node receiver",
     "electron": "electron ."
   },
   "proxy": "http://localhost:6300",

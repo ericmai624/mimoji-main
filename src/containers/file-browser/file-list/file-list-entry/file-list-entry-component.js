@@ -6,9 +6,9 @@ import {
   Entry,
   Icon,
   Span
-} from './file-browser-list-styles';
+} from './file-list-entry-styles';
 
-const FileBrowserList = ({ content, onDoubleClickDirectory, onDoubleClickFile, navigateUpDir }) => {
+const FileBrowserListEntry = ({ content, onDoubleClickDirectory, onDoubleClickFile, navigateUpDir }) => {
   return (
     <List>
       <Entry className='flex' onDoubleClick={navigateUpDir}>
@@ -41,4 +41,4 @@ const FileBrowserList = ({ content, onDoubleClickDirectory, onDoubleClickFile, n
   );
 };
 
-export default FileBrowserList;
+export default FileBrowserListEntry;

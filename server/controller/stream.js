@@ -69,24 +69,12 @@ const remove = (filePath) => {
 const streamFile = (filePath, res) => {
   switch (path.extname(filePath)) {
   case '.m3u8':
-    return fs.readFileAsync(filePath)
-      .then((data) => {
-        res.set({ 'Content-Type': 'application/vnd.apple.mpegurl' });
-        return res.send(data);
-      })
-      .catch((err) => {
-        console.log(chalk.red(err));
-        res.sendStatus(500);
-      });
+    res.set({ 'Content-Type': 'application/x-mpegURL' });
+    return fs.createReadStream(filePath, { highWaterMark: 128 * 1024 }).pipe(res);
   case '.ts':
-    console.log(chalk.greenBright('start reading ', filePath));
-
-    res.set({ 'Content-Type': 'video/MP2T' });
-
-    let stream = fs.createReadStream(filePath);
+    let stream = fs.createReadStream(filePath, { highWaterMark: 256 * 1024 });
 
     stream.on('end', () => {
-      console.log(chalk.white('stream finished: ', filePath));
       if (!uniqueFilePath.has(filePath)) {
         uniqueFilePath.add(filePath);
         finishedQueue.push(filePath);
@@ -98,7 +86,12 @@ const streamFile = (filePath, res) => {
       }
     });
 
-    return stream.pipe(res);
+    return fs.stat(filePath, (err, stat) => {
+      let headers = { 'Content-Type': 'video/MP2T' };
+      if (stat) headers['Content-Length'] = stat.size;
+      res.set(headers);
+      return stream.pipe(res);
+    });
   default:
     console.log(chalk.red('unspported file'));
     res.sendStatus(500);
@@ -109,30 +102,50 @@ const isSupported = (file) => {
   return mime.lookup(file) === 'video/mp4';
 };
 
-const transcodeMedia = (video, seek, output) => {
-  let inputOptions = ['-loglevel panic'];
+const getFramerate = (metadata) => {
+  let framerate = metadata.streams.filter(stream => 
+    stream['codec_type'] === 'video' && stream['codec_name'] !== 'mjpeg')[0]['r_frame_rate'].split('/');
+  
+  if (framerate.length === 1) return parseFloat(framerate[0]);
+  if (framerate.length === 2) return parseFloat(framerate[0]) / parseFloat(framerate[1]);
+  return 24; // fallback framerate
+};
 
+const transcodeMedia = (video, seek, output, metadata) => {
+  let command = ffmpeg(video);
+  let inputOptions = ['-loglevel panic', '-hide_banner', '-y'];
+  let bitrate = 7400; // output bitrate
+  let framerate = getFramerate(metadata);
+  if (typeof framerate !== 'number' || framerate < 0) framerate = 24; // fallback framerate
+  console.log(chalk.white('framerate: ', framerate));
   if (seek) inputOptions.push(`-ss ${seek}`);
-
   console.log(chalk.cyan('seeking: ', seek ? seek : 0));
-
-  const command = ffmpeg(video);
 
   command
     .inputOptions(inputOptions)
     .outputOptions([
-      '-y',
       '-map 0:0',
-      '-c:v libx264',
-      '-threads 1',
+      '-c:v h264',
+      // '-pix_fmt yuv420p',
+      // '-bsf:v h264_mp4toannexb', // convert bitstream
+      '-sc_threshold 0',
+      `-g ${framerate * 2}`, // Keyframe interval
+      `-keyint_min ${framerate * 2}`,
+      // '-refs 1',
+      `-threads ${os.cpus().length}`,
+      `-b:v ${bitrate}k`,
+      `-maxrate ${bitrate}k`,
+      `-minrate ${bitrate}k`,
+      `-bufsize ${bitrate * 1.5}k`,
       '-map 0:1',
       '-c:a aac',
-      '-movflags faststart',
-      '-preset ultrafast',
-      '-crf 17',
-      '-tune zerolatency',
-      '-f ssegment', // ssegment short for stream_segment
-      '-segment_time 10',
+      '-ac 2',
+      '-ar 48000',
+      '-b:a 192k',
+      '-preset superfast',
+      '-tune film',
+      '-f ssegment', // ssegment is short for stream_segment
+      '-segment_time 4',
       '-segment_format mpegts',
       `-segment_list ${path.join(output, 'index.m3u8')}`,
       '-segment_list_type m3u8',
@@ -154,7 +167,7 @@ const transcodeMedia = (video, seek, output) => {
     .on('end', () => {
       console.log(chalk.cyan('process finished'));
     })
-    .save(path.join(output, 'seq%010d.ts'));
+    .save(path.join(output, 'seq_%010d.ts'));
     
   return command;
 };
@@ -190,7 +203,8 @@ module.exports.createStreamProcess = (req, res) => {
     .then(([folder, metadata]) => {
       let source = folder.slice(-6);
       let duration = metadata.format.duration;
-      let command = transcodeMedia(v, s, folder);
+      console.log(metadata);
+      let command = transcodeMedia(v, s, folder, metadata);
       mediaProcesses[id] = { v, s, id, source, command };
       return res.json({ id, source, duration });
     })
