@@ -4,7 +4,7 @@ export const togglePlayer = () => ({ type: 'PLAYER_TOGGLED' });
 
 export const toggleFullscreen = () => ({ type: 'FULLSCREEN_TOGGLED' });
 
-export const playOnChromecast = (option) => ({ type: 'OUTPUT_OPTION_UPDATED', option });
+export const streamToGoogleCast = (option) => ({ type: 'OUTPUT_OPTION_UPDATED', option });
 
 const initState = {
   isPlayerEnabled: false,

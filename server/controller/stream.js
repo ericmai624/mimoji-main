@@ -17,14 +17,12 @@ const finishedQueue = [];
 const uniqueFilePath = new Set();
 
 const openFileRecurr = (path, cb, retry = 0) => {
-  fs.open(path, 'r', (err, fd) => {
+  return fs.open(path, 'r', (err, fd) => {
     if (!err) return cb(null, fd);
-    if (err && err.code === 'ENOENT' && retry < 10) {
+    if (err && err.code === 'ENOENT' && retry < 20) {
       retry++;
       console.log(chalk.red('file not found, retrying ', retry, 'times'));
-      return setTimeout(() => {
-        openFileRecurr(path, cb, retry);
-      }, 2000);
+      return setTimeout(_.partial(openFileRecurr, path, cb, retry), 1000);
     }
     return cb(err);
   });
@@ -72,7 +70,7 @@ const streamFile = (filePath, res) => {
     res.set({ 'Content-Type': 'application/x-mpegURL' });
     return fs.createReadStream(filePath, { highWaterMark: 128 * 1024 }).pipe(res);
   case '.ts':
-    let stream = fs.createReadStream(filePath, { highWaterMark: 256 * 1024 });
+    let stream = fs.createReadStream(filePath, { highWaterMark: 128 * 1024 });
 
     stream.on('end', () => {
       if (!uniqueFilePath.has(filePath)) {
@@ -98,9 +96,9 @@ const streamFile = (filePath, res) => {
   }
 };
 
-const isSupported = (file) => {
-  return mime.lookup(file) === 'video/mp4';
-};
+// const isSupported = (file) => {
+//   return mime.lookup(file) === 'video/mp4';
+// };
 
 const getFramerate = (metadata) => {
   let framerate = metadata.streams.filter(stream => 
@@ -114,7 +112,7 @@ const getFramerate = (metadata) => {
 const transcodeMedia = (video, seek, output, metadata) => {
   let command = ffmpeg(video);
   let inputOptions = ['-loglevel panic', '-hide_banner', '-y'];
-  let bitrate = 7400; // output bitrate
+  let bitrate = 15; // output bitrate
   let framerate = getFramerate(metadata);
   if (typeof framerate !== 'number' || framerate < 0) framerate = 24; // fallback framerate
   console.log(chalk.white('framerate: ', framerate));
@@ -125,32 +123,33 @@ const transcodeMedia = (video, seek, output, metadata) => {
     .inputOptions(inputOptions)
     .outputOptions([
       '-map 0:0',
-      '-c:v h264',
-      // '-pix_fmt yuv420p',
+      '-c:v libx264',
+      '-pix_fmt yuv420p',
       // '-bsf:v h264_mp4toannexb', // convert bitstream
-      '-sc_threshold 0',
+      // '-sc_threshold 0',
       `-g ${framerate * 2}`, // Keyframe interval
-      `-keyint_min ${framerate * 2}`,
-      // '-refs 1',
+      // `-keyint_min ${framerate * 2}`,
       `-threads ${os.cpus().length}`,
-      `-b:v ${bitrate}k`,
-      `-maxrate ${bitrate}k`,
-      `-minrate ${bitrate}k`,
-      `-bufsize ${bitrate * 1.5}k`,
+      '-preset veryfast',
+      `-b:v ${bitrate}m`,
+      `-maxrate ${bitrate}m`,
+      `-minrate ${bitrate}m`,
+      `-bufsize ${bitrate * 1.5}m`,
+      // '-profile:v high -level 4.1',
       '-map 0:1',
       '-c:a aac',
       '-ac 2',
       '-ar 48000',
-      '-b:a 192k',
-      '-preset superfast',
-      '-tune film',
-      '-f ssegment', // ssegment is short for stream_segment
-      '-segment_time 4',
-      '-segment_format mpegts',
-      `-segment_list ${path.join(output, 'index.m3u8')}`,
-      '-segment_list_type m3u8',
-      '-segment_start_number 0',
-      '-segment_list_flags +live'
+      '-b:a 384k',
+      // '-tune film',
+      // '-f ssegment', // ssegment is short for stream_segment
+      '-hls_time 4',
+      '-hls_playlist_type vod',
+      `-hls_segment_filename ${path.join(output, 'seq_%010d.ts')}`,
+      // `-segment_list ${path.join(output, 'index.m3u8')}`,
+      // '-segment_list_type m3u8',
+      // '-segment_start_number 0',
+      // '-segment_list_flags +live'
     ])
     .on('start', (command) => {
       console.log(chalk.blue('ffmpeg command: ', command));
@@ -167,7 +166,9 @@ const transcodeMedia = (video, seek, output, metadata) => {
     .on('end', () => {
       console.log(chalk.cyan('process finished'));
     })
-    .save(path.join(output, 'seq_%010d.ts'));
+    // .save(path.join(output, 'seq_%010d.ts'));
+    .save(path.join(output, 'index.m3u8'));
+
     
   return command;
 };
@@ -216,7 +217,9 @@ module.exports.createStreamProcess = (req, res) => {
 
 module.exports.serveFiles = (req, res) => {
   let { dir, file } = req.params;
+  let { range } = req.headers;
   let filePath = path.join(os.tmpdir(), 'onecast', dir, file);
+  if (range) console.log(chalk.cyan('range: ', range));
 
   openFileRecurr(filePath, (err, fd) => {
     if (!err) return streamFile(filePath, res);

@@ -66,7 +66,7 @@ class App extends Component {
 
   initializeCastApi() {
     console.log('Initializing Google Cast');
-    const { cast } = window;
+    const { cast, chrome } = window;
     const { updateCastPlayer, updateCastController } = this.props;
 
     cast.framework.CastContext.getInstance().setOptions({

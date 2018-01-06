@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
-import { togglePlayer, playOnChromecast } from 'stores/app';
+import { togglePlayer, streamToGoogleCast } from 'stores/app';
 import { toggleFileBrowserDialog, fetchContent } from 'stores/file-browser';
 import { fetchStreamInfo } from 'stores/stream';
 import { updateTextTrack } from 'stores/text-track';
@@ -17,8 +17,8 @@ class FileBrowser extends Component {
     super(props);
 
     this.state = {
-      isOptionsVisible: false,
-      file: {}
+      file: {},
+      isOptionsVisible: false
     };
     
     this.fetch = this.fetch.bind(this);
@@ -63,8 +63,8 @@ class FileBrowser extends Component {
 
   cast() {
     let { cast, chrome } = window;
-    let { fetchStreamInfo, playOnChromecast } = this.props;
-    let { file } = this.state;
+    let { textTrack, fetchStreamInfo, streamToGoogleCast } = this.props;
+    let { isOptionsVisible, file } = this.state;
 
     this.initCastSession()
       .then(err => {
@@ -72,28 +72,40 @@ class FileBrowser extends Component {
         return fetchStreamInfo(file.filePath);
       })
       .then(data => {
-        playOnChromecast(true);
         if (!this.castSession) this.castSession = cast.framework.CastContext.getInstance().getCurrentSession();
         let mediaSource = `http://172.16.1.19:3000/api/stream/video/${data.source}/index.m3u8`;
-        let mediaType = 'application/x-mpegURL';
-        let mediaInfo = new chrome.cast.media.MediaInfo(mediaSource, mediaType);
+        let mediaInfo = new chrome.cast.media.MediaInfo(mediaSource);
+        mediaInfo.contentType = 'application/x-mpegURL';
+        mediaInfo.streamType = chrome.cast.media.StreamType.LIVE;
+        mediaInfo.duration = data.duration;
+        if (textTrack.isEnabled) {
+          let sub = new chrome.cast.media.Track(1 /* track id */, chrome.cast.media.TrackType.TEXT);
+          sub.trackContentId = `http://172.16.1.19:3000/api/stream/subtitle?sub=${textTrack.path}`;
+          sub.trackContentType = 'text/vtt';
+          sub.subType = chrome.cast.media.TextTrackType.SUBTITLES;
+          sub.name = 'SUB';
+          // mediaInfo.textTrackStyle = new chrome.cast.media.TextTrackStyle();
+          mediaInfo.tracks = [sub];
+        }
         let request = new chrome.cast.media.LoadRequest(mediaInfo);
-        return this.castSession.loadMedia(request);
+        this.castSession.loadMedia(request);
+        streamToGoogleCast(true);
+        if (isOptionsVisible) this.toggleCastOptions();
       })
       .then(() => console.log('load success'), (err) => console.log('Error code: ', err))
       .catch(err => console.log(err));
   }
 
   stream() {
-    const { app, fileBrowser, toggleFileBrowserDialog, togglePlayer, playOnChromecast, fetchStreamInfo } = this.props;
-    const { file } = this.state;
+    const { app, fileBrowser, toggleFileBrowserDialog, togglePlayer, streamToGoogleCast, fetchStreamInfo } = this.props;
+    const { isOptionsVisible, file } = this.state;
     
     fetchStreamInfo(file.filePath)
       .then(() => {
         if (fileBrowser.isVisible) toggleFileBrowserDialog();
         if (!app.isPlayerEnabled) togglePlayer();
-        playOnChromecast(false);
-        this.setState({ isOptionsVisible: false });
+        streamToGoogleCast(false);
+        if (isOptionsVisible) this.toggleCastOptions();
       })
       .catch((err) => {
         console.log(err);
@@ -143,13 +155,17 @@ class FileBrowser extends Component {
   }
 }
 
-const mapStateToProps = (state) => ({ app: state.app, fileBrowser: state.fileBrowser });
+const mapStateToProps = (state) => ({
+  app: state.app,
+  fileBrowser: state.fileBrowser,
+  textTrack: state.textTrack
+});
 
 const mapDispatchToProps = (dispatch) => ({ 
   fetchContent: bindActionCreators(fetchContent, dispatch),
   toggleFileBrowserDialog: bindActionCreators(toggleFileBrowserDialog, dispatch),
   togglePlayer: bindActionCreators(togglePlayer, dispatch),
-  playOnChromecast: bindActionCreators(playOnChromecast, dispatch),
+  streamToGoogleCast: bindActionCreators(streamToGoogleCast, dispatch),
   fetchStreamInfo: bindActionCreators(fetchStreamInfo, dispatch),
   updateTextTrack: bindActionCreators(updateTextTrack, dispatch)
 });

@@ -60,8 +60,9 @@ class WebPlayer extends Component {
     const { stream } = this.props;
 
     this.hls = new Hls({ 
+      debug: true,
       maxBufferLength: 10, /* in seconds */
-      maxBufferSize: 60 * 1000 * 1000, /* Chrome max buffer size 150MB */
+      maxBufferSize: 30 * 1000 * 1000, /* Chrome max buffer size 150MB */
       manifestLoadingMaxRetry: 3,
       manifestLoadingTimeOut: 20000 /* 20 seconds before timeout callback is fired */
     });
