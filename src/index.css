@@ -71,6 +71,14 @@ body {
   color: rgb(255, 255, 255);
 }
 
+.no-list-style {
+  list-style: none;
+}
+
+.transition-color {
+  transition: color 0.25s ease;
+}
+
 video::-webkit-media-controls {
   display: none !important;
 }

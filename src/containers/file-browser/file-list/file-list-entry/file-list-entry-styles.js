@@ -1,6 +1,7 @@
 import styled from 'styled-components';
 
 const iconSize = '24px';
+const lightgray = 'rgba(219, 219, 219, 0.5)';
 
 export const List = styled.ul`
   list-style: none;
@@ -16,7 +17,7 @@ export const Entry = styled.li`
   transition: color 0.15s ease-out;
 
   &:hover {
-    background: rgba(221, 221, 221, 1);
+    background: ${lightgray};
     color: rgb(228, 75, 54);
     transition: color 0.15s ease-in;
   }

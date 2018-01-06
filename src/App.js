@@ -45,25 +45,23 @@ class App extends Component {
   }
   
   componentDidMount() {
+    // Event listener for fullscreen change
     const { toggleFullscreen } = this.props;
-
     document.addEventListener('fullscreenchange', (e) => toggleFullscreen('fullscreen'));
     document.addEventListener('webkitfullscreenchange', (e) => toggleFullscreen('fullscreen'));
     document.addEventListener('mozfullscreenchange', (e) => toggleFullscreen('fullscreen'));
     document.addEventListener('msfullscreenchange', (e) => toggleFullscreen('fullscreen'));
 
-    window['__onGCastApiAvailable'] = (isAvailable) => {
-      if (isAvailable) {
-        this.initializeCastApi();
-      }
-    };
     this.loadGoogleCastFramework();
   }
 
   loadGoogleCastFramework() {
-    const script = document.createElement('script');
+    window['__onGCastApiAvailable'] = isAvailable => {
+      if (isAvailable) this.initializeCastApi();
+    };
+    let script = document.createElement('script');
     script.src = 'https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1';
-    document.querySelector('#root').appendChild(script);
+    document.getElementById('root').appendChild(script);
   }
 
   initializeCastApi() {

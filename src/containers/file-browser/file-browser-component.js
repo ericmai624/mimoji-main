@@ -17,8 +17,8 @@ class FileBrowser extends Component {
     super(props);
 
     this.state = {
-      isOptionsVisible: false,
-      file: null
+      isOptionsVisible: true,
+      file: {}
     };
     
     this.fetch = this.fetch.bind(this);
@@ -48,7 +48,6 @@ class FileBrowser extends Component {
 
   onDoubleClickFile(e, file) {
     e.preventDefault();
-    const { app, toggleCastOptions } = this.props;
     if (file.type === 'subtitle') return this.addTextTrack(file.filePath, file.name, 'auto', 0);
     this.setState({ file });
     this.toggleCastOptions();
@@ -109,7 +108,7 @@ class FileBrowser extends Component {
   
   render() {
     const { isOptionsVisible } = this.state;
-    const { app, fileBrowser, toggleFileBrowserDialog } = this.props;
+    const { fileBrowser, toggleFileBrowserDialog } = this.props;
 
     return (
       <Container className='flex flex-center absolute' hidden={!fileBrowser.isVisible}>
@@ -125,6 +124,7 @@ class FileBrowser extends Component {
           isVisible={isOptionsVisible}
           cast={this.cast}
           stream={this.stream}
+          toggleCastOptions={this.toggleCastOptions}
         />
       </Container>
     );

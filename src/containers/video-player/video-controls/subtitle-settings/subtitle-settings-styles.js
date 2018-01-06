@@ -79,7 +79,6 @@ export const Wrapper = styled.div`
   font-size: 24px;
   width: 40px;
   height: 40px;
-  transition: color 0.25s ease;
   cursor: pointer;
   margin-left: 10px;
 

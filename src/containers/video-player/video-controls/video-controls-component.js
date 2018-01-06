@@ -16,7 +16,7 @@ import {
 } from './video-controls-styles';
 
 import SubSettings from './subtitle-settings/subtitle-settings-component';
-import ControlButton from './control-buttons/control-buttons-component';
+import ControlButton from '../control-buttons/control-buttons-component';
 
 momentDurationSetup(moment);
 

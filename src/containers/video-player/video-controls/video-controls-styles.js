@@ -5,15 +5,13 @@ const orange = 'rgba(228, 75, 54, 0.9)';
 const borderRadius = '4px';
 const progressHeight = '8px';
 
-export const Container = styled.div.attrs({
-  opacity: ({ isControlsVisible }) => isControlsVisible ? 1 : 0
-})`
+export const Container = styled.div`
   width: 800px;
   height: 48px;
   padding: 0 45px;
   border-radius: 10px;
   background: ${ctrlBg};
-  opacity: ${({ opacity }) => opacity};
+  opacity: ${({ isControlsVisible }) => isControlsVisible ? 1 : 0};
   left: 50%;
   bottom: 5%;
   margin-left: -400px;
@@ -65,10 +63,8 @@ export const Progress = styled.progress`
   }
 `;
 
-export const Bridge = styled.div.attrs({
-  display: ({ showVolumeRange }) => showVolumeRange ? 'block' : 'none'
-})`
-  display: ${({ display }) => display};
+export const Bridge = styled.div`
+  display: ${({ showVolumeRange }) => showVolumeRange ? 'block' : 'none'};
   background: transparent;
   width: 42px;
   height: 35px;
@@ -85,12 +81,9 @@ export const VolumeContainer = styled.div`
   z-index: 50;
 `;
 
-export const VolumeRangeWrapper = styled.div.attrs({
-  opacity: ({ showVolumeRange }) => showVolumeRange ? '1' : '0',
-  visibility: ({ showVolumeRange }) => showVolumeRange ? 'visible' : 'hidden'
-})`
-  opacity: ${({ opacity }) => opacity};
-  visibility: ${({ visibility }) => visibility};
+export const VolumeRangeWrapper = styled.div`
+  opacity: ${({ showVolumeRange }) => showVolumeRange ? 1 : 0};
+  visibility: ${({ showVolumeRange }) => showVolumeRange ? 'visible' : 'hidden'};
   transform: rotate(-90deg) translate(115px, -32px);
   transform-origin: 50% 50%;
   background: ${ctrlBg};

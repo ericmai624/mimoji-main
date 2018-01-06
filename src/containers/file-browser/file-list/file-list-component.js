@@ -1,14 +1,13 @@
-import React, { Component } from 'react';
-import FontAwesomeIcon from '@fortawesome/react-fontawesome';
+import React from 'react';
 
 import FileBrowserListEntry from './file-list-entry/file-list-entry-component';
+import FileBrowserButton from '../button/button-component';
 
 import {
   Container,
   Side,
   Main,
   Nav,
-  NaviBtns,
   Directory
 } from './file-list-styles';
 
@@ -29,18 +28,10 @@ const FileBrowserList = ({
         <Directory className='ellipsis'>
           <span>{fileBrowser.directory}</span>
         </Directory>
-        <NaviBtns className='flex flex-center' onClick={navigateUpDir}>
-          <FontAwesomeIcon icon={['fas', 'chevron-up']}/>
-        </NaviBtns>
-        <NaviBtns className='flex flex-center'>
-          <FontAwesomeIcon icon={['fas', 'sort-amount-down']}/>
-        </NaviBtns>
-        <NaviBtns className='flex flex-center'>
-          <FontAwesomeIcon icon={['fas', 'filter']}/>
-        </NaviBtns>
-        <NaviBtns className='flex flex-center' onClick={toggleFileBrowserDialog}>
-          <FontAwesomeIcon icon={['fas', 'times']}/>
-        </NaviBtns>
+        <FileBrowserButton onClick={navigateUpDir} icon={['fas', 'chevron-up']} />
+        <FileBrowserButton icon={['fas', 'sort-amount-down']} />
+        <FileBrowserButton icon={['fas', 'filter']} />
+        <FileBrowserButton onClick={toggleFileBrowserDialog} icon={['fas', 'times']} />
       </Nav>
       <FileBrowserListEntry
         content={fileBrowser.content} 

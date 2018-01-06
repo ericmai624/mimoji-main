@@ -36,10 +36,10 @@ class SubSettings extends Component {
             </Option>
           </Preference>
           <Btns className='flex' onClick={toggleSubSettings}>
-            <Wrapper className='flex flex-center'>
+            <Wrapper className='flex flex-center transition-color'>
               <FontAwesomeIcon icon={['fas', 'times']}/>
             </Wrapper>
-            <Wrapper className='flex flex-center'>
+            <Wrapper className='flex flex-center transition-color'>
               <FontAwesomeIcon icon={['fas', 'check']}/>
             </Wrapper>
           </Btns>

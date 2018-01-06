@@ -1,12 +1,39 @@
 import styled from 'styled-components';
 
-export const Container = styled.div.attrs({
-  v: ({ isVisible }) => isVisible
-})`
-  visibility: ${({ v }) => v ? 'visible' : 'hidden'};
-  opacity : ${({ v }) => v ? 1 : 0};
-  width: ${({ v }) => v ? '400px' : 0};
-  height: ${({ v }) => v ? '200px' : 0};
-  background: lightgray;
-  transition: height 0.2s ease;
+const white = 'rgb(255, 255, 255)';
+const orange = 'rgba(228, 75, 54, 0.9)';
+const height = 150;
+const boxShadow = '0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24)';
+
+export const Container = styled.div`
+  visibility: ${({ isVisible }) => isVisible ? 'visible' : 'hidden'};
+  opacity : ${({ isVisible }) => isVisible ? 1 : 0};
+  width: ${({ isVisible }) => isVisible ? '360px' : 0};
+  height: ${({ isVisible }) => isVisible ? height : 0}px;
+  background: ${white};
+  box-shadow: ${boxShadow};
+  transition: height 0.2s linear;
+`;
+
+export const Title = styled.div`
+  width: 100%;
+  height: 50px;
+  padding: 0 10px;
+  font-size: 18px;
+  box-sizing: border-box;
+  color: ${white};
+  background: ${orange};
+`;
+
+export const Options = styled.ul`
+  width: 100%;
+  height: ${height - 50}px;
+  box-sizing: border-box;
+`;
+
+export const Option = styled.li`
+  width: 100%;
+  height: ${(height - 50) / 2}px;
+  padding: 0 10px;
+  cursor: pointer;
 `;

@@ -1,12 +1,29 @@
 import React from 'react';
 
-import { Container } from './cast-options-styles';
+import FileBrowserButton from '../button/button-component';
 
-const CastOptions = ({ isVisible, cast, stream }) => {
+import { Container, Title, Options, Option } from './cast-options-styles';
+
+const CastOptions = ({ isVisible, cast, stream, toggleCastOptions }) => {
+  console.log(window.navigator.userAgent);
   return (
     <Container isVisible={isVisible}>
-      <div onClick={cast}>cast to Chromecast</div>
-      <div onClick={stream}>Play in browser</div>
+      <Title className='flex flex-align-center flex-space-between no-select'>
+        <span>Stream Options</span>
+        <FileBrowserButton
+          onClick={toggleCastOptions}
+          icon={['fas', 'times']}
+          color={{ normal: 'rgb(255, 255, 255)', hover: 'rgb(233, 63, 60)'}}
+        />
+      </Title>
+      <Options className='no-list-style'>
+        <Option onClick={cast} className='flex flex-align-center'>
+          cast to Chromecast
+        </Option>
+        <Option onClick={stream} className='flex flex-align-center'>
+          Play in browser
+        </Option>
+      </Options>
     </Container>
   );
 };
