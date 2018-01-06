@@ -5,7 +5,6 @@ import FileBrowserButton from '../button/button-component';
 import { Container, Title, Options, Option } from './cast-options-styles';
 
 const CastOptions = ({ isVisible, cast, stream, toggleCastOptions }) => {
-  console.log(window.navigator.userAgent);
   return (
     <Container isVisible={isVisible}>
       <Title className='flex flex-align-center flex-space-between no-select'>
@@ -18,10 +17,10 @@ const CastOptions = ({ isVisible, cast, stream, toggleCastOptions }) => {
       </Title>
       <Options className='no-list-style'>
         <Option onClick={cast} className='flex flex-align-center'>
-          cast to Chromecast
+          Play on Chromecast
         </Option>
         <Option onClick={stream} className='flex flex-align-center'>
-          Play in browser
+          Play in the browser
         </Option>
       </Options>
     </Container>

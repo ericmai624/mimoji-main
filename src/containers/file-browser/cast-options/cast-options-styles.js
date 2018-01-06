@@ -4,6 +4,7 @@ const white = 'rgb(255, 255, 255)';
 const orange = 'rgba(228, 75, 54, 0.9)';
 const height = 150;
 const boxShadow = '0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24)';
+const lightgray = 'rgba(219, 219, 219, 0.5)';
 
 export const Container = styled.div`
   visibility: ${({ isVisible }) => isVisible ? 'visible' : 'hidden'};
@@ -36,4 +37,9 @@ export const Option = styled.li`
   height: ${(height - 50) / 2}px;
   padding: 0 10px;
   cursor: pointer;
+  box-sizing: border-box;
+
+  &:hover {
+    background: ${lightgray};
+  }
 `;

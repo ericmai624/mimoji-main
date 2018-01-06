@@ -4,7 +4,7 @@ class CastPlayer extends Component {
   render() {
     return (
       <div>
-        
+        Chromecast
       </div>
     );
   }

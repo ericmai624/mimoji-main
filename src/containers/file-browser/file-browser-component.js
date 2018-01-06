@@ -17,15 +17,16 @@ class FileBrowser extends Component {
     super(props);
 
     this.state = {
-      isOptionsVisible: true,
+      isOptionsVisible: false,
       file: {}
     };
     
     this.fetch = this.fetch.bind(this);
     this.onDoubleClickDirectory = this.onDoubleClickDirectory.bind(this);
     this.onDoubleClickFile = this.onDoubleClickFile.bind(this);
-    this.stream = this.stream.bind(this);
+    this.initCastSession = this.initCastSession.bind(this);
     this.cast = this.cast.bind(this);
+    this.stream = this.stream.bind(this);
     this.addTextTrack = this.addTextTrack.bind(this);
     this.navigateUpDir = this.navigateUpDir.bind(this);
     this.toggleCastOptions = this.toggleCastOptions.bind(this);
@@ -53,23 +54,34 @@ class FileBrowser extends Component {
     this.toggleCastOptions();
   }
 
-  cast() {
-    const { cast, chrome } = window;
-    const { fetchStreamInfo, playOnChromecast } = this.props;
-    const { file } = this.state;
-    const castSession = cast.framework.CastContext.getInstance().getCurrentSession();
-    if (!castSession) return console.log('need to connect to Google Cast first');
+  initCastSession() {
+    let { cast } = window;
+    this.castSession = cast.framework.CastContext.getInstance().getCurrentSession();
+    if (!this.castSession) return cast.framework.CastContext.getInstance().requestSession();
+    return Promise.resolve();
+  }
 
-    fetchStreamInfo(file.filePath)
-      .then((data) => {
-        playOnChromecast(true);
-        const mediaSource = `http://172.16.1.19:3000/api/stream/video/${data.source}/index.m3u8`;
-        const mediaType = 'application/x-mpegURL';
-        const mediaInfo = new chrome.cast.media.MediaInfo(mediaSource, mediaType);
-        const request = new chrome.cast.media.LoadRequest(mediaInfo);
-        return castSession.loadMedia(request);
+  cast() {
+    let { cast, chrome } = window;
+    let { fetchStreamInfo, playOnChromecast } = this.props;
+    let { file } = this.state;
+
+    this.initCastSession()
+      .then(err => {
+        if (err) throw err;
+        return fetchStreamInfo(file.filePath);
       })
-      .then(() => console.log('load success'), (err) => console.log('Error code: ', err));
+      .then(data => {
+        playOnChromecast(true);
+        if (!this.castSession) this.castSession = cast.framework.CastContext.getInstance().getCurrentSession();
+        let mediaSource = `http://172.16.1.19:3000/api/stream/video/${data.source}/index.m3u8`;
+        let mediaType = 'application/x-mpegURL';
+        let mediaInfo = new chrome.cast.media.MediaInfo(mediaSource, mediaType);
+        let request = new chrome.cast.media.LoadRequest(mediaInfo);
+        return this.castSession.loadMedia(request);
+      })
+      .then(() => console.log('load success'), (err) => console.log('Error code: ', err))
+      .catch(err => console.log(err));
   }
 
   stream() {
