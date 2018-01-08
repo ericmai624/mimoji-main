@@ -5,9 +5,7 @@ const TextTrack = ({ textTrack, currTimeOffset, isTextTrackEnabled }) => (
   <Fragment>
     {textTrack.isEnabled && isTextTrackEnabled ? <track
       kind='subtitles'
-      src={`/api/stream/subtitle?sub=${textTrack.path}&`
-          + `offset=${textTrack.offset - currTimeOffset}&`
-          + `encoding=${textTrack.encoding}`}
+      src={`/api/stream/subtitle/${textTrack.id}`}
       label={textTrack.label}
       srcLang='zh'
       default={true}

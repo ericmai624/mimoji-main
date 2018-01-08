@@ -4,8 +4,8 @@ import { bindActionCreators } from 'redux';
 
 import { togglePlayer, streamToGoogleCast } from 'stores/app';
 import { toggleFileBrowserDialog, fetchContent } from 'stores/file-browser';
-import { fetchStreamInfo } from 'stores/stream';
-import { updateTextTrack } from 'stores/text-track';
+import { createStream } from 'stores/stream';
+import { genTextTrackId } from 'stores/text-track';
 
 import FileBrowserList from './file-list/file-list-component';
 import CastOptions from './cast-options/cast-options-component';
@@ -63,30 +63,31 @@ class FileBrowser extends Component {
 
   cast() {
     let { cast, chrome } = window;
-    let { textTrack, fetchStreamInfo, streamToGoogleCast } = this.props;
+    let { textTrack, createStream, streamToGoogleCast } = this.props;
     let { isOptionsVisible, file } = this.state;
 
     this.initCastSession()
       .then(err => {
         if (err) throw err;
-        return fetchStreamInfo(file.filePath);
+        return createStream(file.filePath);
       })
       .then(data => {
         if (!this.castSession) this.castSession = cast.framework.CastContext.getInstance().getCurrentSession();
-        let mediaSource = `http://172.16.1.19:3000/api/stream/video/${data.source}/index.m3u8`;
-        let mediaInfo = new chrome.cast.media.MediaInfo(mediaSource);
-        mediaInfo.contentType = 'application/x-mpegURL';
-        mediaInfo.streamType = chrome.cast.media.StreamType.LIVE;
-        mediaInfo.duration = data.duration;
+        let mediaSource = `http://172.16.1.19:3000/api/stream/video/${data.id}/playlist.m3u8`;
+        let contentType = 'application/vnd.apple.mpegurl';
+        let mediaInfo = new chrome.cast.media.MediaInfo(mediaSource, contentType);
+        mediaInfo.streamType = chrome.cast.media.StreamType.BUFFERED;
+
         if (textTrack.isEnabled) {
           let sub = new chrome.cast.media.Track(1 /* track id */, chrome.cast.media.TrackType.TEXT);
-          sub.trackContentId = `http://172.16.1.19:3000/api/stream/subtitle?sub=${textTrack.path}`;
+          sub.trackContentId = `http://172.16.1.19:3000/api/stream/subtitle/${textTrack.id}`;
           sub.trackContentType = 'text/vtt';
           sub.subType = chrome.cast.media.TextTrackType.SUBTITLES;
           sub.name = 'SUB';
-          // mediaInfo.textTrackStyle = new chrome.cast.media.TextTrackStyle();
+          mediaInfo.textTrackStyle = new chrome.cast.media.TextTrackStyle();
           mediaInfo.tracks = [sub];
         }
+
         let request = new chrome.cast.media.LoadRequest(mediaInfo);
         this.castSession.loadMedia(request);
         streamToGoogleCast(true);
@@ -97,10 +98,10 @@ class FileBrowser extends Component {
   }
 
   stream() {
-    const { app, fileBrowser, toggleFileBrowserDialog, togglePlayer, streamToGoogleCast, fetchStreamInfo } = this.props;
+    const { app, fileBrowser, toggleFileBrowserDialog, togglePlayer, streamToGoogleCast, createStream } = this.props;
     const { isOptionsVisible, file } = this.state;
     
-    fetchStreamInfo(file.filePath)
+    createStream(file.filePath)
       .then(() => {
         if (fileBrowser.isVisible) toggleFileBrowserDialog();
         if (!app.isPlayerEnabled) togglePlayer();
@@ -112,10 +113,10 @@ class FileBrowser extends Component {
       });
   }
 
-  addTextTrack(path, label, encoding, offset) {
-    const { fileBrowser, toggleFileBrowserDialog, updateTextTrack } = this.props;
+  addTextTrack(location, label, encoding, offset) {
+    const { fileBrowser, toggleFileBrowserDialog, genTextTrackId } = this.props;
 
-    updateTextTrack({ path, label, encoding, offset, isEnabled: true });
+    genTextTrackId({ location, label, encoding, offset });
     if (fileBrowser.isVisible) return toggleFileBrowserDialog();
   }
 
@@ -166,8 +167,8 @@ const mapDispatchToProps = (dispatch) => ({
   toggleFileBrowserDialog: bindActionCreators(toggleFileBrowserDialog, dispatch),
   togglePlayer: bindActionCreators(togglePlayer, dispatch),
   streamToGoogleCast: bindActionCreators(streamToGoogleCast, dispatch),
-  fetchStreamInfo: bindActionCreators(fetchStreamInfo, dispatch),
-  updateTextTrack: bindActionCreators(updateTextTrack, dispatch)
+  createStream: bindActionCreators(createStream, dispatch),
+  genTextTrackId: bindActionCreators(genTextTrackId, dispatch)
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(FileBrowser);

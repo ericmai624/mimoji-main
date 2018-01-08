@@ -1,34 +1,37 @@
 const chalk = require('chalk');
-const mime = require('mime-types');
 const os = require('os');
 const Promise = require('bluebird');
 const fs = Promise.promisifyAll(require('fs'));
-const ffmpeg = require('fluent-ffmpeg');
 const path = require('path');
 const _ = require('lodash');
 const util = require('../utilities');
+const chokidar = require('chokidar');
 const jschardet = require('jschardet');
 const iconv = require('iconv-lite');
 const { createHash } = require('crypto');
 const { sep } = path;
 
 const mediaProcesses = {};
+const subtitles = {};
 const finishedQueue = [];
 const uniqueFilePath = new Set();
 
-const openFileRecurr = (path, cb, retry = 0) => {
+const watch = (filePath, callback) => {
+
+};
+
+const open = (path, cb, retry = 0) => {
   return fs.open(path, 'r', (err, fd) => {
     if (!err) return cb(null, fd);
     if (err && err.code === 'ENOENT' && retry < 20) {
-      retry++;
-      console.log(chalk.red('file not found, retrying ', retry, 'times'));
-      return setTimeout(_.partial(openFileRecurr, path, cb, retry), 1000);
+      console.log(chalk.white(`waiting for ${path}`));
+      return setTimeout(_.partial(open, path, cb, retry + 1), 1000);
     }
     return cb(err);
   });
 };
 
-const createFolder = (dir) => {
+const make = (dir) => {
   return new Promise((resolve, reject) => {
     fs.mkdir(dir, (err) => {
       if (err && err.code !== 'EEXIST') reject(err);
@@ -64,186 +67,129 @@ const remove = (filePath) => {
     });
 };
 
-const streamFile = (filePath, res) => {
+const stream = (filePath, res) => {
   switch (path.extname(filePath)) {
   case '.m3u8':
-    res.set({ 'Content-Type': 'application/x-mpegURL' });
+    res.set({ 'Content-Type': 'application/vnd.apple.mpegurl' });
     return fs.createReadStream(filePath, { highWaterMark: 128 * 1024 }).pipe(res);
-  case '.ts':
-    let stream = fs.createReadStream(filePath, { highWaterMark: 128 * 1024 });
-
-    stream.on('end', () => {
-      if (!uniqueFilePath.has(filePath)) {
-        uniqueFilePath.add(filePath);
-        finishedQueue.push(filePath);
-      }
-      if (finishedQueue.length > 2) {
-        let trash = finishedQueue.shift();
-        remove(trash);
-        uniqueFilePath.delete(trash);
-      }
-    });
-
-    return fs.stat(filePath, (err, stat) => {
-      let headers = { 'Content-Type': 'video/MP2T' };
-      if (stat) headers['Content-Length'] = stat.size;
-      res.set(headers);
-      return stream.pipe(res);
-    });
-  default:
-    console.log(chalk.red('unspported file'));
-    res.sendStatus(500);
   }
 };
 
-// const isSupported = (file) => {
-//   return mime.lookup(file) === 'video/mp4';
-// };
-
-const getFramerate = (metadata) => {
-  let framerate = metadata.streams.filter(stream => 
-    stream['codec_type'] === 'video' && stream['codec_name'] !== 'mjpeg')[0]['r_frame_rate'].split('/');
-  
-  if (framerate.length === 1) return parseFloat(framerate[0]);
-  if (framerate.length === 2) return parseFloat(framerate[0]) / parseFloat(framerate[1]);
-  return 24; // fallback framerate
+const isSupported = (metadata) => {
+  let { streams } = metadata;
+  return streams.filter(s => s['codec_type'] === 'video' && s['codec_name'] === 'h264').length > 0;
 };
 
-const transcodeMedia = (video, seek, output, metadata) => {
-  let command = ffmpeg(video);
-  let inputOptions = ['-loglevel panic', '-hide_banner', '-y'];
-  let bitrate = 15; // output bitrate
-  let framerate = getFramerate(metadata);
-  if (typeof framerate !== 'number' || framerate < 0) framerate = 24; // fallback framerate
-  console.log(chalk.white('framerate: ', framerate));
-  if (seek) inputOptions.push(`-ss ${seek}`);
-  console.log(chalk.cyan('seeking: ', seek ? seek : 0));
-
-  command
-    .inputOptions(inputOptions)
-    .outputOptions([
-      '-map 0:0',
-      '-c:v libx264',
-      '-pix_fmt yuv420p',
-      // '-bsf:v h264_mp4toannexb', // convert bitstream
-      // '-sc_threshold 0',
-      `-g ${framerate * 2}`, // Keyframe interval
-      // `-keyint_min ${framerate * 2}`,
-      `-threads ${os.cpus().length}`,
-      '-preset veryfast',
-      `-b:v ${bitrate}m`,
-      `-maxrate ${bitrate}m`,
-      `-minrate ${bitrate}m`,
-      `-bufsize ${bitrate * 1.5}m`,
-      // '-profile:v high -level 4.1',
-      '-map 0:1',
-      '-c:a aac',
-      '-ac 2',
-      '-ar 48000',
-      '-b:a 384k',
-      // '-tune film',
-      // '-f ssegment', // ssegment is short for stream_segment
-      '-hls_time 4',
-      '-hls_playlist_type vod',
-      `-hls_segment_filename ${path.join(output, 'seq_%010d.ts')}`,
-      // `-segment_list ${path.join(output, 'index.m3u8')}`,
-      // '-segment_list_type m3u8',
-      // '-segment_start_number 0',
-      // '-segment_list_flags +live'
-    ])
-    .on('start', (command) => {
-      console.log(chalk.blue('ffmpeg command: ', command));
-    })
-    .on('progress', (progress) => {
-      console.log('Processing: ' + progress.percent + '% done');
-    })
-    .on('stderr', (stderrLine) => {
-      console.log('Stderr output: ' + stderrLine);
-    })
-    .on('error', (err) => {
-      console.log(chalk.red(err));
-    })
-    .on('end', () => {
-      console.log(chalk.cyan('process finished'));
-    })
-    // .save(path.join(output, 'seq_%010d.ts'));
-    .save(path.join(output, 'index.m3u8'));
-
-    
-  return command;
+const terminate = (id) => {
+  if (!mediaProcesses[id]) return;
+  let { location, command, watcher } = mediaProcesses[id];
+  command.kill();
+  watcher.close();
+  remove(location);
+  delete mediaProcesses[id];
+  finishedQueue.length = 0;
+  uniqueFilePath.clear();
 };
 
-const terminateProcess = (id) => {
-  if (mediaProcesses[id]) {
-    mediaProcesses[id].command.kill();
-    remove(path.join(os.tmpdir(), 'onecast', mediaProcesses[id].source));
-    delete mediaProcesses[id];
-    finishedQueue.length = 0;
-    uniqueFilePath.clear();
-  }
-};
-
-module.exports.createStreamProcess = (req, res) => {
-  let { v, s } = req.query;
-  if (!v || v === '') return res.end();
-  let id = createHash('md5').update(v).digest('hex');
+const create = (req, res) => {
+  let { video, seek } = req.body;
+  if (!video || video === '') return res.end();
+  let id = createHash('sha256').update(video).digest('hex');
   let directory = path.join(os.tmpdir(), 'onecast');
-  let getMetadata = new Promise((resolve, reject) => {
-    ffmpeg.ffprobe(v, (err, metadata) => {
-      if (err) reject(err);
-      resolve(metadata);
-    });
-  });
 
-  terminateProcess(id); // Kill any existing ffmpeg process and remove tmp files
+  terminate(id);
 
-  createFolder(directory)
+  make(directory) // create directory, ignore if already exists
     .then(() => {
-      return Promise.all([ fs.mkdtempAsync(directory + sep), getMetadata ]);
+      return Promise.all([ fs.mkdtempAsync(directory + sep), util.ffmpeg.getMetadata(video) ]);
     })
-    .then(([folder, metadata]) => {
-      let source = folder.slice(-6);
-      let duration = metadata.format.duration;
-      console.log(metadata);
-      let command = transcodeMedia(v, s, folder, metadata);
-      mediaProcesses[id] = { v, s, id, source, command };
-      return res.json({ id, source, duration });
+    .then(([location, metadata]) => {
+      mediaProcesses[id] = { id, video, seek, location, metadata, isRemuxing: isSupported(metadata) };
+      mediaProcesses[id].command = util.ffmpeg.processMedia(mediaProcesses[id]);
+      mediaProcesses[id].fileCount = 0;
+      mediaProcesses[id].watcher = chokidar.watch(location)
+        .on('add', file => {
+          if (path.extname(file) === '.m3u8') return res.json({ id, duration: metadata.format.duration });
+          mediaProcesses[id].fileCount++;
+          if (mediaProcesses[id].fileCount > 10) mediaProcesses[id].command.kill('SIGSTOP');
+        })
+        .on('unlink', file => {
+          mediaProcesses[id].fileCount--;
+          if (mediaProcesses[id].fileCount <= 6) mediaProcesses[id].command.kill('SIGCONT');
+        });
     })
-    .catch((err) => {
-      console.log(chalk.red(err));
-      res.sendStatus(500);
-    });
+    .catch(err => console.log(chalk.red(err)));
 };
 
-module.exports.serveFiles = (req, res) => {
-  let { dir, file } = req.params;
-  let { range } = req.headers;
-  let filePath = path.join(os.tmpdir(), 'onecast', dir, file);
-  if (range) console.log(chalk.cyan('range: ', range));
+const serve = (req, res) => {
+  let { id, file } = req.params;
+  let { location } = mediaProcesses[id];
+  let filePath = path.join(location, file);
+  let ext = path.extname(filePath);
 
-  openFileRecurr(filePath, (err, fd) => {
-    if (!err) return streamFile(filePath, res);
-    console.log(chalk.red(err));
-  });
-};
+  try {
+    switch (ext) {
+    case '.m3u8':
+      res.set({ 'Content-Type': 'application/x-mpegURL' });
+      return fs.createReadStream(filePath, { highWaterMark: 128 * 1024}).pipe(res);
+    case '.ts':
+      let stream = fs.createReadStream(filePath);
 
-module.exports.loadSubtitle = (req, res) => {
-  let { sub, offset, encoding } = req.query;
-  if (!sub || sub === '') return res.end();
-  offset = parseFloat(offset);
-  let ext = path.extname(sub);
+      stream.on('end', () => {
+        if (finishedQueue.length > 2) {
+          let trash = finishedQueue.shift();
+          remove(trash);
+          uniqueFilePath.delete(filePath);
+        }
+        if (!uniqueFilePath.has(filePath)) {
+          uniqueFilePath.add(filePath);
+          finishedQueue.push(filePath);
+        }
+      });
   
-  console.log(chalk.white('loading subtitle...'));
-  console.log(encoding);
+      return fs.stat(filePath, (err, stat) => {
+        let headers = { 'Content-Type': 'video/MP2T' };
+        if (stat) headers['Content-Length'] = stat.size;
+        res.set(headers);
+        return stream.pipe(res);
+      });
+    default:
+      console.log(chalk.red('unspported file'));
+      return res.sendStatus(500);
+    }
+  } catch (err) {
+    console.log(chalk.red(err));
+    return res.sendStatus(500);
+  }
+};
 
-  fs.readFileAsync(sub)
+const addSubtitle = (req, res) => {
+  let { location, offset, encoding } = req.body;
+  if (!location || location === '') return res.end();
+  offset = offset ? parseFloat(offset) : 0;
+  let id = createHash('sha256').update(location).digest('hex');
+  subtitles[id] = { id, location, offset, encoding };
+
+  return res.json(id);
+};
+
+const loadSubtitle = (req, res) => {
+  let { id } = req.params;
+  let { location, offset, encoding } = subtitles[id];
+  let ext = path.extname(location);
+  
+  console.log(chalk.white('loading subtitle: ', location));
+
+  fs.readFileAsync(location)
     .then(buffer => {
       let charset = jschardet.detect(buffer);
       let str = iconv.decode(buffer, charset.encoding);
-      res.set({ 'Content-Type': `text/vtt; charset=${charset.encoding}` }); // set response header
+      res.set({ 'Content-Type': 'text/vtt' }); // set response header
       
-      if (offset === 0 && ext === '.vtt') return res.send(str);
-      return res.send(util.subParser(str, offset, ext));
+      if (!offset && ext === '.vtt') return res.send(str);
+      let sub = util.subParser(str, offset, ext);
+      console.log(sub);
+      return res.send(sub);
     }) 
     .catch((err) => {
       console.log(chalk.red(err));
@@ -251,10 +197,15 @@ module.exports.loadSubtitle = (req, res) => {
     });
 };
 
-module.exports.terminate = (req, res) => {
+const cleanup = (req, res) => {
   // remove tmp folder
   console.log(chalk.blueBright('terminate request id: ', req.body.id));
-  terminateProcess(req.body.id);
+  terminate(req.body.id);
   res.sendStatus(200);
 };
 
+module.exports.create = create;
+module.exports.serve = serve;
+module.exports.addSubtitle = addSubtitle;
+module.exports.loadSubtitle = loadSubtitle;
+module.exports.cleanup = cleanup;

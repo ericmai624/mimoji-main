@@ -1,20 +1,24 @@
 import { createReducer } from '../utils';
 
-export const fetchStreamInfo = (path, seek = 0) => {
+export const createStream = (video, seek = 0) => {
   return (dispatch) => {
-    dispatch({ type: 'FETCH_STREAMINFO_PENDING' });
-    return fetch(`/api/stream/process?v=${path}&s=${seek}`)
+    dispatch({ type: 'CREATE_STREAM_PENDING' });
+    return fetch('/api/stream/create', {
+      method: 'post',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ video, seek })
+    })
       .then((response) => {
         if (response.ok) return response.json();
         throw new Error(response.statusText);
       })
       .then((data) => {
-        const { id, source, duration } = data;
-        dispatch({ type: 'FETCH_STREAMINFO_FULFILLED', payload: { id, source, duration, path, seek } });
+        const { id, duration } = data;
+        dispatch({ type: 'CREATE_STREAM_FULFILLED', payload: { id, duration, video, seek } });
         return data;
       })
       .catch((err) => {
-        dispatch({ type: 'FETCH_STREAMINFO_REJECTED' });
+        dispatch({ type: 'CREATE_STREAM_REJECTED' });
       });
   };
 };
@@ -25,8 +29,7 @@ export const resetStream = () => ({ type: 'STREAM_RESETS' });
 
 const initState = {
   id: '',
-  source: '',
-  path: '',
+  video: '',
   currentTime: 0,
   duration: 0,
   fetching: false,
@@ -35,12 +38,12 @@ const initState = {
 };
 
 const handlers = {
-  FETCH_STREAMINFO_PENDING: (state, action) => ({ ...state, fetching: true, hasError: false }),
-  FETCH_STREAMINFO_FULFILLED: (state, action) => {
-    const { id, source, duration, path, seek } = action.payload;
-    return { ...state, id, source, duration, path, seek, fetched: true, fetching: false };
+  CREATE_STREAM_PENDING: (state, action) => ({ ...state, fetching: true, hasError: false }),
+  CREATE_STREAM_FULFILLED: (state, action) => {
+    const { id, duration, video, seek } = action.payload;
+    return { ...state, id, duration, video, seek, fetched: true, fetching: false };
   },
-  FETCH_STREAMINFO_REJECTED: (state, action) => ({ ...state, fetching: false, fetched: false, hasError: true }),
+  CREATE_STREAM_REJECTED: (state, action) => ({ ...state, fetching: false, fetched: false, hasError: true }),
   STREAM_TIME_UPDATES: (state, action) => ({ ...state, currentTime: action.currentTime }),
   STREAM_RESETS: () => initState
 };

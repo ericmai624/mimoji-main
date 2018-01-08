@@ -8,12 +8,22 @@
   <cast-media-player></cast-media-player>
   <script>
     const context = cast.framework.CastReceiverContext.getInstance();
-    // const player = context.getPlayerManager();
+    const playerManager = context.getPlayerManager();
 
+    playerManager.addEventListener(
+      cast.framework.events.EventType.PLAYER_LOAD_COMPLETE, () => {
+        const textTracksManager = playerManager.getTextTracksManager();
+
+        // Get all text tracks
+        const tracks = textTracksManager.getTracks();
+
+        // Choose the first text track to be active by its ID
+        textTracksManager.setActiveByIds([tracks[0].trackId]);
+      });
+      
     const playbackConfig = new cast.framework.PlaybackConfig();
-    playbackConfig.autoResumeDuration = 10;
-    playbackConfig.autoResumeNumberOfSegments = 3;
-    playbackConfig.initialBandwidth = 80000000;
+    // playbackConfig.autoResumeDuration = 5;
+    playbackConfig.initialBandwidth = 10 * 1024 * 1024;
 
     context.start({ playbackConfig });
   </script>

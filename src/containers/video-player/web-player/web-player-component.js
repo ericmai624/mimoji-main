@@ -8,7 +8,7 @@ import VideoControls from 'containers/video-player/video-controls/video-controls
 import TextTrack from 'containers/video-player/text-track/text-track-component';
 
 import { togglePlayer } from 'stores/app';
-import { fetchStreamInfo, updateStreamTime, resetStream } from 'stores/stream';
+import { createStream, updateStreamTime, resetStream } from 'stores/stream';
 import { toggleFileBrowserDialog } from 'stores/file-browser';
 import { resetTextTrack } from 'stores/text-track';
 
@@ -47,7 +47,7 @@ class WebPlayer extends Component {
 
   componentDidMount() {
     const { stream } = this.props;
-    if (stream.source !== '' && !stream.hasError) this.initHls();
+    if (stream.id !== '' && !stream.hasError) this.initHls();
   }
 
   componentWillUnmount() {
@@ -70,7 +70,7 @@ class WebPlayer extends Component {
     // load source when hls is attached to video element
     this.hls.on(Hls.Events.MEDIA_ATTACHED, () => {
       this.setState({ isLoading: true, isTextTrackEnabled: false }, () => {
-        this.hls.loadSource(`/api/stream/video/${stream.source}/index.m3u8`);
+        this.hls.loadSource(`/api/stream/video/${stream.id}/playlist.m3u8`);
       });
     });
     this.hls.on(Hls.Events.MANIFEST_PARSED, (evt, data) => {
@@ -122,12 +122,12 @@ class WebPlayer extends Component {
   }
 
   seek(seekTime) {
-    const { stream, fetchStreamInfo } = this.props;
+    const { stream, createStream } = this.props;
 
     if (this.hls) this.hls.destroy(); // destroy current hls stream
 
     this.setState({ currTimeOffset: seekTime }, () => {
-      fetchStreamInfo(stream.path, seekTime).then(() => {
+      createStream(stream.video, seekTime).then(() => {
         if (!stream.hasError) this.initHls();
       });
     });
@@ -276,7 +276,7 @@ const mapStateToProps = (state) => ({
 });
 
 const mapDispatchToProps = (dispatch) => ({ 
-  fetchStreamInfo: bindActionCreators(fetchStreamInfo, dispatch),
+  createStream: bindActionCreators(createStream, dispatch),
   togglePlayer: bindActionCreators(togglePlayer, dispatch),
   toggleFileBrowserDialog: bindActionCreators(toggleFileBrowserDialog, dispatch),
   updateStreamTime: bindActionCreators(updateStreamTime, dispatch),

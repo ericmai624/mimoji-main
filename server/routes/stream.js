@@ -1,12 +1,14 @@
 const router = require('express').Router();
 const { stream } = require('../controller');
 
-router.get('/process', stream.createStreamProcess);
+router.get('/video/:id/:file', stream.serve);
 
-router.get('/video/:dir/:file', stream.serveFiles);
+router.post('/create', stream.create);
 
-router.get('/subtitle', stream.loadSubtitle);
+router.get('/subtitle/:id', stream.loadSubtitle);
 
-router.post('/terminate', stream.terminate);
+router.post('/subtitle', stream.addSubtitle);
+
+router.post('/terminate', stream.cleanup);
 
 module.exports = router;
