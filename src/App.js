@@ -3,6 +3,7 @@ import fontawesome from '@fortawesome/fontawesome';
 import solid from '@fortawesome/fontawesome-free-solid';
 import regular from '@fortawesome/fontawesome-free-regular';
 import styled from 'styled-components';
+import io from 'socket.io-client';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 
@@ -40,6 +41,7 @@ class App extends Component {
   constructor(props) {
     super(props);
     
+    window.socket = io('http://localhost:6300');
     this.loadGoogleCastFramework = this.loadGoogleCastFramework.bind(this);
     this.initializeCastApi = this.initializeCastApi.bind(this);
   }

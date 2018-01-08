@@ -24,7 +24,7 @@ if (platform === 'darwin') {
 
 module.exports.processMedia = ({ video, seek, id, location, metadata, isRemuxing }) => {
   let command = ffmpeg(video);
-  let bitrate = 10000; // output bitrate
+  let bitrate = 12000; // output bitrate
   let tracks = metadata.streams.filter(s => s['codec_type'] === 'video' && s['codec_name'] !== 'mjpeg');
   let framerate = 24;
   if (tracks.length > 0) {
@@ -37,7 +37,7 @@ module.exports.processMedia = ({ video, seek, id, location, metadata, isRemuxing
     '-c:v libx264',
     // `-c:v ${isRemuxing ? 'copy' : 'libx264'}`,
     `-threads ${os.cpus().length}`,
-    '-preset veryfast',
+    '-preset superfast',
     `-b:v ${bitrate}k`,
     `-maxrate ${bitrate}k`,
     `-minrate ${bitrate}k`,
@@ -45,9 +45,10 @@ module.exports.processMedia = ({ video, seek, id, location, metadata, isRemuxing
     `-g ${framerate * 2}`, // Keyframe interval
     '-sc_threshold 0',
     `-keyint_min ${framerate * 2}`,
+    '-vprofile high',
+    '-vlevel 4.2',
     // '-pix_fmt yuv420p',
     // '-bsf:v h264_mp4toannexb', // convert bitstream
-    // '-profile:v high -level 4.1',
     '-map 0:1',
     '-c:a aac',
     '-ac 2',
@@ -59,8 +60,7 @@ module.exports.processMedia = ({ video, seek, id, location, metadata, isRemuxing
     // `-hls_base_url http://172.16.1.19:3000/api/stream/video/${id}/`,
     '-hls_segment_type mpegts',
     `-hls_segment_filename ${path.join(location, 'file_%05d.ts')}`,
-    // '-hls_flags program_date_time+split_by_time'
-    '-hls_flags program_date_time'
+    '-hls_flags program_date_time+append_list'
   ];
   // if (isRemuxing) outputOptions.splice(2, 6);
 

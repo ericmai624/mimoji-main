@@ -23,7 +23,6 @@ class WebPlayer extends Component {
       isPaused: false,
       isMuted: false,
       isControlsVisible: true,
-      isTextTrackEnabled: false,
       volume: 1,
       currTimeOffset: 0
     };
@@ -62,19 +61,19 @@ class WebPlayer extends Component {
     this.hls = new Hls({ 
       debug: true,
       maxBufferLength: 10, /* in seconds */
-      maxBufferSize: 30 * 1000 * 1000, /* Chrome max buffer size 150MB */
+      maxBufferSize: 100 * 1000 * 1000, /* Chrome max buffer size 150MB */
       manifestLoadingMaxRetry: 3,
       manifestLoadingTimeOut: 20000 /* 20 seconds before timeout callback is fired */
     });
     this.hls.attachMedia(video);
     // load source when hls is attached to video element
     this.hls.on(Hls.Events.MEDIA_ATTACHED, () => {
-      this.setState({ isLoading: true, isTextTrackEnabled: false }, () => {
+      this.setState({ isLoading: true }, () => {
         this.hls.loadSource(`/api/stream/video/${stream.id}/playlist.m3u8`);
       });
     });
     this.hls.on(Hls.Events.MANIFEST_PARSED, (evt, data) => {
-      this.setState({ isLoading: false, isTextTrackEnabled: true }, () => video.play());
+      this.setState({ isLoading: false }, () => video.play());
     });
     // hls error handling
     this.hls.on(Hls.Events.ERROR, (evt, data) => { 
@@ -247,7 +246,7 @@ class WebPlayer extends Component {
           onEnded={this.onVideoEnded}
           ref={(el) => this.video = el}
         >
-          <TextTrack currTimeOffset={currTimeOffset} isTextTrackEnabled={isTextTrackEnabled}/>
+          <TextTrack currTimeOffset={currTimeOffset} isLoading={isLoading}/>
         </video>
         <VideoControls
           seek={this.seek}

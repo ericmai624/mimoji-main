@@ -1,15 +1,16 @@
 import React, { Fragment } from 'react';
 import { connect } from 'react-redux';
 
-const TextTrack = ({ textTrack, currTimeOffset, isTextTrackEnabled }) => (
+const TextTrack = ({ textTrack, currTimeOffset, isLoading }) => (
   <Fragment>
-    {textTrack.isEnabled && isTextTrackEnabled ? <track
-      kind='subtitles'
-      src={`/api/stream/subtitle/${textTrack.id}`}
-      label={textTrack.label}
-      srcLang='zh'
-      default={true}
-    /> : null}
+    {textTrack.isEnabled && !isLoading ? 
+      <track
+        kind='subtitles'
+        src={`/api/stream/subtitle/${textTrack.id}?offset=${textTrack.offset - currTimeOffset}&encoding=${textTrack.encoding}`}
+        label={textTrack.label}
+        srcLang='zh'
+        default={true}
+      /> : null}
   </Fragment>
 );
 

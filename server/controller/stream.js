@@ -154,18 +154,20 @@ const serve = (req, res) => {
 };
 
 const addSubtitle = (req, res) => {
-  let { location, offset, encoding } = req.body;
+  let { location } = req.body;
   if (!location || location === '') return res.end();
-  offset = offset ? parseFloat(offset) : 0;
   let id = createHash('sha256').update(location).digest('hex');
-  subtitles[id] = { id, location, offset, encoding };
+  subtitles[id] = location;
 
   return res.json(id);
 };
 
 const loadSubtitle = (req, res) => {
   let { id } = req.params;
-  let { location, offset, encoding } = subtitles[id];
+  if (!id) return res.end();
+  let location = subtitles[id];
+  let { offset, encoding } = req.query;
+  offset = offset ? parseFloat(offset) : 0;
   let ext = path.extname(location);
   
   console.log(chalk.white('loading subtitle: ', location));
