@@ -1,6 +1,6 @@
 import { createReducer } from '../utils';
 
-export const createStream = (video, seek = 0) => {
+export const createStream = (video, seek = 2520) => {
   return (dispatch) => {
     dispatch({ type: 'CREATE_STREAM_PENDING' });
     return fetch('/api/stream/create', {

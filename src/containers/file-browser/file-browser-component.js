@@ -49,7 +49,7 @@ class FileBrowser extends Component {
 
   onDoubleClickFile(e, file) {
     e.preventDefault();
-    if (file.type === 'subtitle') return this.addTextTrack(file.filePath, file.name, 'auto', 0);
+    if (file.type === 'subtitle') return this.addTextTrack(file.filePath, file.name, 'auto', -2520);
     this.setState({ file });
     this.toggleCastOptions();
   }

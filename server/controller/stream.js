@@ -16,10 +16,6 @@ const subtitles = {};
 const finishedQueue = [];
 const uniqueFilePath = new Set();
 
-const watch = (filePath, callback) => {
-
-};
-
 const open = (path, cb, retry = 0) => {
   return fs.open(path, 'r', (err, fd) => {
     if (!err) return cb(null, fd);
@@ -46,6 +42,7 @@ const remove = (filePath) => {
     .then((stats) => {
       if (stats.isFile()) return fs.unlinkAsync(filePath);
       else if (stats.isDirectory()) return fs.readdirAsync(filePath);
+      else throw new Error('Unknow file.');
     })
     .then((files) => {
       if (!files) {
@@ -65,14 +62,6 @@ const remove = (filePath) => {
 
       console.log(chalk.red(err));
     });
-};
-
-const stream = (filePath, res) => {
-  switch (path.extname(filePath)) {
-  case '.m3u8':
-    res.set({ 'Content-Type': 'application/vnd.apple.mpegurl' });
-    return fs.createReadStream(filePath, { highWaterMark: 128 * 1024 }).pipe(res);
-  }
 };
 
 const isSupported = (metadata) => {
@@ -104,10 +93,11 @@ const create = (req, res) => {
       return Promise.all([ fs.mkdtempAsync(directory + sep), util.ffmpeg.getMetadata(video) ]);
     })
     .then(([location, metadata]) => {
+      console.log(metadata);
       mediaProcesses[id] = { id, video, seek, location, metadata, isRemuxing: isSupported(metadata) };
       mediaProcesses[id].command = util.ffmpeg.processMedia(mediaProcesses[id]);
       mediaProcesses[id].fileCount = 0;
-      mediaProcesses[id].watcher = chokidar.watch(location)
+      mediaProcesses[id].watcher = chokidar.watch(location, { ignored: /\.tmp$/ })
         .on('add', file => {
           if (path.extname(file) === '.m3u8') return res.json({ id, duration: metadata.format.duration });
           mediaProcesses[id].fileCount++;
@@ -154,8 +144,8 @@ const serve = (req, res) => {
         return stream.pipe(res);
       });
     default:
-      console.log(chalk.red('unspported file'));
-      return res.sendStatus(500);
+      throw new Error('Unsupported format');
+      break;
     }
   } catch (err) {
     console.log(chalk.red(err));
@@ -188,7 +178,6 @@ const loadSubtitle = (req, res) => {
       
       if (!offset && ext === '.vtt') return res.send(str);
       let sub = util.subParser(str, offset, ext);
-      console.log(sub);
       return res.send(sub);
     }) 
     .catch((err) => {
