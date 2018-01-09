@@ -93,8 +93,8 @@ class VideoControls extends Component {
     if (volume < 0.5) volumeIcon = (<FontAwesomeIcon icon={['fas', 'volume-down']}/>);
     if (volume === 0 || isMuted) {
       volumeIcon = [
-        <FontAwesomeIcon key='volume-off' icon={['fas', 'volume-off']} transform='left-4.5' stack />,
-        <FontAwesomeIcon key='times' icon={['fas', 'times']} transform='shrink-7 right-4.5' stack />
+        <FontAwesomeIcon key='volume-off' icon={['fas', 'volume-off']} transform='left-4.5' />,
+        <FontAwesomeIcon key='times' icon={['fas', 'times']} transform='shrink-7 right-4.5' />
       ];
     }
 

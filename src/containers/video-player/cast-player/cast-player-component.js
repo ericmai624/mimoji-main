@@ -26,7 +26,8 @@ class CastPlayer extends Component {
     this.initPlayer = this.initPlayer.bind(this);
     this.cast = this.cast.bind(this);
     this.seek = this.seek.bind(this);
-    this.loadTextTrack = this.loadTextTrack.bind(this);
+    this.setTextTrack = this.setTextTrack.bind(this);
+    this.updateTextTrack = this.updateTextTrack.bind(this);
     this.muteOrUnmute = this.muteOrUnmute.bind(this);
     this.playOrPause = this.playOrPause.bind(this);
     this.setVolume = this.setVolume.bind(this);
@@ -34,6 +35,14 @@ class CastPlayer extends Component {
     this.cleanup = this.cleanup.bind(this);
   }
 
+  componentDidUpdate(prevProps, prevState) {
+    const textTrackEnabled = !prevProps.textTrack.isEnabled && this.props.textTrack.isEnabled;
+    const textTrackChanged = (prevProps.textTrack.id !== this.props.textTrack.id) ||
+                             (prevProps.textTrack.offset !== this.props.textTrack.offset) ||
+                             (prevProps.textTrack.encoding !== this.props.textTrack.encoding);
+    if (textTrackEnabled || textTrackChanged) this.updateTextTrack();
+  }
+  
   componentDidMount() {
     const { stream } = this.props;
     if (stream.id !== '' && !stream.hasError) this.cast();
@@ -95,23 +104,54 @@ class CastPlayer extends Component {
     const { stream, textTrack } = this.props;
 
     if (!this.castSession) this.castSession = cast.framework.CastContext.getInstance().getCurrentSession();
-    let mediaSource = `http://172.16.1.19:3000/api/stream/video/${stream.id}/playlist.m3u8`;
-    let contentType = 'application/vnd.apple.mpegurl';
-    let mediaInfo = new chrome.cast.media.MediaInfo(mediaSource, contentType);
+
+    const mediaSource = `http://172.16.1.19:3000/api/stream/video/${stream.id}/playlist.m3u8`;
+    const mediaInfo = new chrome.cast.media.MediaInfo(mediaSource);
+    mediaInfo.contentType = 'application/vnd.apple.mpegurl';
     mediaInfo.streamType = chrome.cast.media.StreamType.BUFFERED;
+    // style text track
+    mediaInfo.textTrackStyle = new chrome.cast.media.TextTrackStyle();
+    mediaInfo.textTrackStyle.backgroundColor = '#00000000';
+    mediaInfo.textTrackStyle.fontFamily = '\'Roboto\', sans-serif';
+    mediaInfo.textTrackStyle.fontScale = 1.2;
 
-    if (textTrack.isEnabled) this.loadTextTrack(mediaInfo);
+    const request = new chrome.cast.media.LoadRequest(mediaInfo);
 
-    let request = new chrome.cast.media.LoadRequest(mediaInfo);
+    if (textTrack.isEnabled) {
+      mediaInfo.tracks = [this.setTextTrack()];
+      request.activeTrackIds = [1];
+    }
+    // start streaming
     this.castSession.loadMedia(request)
       .then(() => {
         console.log('load success');
         this.initPlayer();
+        // this.media = new chrome.cast.media.Media(this.castSession.sessionId);
       }, (err) => console.log('Error code: ', err))
       .catch(err => console.log(err));
   }
 
-  seek() {
+  setTextTrack() {
+    let { chrome } = window;
+    let { textTrack } = this.props;
+
+    let sub = new chrome.cast.media.Track(1 /* track id */, chrome.cast.media.TrackType.TEXT);
+    sub.trackContentId = `http://172.16.1.19:3000/api/stream/subtitle/${textTrack.id}?offset=${textTrack.offset}`;
+    sub.trackContentType = 'text/vtt';
+    sub.subType = chrome.cast.media.TextTrackType.SUBTITLES;
+    sub.name = textTrack.label;
+    sub.language = 'zh';
+
+    return sub;
+  }
+
+  updateTextTrack() {
+    const { chrome } = window;
+    const tracksInfoRequest = new chrome.cast.media.EditTracksInfoRequest([1]);
+    console.log(tracksInfoRequest);
+  }
+
+  seek(time) {
     // unload current session
 
     // init new session with new seek time
@@ -153,19 +193,6 @@ class CastPlayer extends Component {
     //     this.setState({ volume });
     //   })
     //   .catch(err => console.log('failed to set volume, error code: ', err));
-  }
-
-  loadTextTrack(mediaInfo) {
-    let { chrome } = window;
-    let { textTrack } = this.props;
-
-    let sub = new chrome.cast.media.Track(1 /* track id */, chrome.cast.media.TrackType.TEXT);
-    sub.trackContentId = `http://172.16.1.19:3000/api/stream/subtitle/${textTrack.id}?offset=${textTrack.offset}`;
-    sub.trackContentType = 'text/vtt';
-    sub.subType = chrome.cast.media.TextTrackType.SUBTITLES;
-    sub.name = 'SUB';
-    mediaInfo.textTrackStyle = new chrome.cast.media.TextTrackStyle();
-    mediaInfo.tracks = [sub];
   }
 
   stop() {

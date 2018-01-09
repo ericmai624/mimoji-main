@@ -195,8 +195,4 @@ const cleanup = (req, res) => {
   res.sendStatus(200);
 };
 
-module.exports.create = create;
-module.exports.serve = serve;
-module.exports.addSubtitle = addSubtitle;
-module.exports.loadSubtitle = loadSubtitle;
-module.exports.cleanup = cleanup;
+module.exports = { create, serve, addSubtitle, loadSubtitle, cleanup };

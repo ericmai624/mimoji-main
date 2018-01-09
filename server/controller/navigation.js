@@ -38,7 +38,7 @@ const arrangeContent = (input, dir) => {
   return content;
 };
 
-module.exports.readDir = (req, res) => {
+const readDir = (req, res) => {
   let { dir, nav } = req.query;
   let directory = dir === '' ? homedir() : dir;
   if (nav === '..') directory = path.join(directory, nav);
@@ -53,3 +53,5 @@ module.exports.readDir = (req, res) => {
       res.sendStatus(404);
     });
 };
+
+module.exports = { readDir };
