@@ -3,11 +3,10 @@ import fontawesome from '@fortawesome/fontawesome';
 import solid from '@fortawesome/fontawesome-free-solid';
 import regular from '@fortawesome/fontawesome-free-regular';
 import styled from 'styled-components';
-import io from 'socket.io-client';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 
-import { updateCastPlayer, updateCastController } from 'stores/cast';
+import { updateCastContext } from 'stores/cast';
 import { toggleFileBrowserDialog } from 'stores/file-browser';
 import { toggleFullscreen } from 'stores/app';
 
@@ -41,8 +40,7 @@ class App extends Component {
   constructor(props) {
     super(props);
     
-    window.socket = io('http://localhost:6300');
-    this.loadGoogleCastFramework = this.loadGoogleCastFramework.bind(this);
+    this.loadCastFramework = this.loadCastFramework.bind(this);
     this.initializeCastApi = this.initializeCastApi.bind(this);
   }
   
@@ -54,32 +52,52 @@ class App extends Component {
     document.addEventListener('mozfullscreenchange', (e) => toggleFullscreen('fullscreen'));
     document.addEventListener('msfullscreenchange', (e) => toggleFullscreen('fullscreen'));
 
-    this.loadGoogleCastFramework();
+    // this.loadCastFramework();
   }
 
-  loadGoogleCastFramework() {
-    window['__onGCastApiAvailable'] = isAvailable => {
+  loadCastFramework() {
+    window['__onGCastApiAvailable'] = (isAvailable) => {
       if (isAvailable) this.initializeCastApi();
     };
     let script = document.createElement('script');
     script.src = 'https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1';
-    document.getElementById('root').appendChild(script);
+    script.type = 'text/javascript';
+    // script.crossorigin = 'anonymous';
+    document.getElementById('root').insertAdjacentElement('afterend', script);
   }
 
   initializeCastApi() {
     console.log('Initializing Google Cast');
-    const { cast, chrome } = window;
-    const { updateCastPlayer, updateCastController } = this.props;
+    const { cast } = window;
+    const { updateCastContext } = this.props;
 
+    // const context = new cast.framework.CastContext();
     cast.framework.CastContext.getInstance().setOptions({
-      // receiverApplicationId: chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID
+      // receiverApplicationId: window.chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID
       receiverApplicationId: '7DDC0933'
-    }); 
+    });
 
-    const player = new cast.framework.RemotePlayer();
-    const controller = new cast.framework.RemotePlayerController(player);
-    updateCastPlayer(player);
-    updateCastController(controller);
+    cast.framework.setLoggerLevel(cast.framework.LoggerLevel.DEBUG);
+    // console.log(castSession);
+    // context.requestSession()
+    //   .then(err => {
+    //     console.log(err);
+    //   })
+    //   .catch(err => {
+    //     console.log(err);
+    //   });
+
+    cast.framework.CastContext.getInstance().requestSession()
+      .then(() => {
+
+      })
+      .catch(err => {
+        console.log(err);
+      });
+
+    // updateCastContext(context);
+    // const player = new cast.framework.RemotePlayer();
+    // const controller = new cast.framework.RemotePlayerController(player);
   }
   
   render() {
@@ -87,8 +105,9 @@ class App extends Component {
     
     return (
       <Fragment>
-        <Cast/>
-        {app.isPlayerEnabled ? (<VideoPlayer isChromecast={app.isChromecast} />) : 
+        {/* <Cast/> */}
+        {app.isPlayerEnabled ? 
+          (<VideoPlayer isChromecast={app.isChromecast} />) : 
           (<LabelWrapper className='flex flex-center'>
             <Label onClick={toggleFileBrowserDialog}>Choose a Video</Label>
           </LabelWrapper>)}
@@ -98,11 +117,10 @@ class App extends Component {
   }
 }
 
-const mapStateToProps = (state) => ({ cast: state.cast, app: state.app });
+const mapStateToProps = (state) => ({ app: state.app });
 
 const mapDispatchToProps = (dispatch) => ({ 
-  updateCastPlayer: bindActionCreators(updateCastPlayer, dispatch),
-  updateCastController: bindActionCreators(updateCastController, dispatch),
+  updateCastContext: bindActionCreators(updateCastContext, dispatch),
   toggleFileBrowserDialog: bindActionCreators(toggleFileBrowserDialog, dispatch),
   toggleFullscreen: bindActionCreators(toggleFullscreen, dispatch)
 });

@@ -10,9 +10,9 @@ body {
 }
 
 #root {
-  display: grid;
+  /* display: grid;
   grid-template-columns: 1fr;
-  grid-template-rows: 50px calc(100vh - 50px);
+  grid-template-rows: 50px calc(100vh - 50px); */
   width: 100%;
   height: 100vh;
   background: url('/assets/background/466681.jpg') no-repeat center center fixed;
@@ -77,6 +77,10 @@ body {
 
 .transition-color {
   transition: color 0.25s ease;
+}
+
+.no-background {
+  background: transparent;
 }
 
 video::-webkit-media-controls {

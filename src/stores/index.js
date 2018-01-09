@@ -1,7 +1,7 @@
 import { createStore, combineReducers, applyMiddleware } from 'redux';
 import thunk from 'redux-thunk';
 
-import { castPlayerReducer, castControllerReducer } from './cast';
+import { castReducer } from './cast';
 import { streamReducer } from './stream';
 import { appReducer } from './app';
 import { fileBrowserReducer } from './file-browser';
@@ -9,8 +9,7 @@ import { textTrackReducer } from './text-track';
 
 const reducer = combineReducers({
   app: appReducer,
-  cast: castPlayerReducer,
-  controller: castControllerReducer,
+  cast: castReducer,
   stream: streamReducer,
   textTrack: textTrackReducer,
   fileBrowser: fileBrowserReducer,

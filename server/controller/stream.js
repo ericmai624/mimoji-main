@@ -93,8 +93,8 @@ const create = (req, res) => {
       return Promise.all([ fs.mkdtempAsync(directory + sep), util.ffmpeg.getMetadata(video) ]);
     })
     .then(([location, metadata]) => {
-      console.log(metadata);
-      mediaProcesses[id] = { id, video, seek, location, metadata, isRemuxing: isSupported(metadata) };
+      // console.log(metadata);
+      mediaProcesses[id] = { id, video, seek, location, metadata };
       mediaProcesses[id].command = util.ffmpeg.processMedia(mediaProcesses[id]);
       mediaProcesses[id].fileCount = 0;
       mediaProcesses[id].watcher = chokidar.watch(location, { ignored: /\.tmp$/ })
@@ -179,7 +179,7 @@ const loadSubtitle = (req, res) => {
       res.set({ 'Content-Type': 'text/vtt' }); // set response header
       
       if (!offset && ext === '.vtt') return res.send(str);
-      let sub = util.subParser(str, offset, ext);
+      let sub = util.subtitleParser(str, offset, ext);
       return res.send(sub);
     }) 
     .catch((err) => {

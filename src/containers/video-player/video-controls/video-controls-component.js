@@ -70,11 +70,11 @@ class VideoControls extends Component {
   render() {
     const { 
       toggleFileBrowserDialog, 
-      togglePlay, 
-      toggleMute, 
+      playOrPause, 
+      muteOrUnmute, 
       toggleFullscreen, 
-      changeVolume, 
-      cleanup, 
+      setVolume, 
+      stop, 
       isControlsVisible,
       isPaused,
       isMuted,
@@ -104,8 +104,8 @@ class VideoControls extends Component {
           className='flex flex-align-center flex-space-around absolute'
           isControlsVisible={isControlsVisible}
         >
-          <ControlButton onClick={togglePlay} icon={['fas', isPaused ? 'play' : 'pause']}/>
-          <ControlButton onClick={cleanup} icon={['fas', 'stop']}/>
+          <ControlButton onClick={playOrPause} icon={['fas', isPaused ? 'play' : 'pause']}/>
+          <ControlButton onClick={stop} icon={['fas', 'stop']}/>
           <ProgressContainer onClick={this.handleSeek}>
             <Progress 
               value={currentTime} 
@@ -122,7 +122,7 @@ class VideoControls extends Component {
             onMouseOver={this.onVolumeMouseEnter}
             onMouseLeave={this.onVolumeMouseLeave}
           >
-            <ControlButton onClick={toggleMute} className={'fa-layers fa-fw'}>
+            <ControlButton onClick={muteOrUnmute} className={'fa-layers fa-fw'}>
               {volumeIcon}
             </ControlButton>
             <VolumeRangeWrapper
@@ -132,7 +132,7 @@ class VideoControls extends Component {
             >
               <VolumeRange
                 value={volume}
-                onChange={changeVolume}
+                onChange={setVolume}
                 style={{
                   background: 'linear-gradient(to right, rgba(228, 75, 54, 0.9) 0%,' 
                               + `rgba(228, 75, 54, 0.9) ${volume * 100}%,` 
@@ -147,7 +147,7 @@ class VideoControls extends Component {
           <ControlButton onClick={this.toggleSubSettings}>
             <FontAwesomeIcon icon={['fas', 'language']} size='lg'/>
           </ControlButton>
-          <ControlButton onClick={toggleFullscreen} icon={['fas', isFullscreenEnabled ? 'compress' : 'expand']}/>
+          {toggleFullscreen ? <ControlButton onClick={toggleFullscreen} icon={['fas', isFullscreenEnabled ? 'compress' : 'expand']}/> : null}
         </Container>
         {showSubSettings ? 
           <SubSettings

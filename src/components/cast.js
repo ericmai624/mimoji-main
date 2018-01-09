@@ -2,7 +2,12 @@ import React, { Component } from 'react';
 import styled from 'styled-components';
 
 const Wrapper = styled.div`
-  grid-row: 1;
+  z-index: 5000;
+  width: 40px;
+  height: 40px;
+  top: 20px;
+  left: 20px;
+  background: transparent;
 `;
 
 class Cast extends Component {
@@ -20,14 +25,20 @@ class Cast extends Component {
     style.outline = 'none';
     style.cursor = 'pointer';
     style.background = 'transparent';
-    style.zIndex = '1000';
-    document.querySelector('#cast').appendChild(castBtn);
+    // style.zIndex = '10000';
+    document.getElementById('cast-wrapper').appendChild(castBtn);
+
+    let script = document.createElement('script');
+    script.src = 'https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1';
+    script.type = 'text/javascript';
+    // script.crossorigin = 'anonymous';
+    document.getElementById('cast-wrapper').insertAdjacentElement('beforeend', script);
   }
 
   render() {
     return (
-      <Wrapper id='cast'>
-        
+      <Wrapper id='cast-wrapper'
+        className='flex flex-center absolute'>
       </Wrapper>
     );
   }

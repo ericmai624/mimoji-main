@@ -22,20 +22,27 @@ if (platform === 'darwin') {
 }
 */
 
-module.exports.processMedia = ({ video, seek, id, location, metadata, isRemuxing }) => {
+const getFramerate = metadata => {
+  let result = 24;
+
+  let tracks = metadata.streams.filter(s => s['codec_type'] === 'video' && s['codec_name'] !== 'mjpeg');
+
+  if (tracks.length < 1) return result;
+
+  let [a, b] = tracks[0]['r_frame_rate'].split('/').map(Number);
+  if (typeof a === 'number' && typeof b === 'number' && a !== 0 && b !== 0) result = Math.round(a / b);
+  
+  return result;
+};
+
+const processMedia = ({ video, seek, id, location, metadata }) => {
   let command = ffmpeg(video);
   let bitrate = 12000; // output bitrate
-  let tracks = metadata.streams.filter(s => s['codec_type'] === 'video' && s['codec_name'] !== 'mjpeg');
-  let framerate = 24;
-  if (tracks.length > 0) {
-    let [a, b] = tracks[0]['r_frame_rate'].split('/');
-    if (a !== '0' && b !== '0') framerate = parseFloat(a) / parseFloat(b);
-  }
+  let framerate = getFramerate(metadata);
   let inputOptions = ['-hide_banner', '-y', '-copyts', '-loglevel panic'];
   let outputOptions = [
     '-map 0:0',
     '-c:v libx264',
-    // `-c:v ${isRemuxing ? 'copy' : 'libx264'}`,
     `-threads ${os.cpus().length}`,
     '-preset superfast',
     `-b:v ${bitrate}k`,
@@ -62,7 +69,6 @@ module.exports.processMedia = ({ video, seek, id, location, metadata, isRemuxing
     `-hls_segment_filename ${path.join(location, 'file_%05d.ts')}`,
     '-hls_flags program_date_time+append_list'
   ];
-  // if (isRemuxing) outputOptions.splice(2, 6);
 
   if (seek) inputOptions.push(`-ss ${seek}`);
   console.log(chalk.cyan('seeking: ', seek ? seek : 0));
@@ -91,7 +97,7 @@ module.exports.processMedia = ({ video, seek, id, location, metadata, isRemuxing
   return command;
 };
 
-module.exports.getMetadata = (file) => {
+const getMetadata = (file) => {
   console.log(file);
   return new Promise((resolve, reject) => {
     ffmpeg.ffprobe(file, (err, metadata) => {
@@ -100,3 +106,5 @@ module.exports.getMetadata = (file) => {
     });
   });
 };
+
+module.exports = { processMedia, getMetadata };

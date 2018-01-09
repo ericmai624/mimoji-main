@@ -1,2 +1,2 @@
-module.exports.subParser = require('./subParser');
+module.exports.subtitleParser = require('./subtitle-parser');
 module.exports.ffmpeg = require('./ffmpeg');

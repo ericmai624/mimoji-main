@@ -12,13 +12,11 @@ export const createStream = (video, seek = 0) => {
         if (response.ok) return response.json();
         throw new Error(response.statusText);
       })
-      .then((data) => {
-        const { id, duration } = data;
-        dispatch({ type: 'CREATE_STREAM_FULFILLED', payload: { id, duration, video, seek } });
-        return data;
+      .then(({ id, duration }) => {
+        return dispatch({ type: 'CREATE_STREAM_FULFILLED', payload: { id, duration, video } });
       })
       .catch((err) => {
-        dispatch({ type: 'CREATE_STREAM_REJECTED' });
+        return dispatch({ type: 'CREATE_STREAM_REJECTED' });
       });
   };
 };
@@ -40,8 +38,8 @@ const initState = {
 const handlers = {
   CREATE_STREAM_PENDING: (state, action) => ({ ...state, fetching: true, hasError: false }),
   CREATE_STREAM_FULFILLED: (state, action) => {
-    const { id, duration, video, seek } = action.payload;
-    return { ...state, id, duration, video, seek, fetched: true, fetching: false };
+    const { id, duration, video } = action.payload;
+    return { ...state, id, duration, video, fetched: true, fetching: false };
   },
   CREATE_STREAM_REJECTED: (state, action) => ({ ...state, fetching: false, fetched: false, hasError: true }),
   STREAM_TIME_UPDATES: (state, action) => ({ ...state, currentTime: action.currentTime }),

@@ -28,7 +28,7 @@ class WebPlayer extends Component {
     };
   
     this.initHls = this.initHls.bind(this);
-    this.togglePlay = this.togglePlay.bind(this);
+    this.playOrPause = this.playOrPause.bind(this);
     this.showControls = this.showControls.bind(this);
     this.hideControls = this.hideControls.bind(this);
     this.onVideoMouseMove = this.onVideoMouseMove.bind(this);
@@ -36,9 +36,9 @@ class WebPlayer extends Component {
     this.onVideoPlaying = this.onVideoPlaying.bind(this);
     this.onVideoPaused = this.onVideoPaused.bind(this);
     this.onVideoTimeUpdate = this.onVideoTimeUpdate.bind(this);
-    this.onVideoEnded = this.onVideoEnded.bind(this);
-    this.changeVolume = this.changeVolume.bind(this);
-    this.toggleMute = this.toggleMute.bind(this);
+    this.stop = this.stop.bind(this);
+    this.setVolume = this.setVolume.bind(this);
+    this.muteOrUnmute = this.muteOrUnmute.bind(this);
     this.toggleFullscreen = this.toggleFullscreen.bind(this);
     this.stopTimer = this.stopTimer.bind(this);
     this.cleanup = this.cleanup.bind(this);
@@ -93,7 +93,7 @@ class WebPlayer extends Component {
     });
   }
 
-  togglePlay(e) {
+  playOrPause(e) {
     e.preventDefault();
     const { video } = this;
 
@@ -150,19 +150,19 @@ class WebPlayer extends Component {
     if (isControlsVisible) updateStreamTime(video.currentTime + currTimeOffset);
   }
 
-  onVideoEnded() {
+  stop() {
     console.log('the video has ended');
     return this.cleanup();
   }
 
-  changeVolume(e) {
+  setVolume(e) {
     const { video } = this;
     const volume = parseFloat(e.target.value);
 
     this.setState({ volume }, () => video.volume = volume);
   }
 
-  toggleMute() {
+  muteOrUnmute() {
     const { isMuted } = this.state;
     const { video } = this;
 
@@ -217,7 +217,7 @@ class WebPlayer extends Component {
   
   render() {
     const { app, stream, toggleFileBrowserDialog } = this.props;
-    const { isLoading, isPaused, isMuted, isControlsVisible, isTextTrackEnabled, volume, currTimeOffset } = this.state;
+    const { isLoading, isPaused, isMuted, isControlsVisible, volume, currTimeOffset } = this.state;
 
     if (stream.hasError) {
       return (
@@ -243,7 +243,7 @@ class WebPlayer extends Component {
           onPlaying={this.onVideoPlaying}
           onPause={this.onVideoPaused}
           onTimeUpdate={this.onVideoTimeUpdate}
-          onEnded={this.onVideoEnded}
+          onEnded={this.stop}
           ref={(el) => this.video = el}
         >
           <TextTrack currTimeOffset={currTimeOffset} isLoading={isLoading}/>
@@ -251,11 +251,11 @@ class WebPlayer extends Component {
         <VideoControls
           seek={this.seek}
           toggleFileBrowserDialog={toggleFileBrowserDialog}
-          togglePlay={this.togglePlay}
-          toggleMute={this.toggleMute}
+          playOrPause={this.playOrPause}
+          muteOrUnmute={this.muteOrUnmute}
           toggleFullscreen={this.toggleFullscreen}
-          changeVolume={this.changeVolume}
-          cleanup={this.cleanup}
+          setVolume={this.setVolume}
+          stop={this.stop}
           isControlsVisible={isControlsVisible}
           isPaused={isPaused}
           isMuted={isMuted}
