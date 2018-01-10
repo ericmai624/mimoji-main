@@ -14,6 +14,7 @@ app.use(middleware.morgan('dev'));
 
 app.use(express.static(build));
 
+app.use('/api/networkinterface', routes.networkInterface);
 app.use('/api/navigation', routes.navigation);
 app.use('/api/stream', (req, res, next) => {
   res.set({ 'Access-Control-Allow-Origin': '*'});

@@ -101,11 +101,11 @@ const create = (req, res) => {
         .on('add', file => {
           if (path.extname(file) === '.m3u8') return res.json({ id, duration: metadata.format.duration });
           mediaProcesses[id].fileCount++;
-          if (mediaProcesses[id].fileCount > 10) mediaProcesses[id].command.kill('SIGSTOP');
+          // if (mediaProcesses[id].fileCount > 10) mediaProcesses[id].command.kill('SIGSTOP');
         })
         .on('unlink', file => {
           mediaProcesses[id].fileCount--;
-          if (mediaProcesses[id].fileCount <= 6) mediaProcesses[id].command.kill('SIGCONT');
+          // if (mediaProcesses[id].fileCount <= 6) mediaProcesses[id].command.kill('SIGCONT');
         });
     })
     .catch(err => console.log(chalk.red(err)));

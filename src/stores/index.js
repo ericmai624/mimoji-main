@@ -6,8 +6,10 @@ import { streamReducer } from './stream';
 import { appReducer } from './app';
 import { fileBrowserReducer } from './file-browser';
 import { textTrackReducer } from './text-track';
+import { ipReducer } from './ip';
 
 const reducer = combineReducers({
+  ip: ipReducer,
   app: appReducer,
   cast: castReducer,
   stream: streamReducer,

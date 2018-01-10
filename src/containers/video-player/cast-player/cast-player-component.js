@@ -101,11 +101,11 @@ class CastPlayer extends Component {
 
   cast() {
     const { cast, chrome } = window;
-    const { stream, textTrack } = this.props;
+    const { ip, stream, textTrack } = this.props;
 
     if (!this.castSession) this.castSession = cast.framework.CastContext.getInstance().getCurrentSession();
 
-    const mediaSource = `http://172.16.1.9:6300/api/stream/video/${stream.id}/playlist.m3u8`;
+    const mediaSource = `http://${ip.address}:6300/api/stream/video/${stream.id}/playlist.m3u8`;
     const mediaInfo = new chrome.cast.media.MediaInfo(mediaSource);
     mediaInfo.contentType = 'application/vnd.apple.mpegurl';
     mediaInfo.streamType = chrome.cast.media.StreamType.BUFFERED;
@@ -133,10 +133,10 @@ class CastPlayer extends Component {
 
   setTextTrack() {
     let { chrome } = window;
-    let { textTrack } = this.props;
+    let { ip, textTrack } = this.props;
 
     let sub = new chrome.cast.media.Track(1 /* track id */, chrome.cast.media.TrackType.TEXT);
-    sub.trackContentId = `http://172.16.1.9:6300/api/stream/subtitle/${textTrack.id}?offset=${textTrack.offset}`;
+    sub.trackContentId = `http://${ip.address}:6300/api/stream/subtitle/${textTrack.id}?offset=${textTrack.offset}`;
     sub.trackContentType = 'text/vtt';
     sub.subType = chrome.cast.media.TextTrackType.SUBTITLES;
     sub.name = textTrack.label;
@@ -241,7 +241,7 @@ class CastPlayer extends Component {
   }
 }
 
-const mapStateToProps = state => ({ cast: state.cast, stream: state.stream, textTrack: state.textTrack });
+const mapStateToProps = state => ({ ip: state.ip, cast: state.cast, stream: state.stream, textTrack: state.textTrack });
 
 const mapDispatchToProps = (dispatch) => ({ 
   createStream: bindActionCreators(createStream, dispatch),

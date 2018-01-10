@@ -9,6 +9,7 @@ import { connect } from 'react-redux';
 import { updateCastContext } from 'stores/cast';
 import { toggleFileBrowserDialog } from 'stores/file-browser';
 import { toggleFullscreen } from 'stores/app';
+import { getIpAddress } from 'stores/ip'; 
 
 import Cast from 'components/cast';
 import FileBrowser from 'containers/file-browser/file-browser-component';
@@ -46,12 +47,13 @@ class App extends Component {
   
   componentDidMount() {
     // Event listener for fullscreen change
-    const { toggleFullscreen } = this.props;
+    const { getIpAddress, toggleFullscreen } = this.props;
     document.addEventListener('fullscreenchange', (e) => toggleFullscreen('fullscreen'));
     document.addEventListener('webkitfullscreenchange', (e) => toggleFullscreen('fullscreen'));
     document.addEventListener('mozfullscreenchange', (e) => toggleFullscreen('fullscreen'));
     document.addEventListener('msfullscreenchange', (e) => toggleFullscreen('fullscreen'));
 
+    getIpAddress();
     // this.loadCastFramework();
   }
 
@@ -119,7 +121,8 @@ class App extends Component {
 
 const mapStateToProps = (state) => ({ app: state.app });
 
-const mapDispatchToProps = (dispatch) => ({ 
+const mapDispatchToProps = (dispatch) => ({
+  getIpAddress: bindActionCreators(getIpAddress, dispatch),
   updateCastContext: bindActionCreators(updateCastContext, dispatch),
   toggleFileBrowserDialog: bindActionCreators(toggleFileBrowserDialog, dispatch),
   toggleFullscreen: bindActionCreators(toggleFullscreen, dispatch)

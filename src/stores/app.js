@@ -6,7 +6,9 @@ export const toggleFullscreen = () => ({ type: 'FULLSCREEN_TOGGLED' });
 
 export const streamToGoogleCast = (option) => ({ type: 'OUTPUT_OPTION_UPDATED', option });
 
+
 const initState = {
+  gettingIp: false,
   isPlayerEnabled: false,
   isChromecast: false,
   isFullscreenEnabled: false
