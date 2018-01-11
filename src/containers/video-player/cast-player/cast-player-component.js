@@ -160,7 +160,7 @@ class CastPlayer extends Component {
     let { ip, textTrack } = this.props;
 
     let sub = new chrome.cast.media.Track(1 /* track id */, chrome.cast.media.TrackType.TEXT);
-    sub.trackContentId = `http://${ip.address}:6300/api/stream/subtitle/${textTrack.id}?offset=${textTrack.offset}`;
+    sub.trackContentId = `http://${ip.address}:6300/api/stream/subtitle/${textTrack.id}?offset=${textTrack.offset}&encoding=${textTrack.encoding}`;
     sub.trackContentType = 'text/vtt';
     sub.subType = chrome.cast.media.TextTrackType.SUBTITLES;
     sub.name = textTrack.label;

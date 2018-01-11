@@ -167,13 +167,12 @@ const loadSubtitle = async (req, res) => {
   let { offset, encoding } = req.query;
   offset = offset ? parseFloat(offset) : 0;
   let ext = path.extname(location);
-  
-  log(chalk.white('loading subtitle: ', location));
 
   try {
     let buffer = await fs.readFileAsync(location);
-    let charset = jschardet.detect(buffer);
-    let str = iconv.decode(buffer, charset.encoding);
+    if (encoding === 'auto') encoding = jschardet.detect(buffer).encoding;
+    let str = iconv.decode(buffer, encoding);
+    log(chalk.white('loading subtitle: ', location, encoding));
     res.set({ 'Content-Type': 'text/vtt' }); // set response header
     
     if (!offset && ext === '.vtt') return res.send(str);
