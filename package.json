@@ -8,7 +8,7 @@
     "dev": "nodemon server",
     "client": "react-scripts start",
     "build": "react-scripts build",
-    "cast": "node receiver",
+    "cast": "nodemon receiver",
     "electron": "electron ."
   },
   "proxy": "http://localhost:6300",
@@ -34,6 +34,7 @@
     "moment-duration-format": "^2.1.1",
     "morgan": "^1.9.0",
     "normalize.css": "^7.0.0",
+    "pug": "^2.0.0-rc.4",
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
     "react-redux": "^5.0.6",

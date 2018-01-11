@@ -36,7 +36,7 @@ const make = (dir) => {
   });
 };
 
-const remove = (filePath) => {
+const remove = async (filePath) => {
   let isFulfilled = false;
   return fs.statAsync(filePath)
     .then((stats) => {
@@ -189,7 +189,6 @@ const loadSubtitle = (req, res) => {
 };
 
 const cleanup = (req, res) => {
-  // remove tmp folder
   console.log(chalk.blueBright('terminate request id: ', req.body.id));
   terminate(req.body.id);
   res.sendStatus(200);

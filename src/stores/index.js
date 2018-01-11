@@ -22,7 +22,7 @@ const middlewares = [thunk];
 if (process.env.NODE_ENV !== 'production') {
   const { createLogger } = require('redux-logger');
   middlewares.push(createLogger({
-    predicate: (getState, action) => action.type !== 'UPDATE_STREAM_TIME'
+    predicate: (getState, action) => action.type !== 'STREAM_TIME_UPDATES'
   }));
 }
 

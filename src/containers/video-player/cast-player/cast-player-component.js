@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import _ from 'lodash';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
@@ -18,6 +19,7 @@ class CastPlayer extends Component {
     this.state = {
       isPaused: false,
       isMuted: false,
+      isBuffering: false,
       volume: 1,
       currTimeOffset: 0
     };
@@ -26,6 +28,8 @@ class CastPlayer extends Component {
     this.initPlayer = this.initPlayer.bind(this);
     this.cast = this.cast.bind(this);
     this.seek = this.seek.bind(this);
+    this.updateTime = this.updateTime.bind(this);
+    this.stopTimer = this.stopTimer.bind(this);
     this.setTextTrack = this.setTextTrack.bind(this);
     this.updateTextTrack = this.updateTextTrack.bind(this);
     this.muteOrUnmute = this.muteOrUnmute.bind(this);
@@ -43,6 +47,10 @@ class CastPlayer extends Component {
     if (textTrackEnabled || textTrackChanged) this.updateTextTrack();
   }
   
+  componentWillUnmount() {
+    this.stopTimer();
+  }
+
   componentDidMount() {
     const { stream } = this.props;
     if (stream.id !== '' && !stream.hasError) this.cast();
@@ -57,15 +65,16 @@ class CastPlayer extends Component {
   }
 
   initPlayer() {
-    const { cast } = window;
+    const { cast, chrome } = window;
     const { 
       IS_CONNECTED_CHANGED,
-      CURRENT_TIME_CHANGED,
       IS_PAUSED_CHANGED,
       VOLUME_LEVEL_CHANGED,
-      IS_MUTED_CHANGED
+      IS_MUTED_CHANGED,
+      PLAYER_STATE_CHANGED
     } = cast.framework.RemotePlayerEventType;
     const { stream, updateStreamTime } = this.props;
+    const { isPaused, isMuted, currTimeOffset, volume } = this.state;
 
     this.player = new cast.framework.RemotePlayer();
     this.controller = new cast.framework.RemotePlayerController(this.player);
@@ -78,24 +87,41 @@ class CastPlayer extends Component {
         this.cleanup();
       }
     });
-    
-    controller.addEventListener(CURRENT_TIME_CHANGED, () => {
-      const newTime = this.state.currTimeOffset + player.currentTime;
-      console.log(newTime);
-      if (newTime >= stream.duration) return this.stop();
-      updateStreamTime(newTime);
-    });
 
     controller.addEventListener(IS_PAUSED_CHANGED, () => {
-      this.setState({ isPaused: player.isPaused });
+      if (isPaused !== player.isPaused) {
+        this.setState({ isPaused: player.isPaused });
+      }
     });
 
     controller.addEventListener(VOLUME_LEVEL_CHANGED, () => {
-      this.setState({ volume: player.volumeLevel });
+      if (volume !== player.volumelevel) {
+        this.setState({ volume: player.volumeLevel });
+      }
     });
 
     controller.addEventListener(IS_MUTED_CHANGED, () => {
-      this.setState({ isMuted: player.isMuted });
+      if (isMuted !== player.isMuted) {
+        this.setState({ isMuted: player.isMuted });
+      }
+    });
+
+    controller.addEventListener(PLAYER_STATE_CHANGED, () => {
+      const { playerState } = player;
+
+      if (playerState === chrome.cast.media.PlayerState.PLAYING) {
+        this.updateTime();
+        this.setState({ isBuffering: false });
+      }
+      if (playerState === chrome.cast.media.PlayerState.PAUSED) {
+        this.stopTimer();
+        this.setState({ isBuffering: false });
+      }
+      if (playerState === chrome.cast.media.PlayerState.BUFFERING) {
+        this.stopTimer();
+        this.setState({ isBuffering: true });
+      }
+      console.log(player);
     });
   }
 
@@ -108,7 +134,7 @@ class CastPlayer extends Component {
     const mediaSource = `http://${ip.address}:6300/api/stream/video/${stream.id}/playlist.m3u8`;
     const mediaInfo = new chrome.cast.media.MediaInfo(mediaSource);
     mediaInfo.contentType = 'application/vnd.apple.mpegurl';
-    mediaInfo.streamType = chrome.cast.media.StreamType.BUFFERED;
+    mediaInfo.streamType = chrome.cast.media.StreamType.LIVE;
     // style text track
     mediaInfo.textTrackStyle = new chrome.cast.media.TextTrackStyle();
     mediaInfo.textTrackStyle.backgroundColor = '#00000000';
@@ -126,7 +152,6 @@ class CastPlayer extends Component {
       .then(() => {
         console.log('load success');
         this.initPlayer();
-        // this.media = new chrome.cast.media.Media(this.castSession.sessionId);
       }, (err) => console.log('Error code: ', err))
       .catch(err => console.log(err));
   }
@@ -152,53 +177,66 @@ class CastPlayer extends Component {
   }
 
   seek(time) {
-    // unload current session
+    const { stream, createStream, updateStreamTime } = this.props;
+    this.controller.stop();
 
-    // init new session with new seek time
+    this.setState({ currTimeOffset: time }, () => {
+      updateStreamTime(time);
+      createStream(stream.video, time)
+        .then(() => {
+          if (!stream.hasError) this.cast();
+        })
+        .catch(err => {
+          console.log(err);
+        });
+    });
+  }
+
+  updateTime(prev = Date.now() - 1000) {
+    const { chrome } = window;
+    const { currTimeOffset } = this.state;
+    const { stream, updateStreamTime } = this.props;
+    const { playerState } = this.player;
+    const isPlaying = playerState === chrome.cast.media.PlayerState.PLAYING;
+   
+    updateStreamTime(stream.currentTime + 1);
+    if (isPlaying) this.timer = setTimeout(_.partial(this.updateTime, Date.now()), 2000 - (Date.now() - prev));
+  }
+
+  stopTimer() {
+    if (this.timer) {
+      clearTimeout(this.timer);
+      this.timer = null;
+    }
   }
 
   playOrPause() {
-    console.log('play or pause');
-    const { isPaused } = this.state;
-    this.player.isPaused = !isPaused;
-    this.controller.playOrPause();
+    const { isPaused } = this.player;
+    this.setState({ isPaused: !isPaused }, () => {
+      this.controller.playOrPause();
+    });
   }
 
   muteOrUnmute() {
-    const { cast } = window;
-    const { isMuted } = this.state;
-
-    this.castSession = cast.framework.CastContext.getInstance().getCurrentSession();
-    this.castSession.setMute(!isMuted)
-      .then(err => {
-        if (err) throw err;
-        this.setState({ isMuted: !isMuted });
-      })
-      .catch(err => {
-        console.log('failed to set mute, error code: ', err);
-      });
+    const { isMuted } = this.player;
+    this.setState({ isMuted: !isMuted }, () => {
+      this.controller.muteOrUnmute();
+    });
   }
 
   setVolume(e) {
-    const { cast } = window;
-    const volume = parseFloat(e.target.value).toFixed(1);
-    console.log(this.controller);
-    this.player.volumeLevel = volume;
-    this.controller.setVolume();
-    // this.castSession = cast.framework.CastContext.getInstance().getCurrentSession();
-
-    // this.castSession.setVolume(volume)
-    //   .then(err => {
-    //     if (err) throw err;
-    //     this.setState({ volume });
-    //   })
-    //   .catch(err => console.log('failed to set volume, error code: ', err));
+    const volume = parseFloat(e.target.value);
+    this.setState({ volume }, () => {
+      this.player.volumeLevel = volume;
+      this.controller.setVolumeLevel();
+    });
   }
 
   stop() {
-    console.log('video has ended');
-    if (this.castSession) this.castSession.endSession(true);
-    else this.cleanup();
+    console.log('video has stopped');
+    if (this.controller) this.controller.stop();
+    this.stopTimer();
+    this.cleanup();
   }
 
   cleanup() {
