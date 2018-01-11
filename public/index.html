@@ -34,7 +34,8 @@
         <script>
           const initializeCastApi = () => {
             cast.framework.CastContext.getInstance().setOptions({
-              receiverApplicationId: '7DDC0933'
+              receiverApplicationId: chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID
+              // receiverApplicationId: '7DDC0933'
             });
             cast.framework.CastContext.getInstance().requestSession()
               .then(() => {

@@ -19,7 +19,7 @@ class WebPlayer extends Component {
     super(props);
 
     this.state = {
-      isLoading: false,
+      isLoading: true,
       isPaused: false,
       isMuted: false,
       isControlsVisible: true,
@@ -44,9 +44,12 @@ class WebPlayer extends Component {
     this.cleanup = this.cleanup.bind(this);
   }
 
-  componentDidMount() {
-    const { stream } = this.props;
-    if (stream.id !== '' && !stream.hasError) this.initHls();
+  componentDidUpdate(prevProps, prevState) {
+    const { stream: prev } = prevProps;
+    const { stream: curr } = this.props;
+  
+    const isNewStream = curr.id !== prev.id;
+    if (isNewStream && !curr.hasError) this.initHls();
   }
 
   componentWillUnmount() {
@@ -57,6 +60,7 @@ class WebPlayer extends Component {
   initHls() {
     const { video } = this;
     const { stream } = this.props;
+    const source = `/api/stream/video/${stream.id}/playlist.m3u8`;
 
     this.hls = new Hls({ 
       debug: true,
@@ -67,13 +71,10 @@ class WebPlayer extends Component {
     });
     this.hls.attachMedia(video);
     // load source when hls is attached to video element
-    this.hls.on(Hls.Events.MEDIA_ATTACHED, () => {
-      this.setState({ isLoading: true }, () => {
-        this.hls.loadSource(`/api/stream/video/${stream.id}/playlist.m3u8`);
-      });
-    });
+    this.hls.on(Hls.Events.MEDIA_ATTACHED, this.hls.loadSource.bind(this.hls, source));
+
     this.hls.on(Hls.Events.MANIFEST_PARSED, (evt, data) => {
-      this.setState({ isLoading: false }, () => video.play());
+      this.setState({ isLoading: false }, video.play.bind(video));
     });
     // hls error handling
     this.hls.on(Hls.Events.ERROR, (evt, data) => { 
@@ -97,8 +98,8 @@ class WebPlayer extends Component {
     e.preventDefault();
     const { video } = this;
 
-    if (video.paused) this.setState({ isPaused: false }, () => video.play());
-    else this.setState({ isPaused: true }, () => video.pause());
+    if (video.paused) this.setState({ isPaused: false }, video.play.bind(video));
+    else this.setState({ isPaused: true }, video.pause.bind(video));
   }
 
   showControls(e) {
@@ -125,11 +126,7 @@ class WebPlayer extends Component {
 
     if (this.hls) this.hls.destroy(); // destroy current hls stream
 
-    this.setState({ currTimeOffset: seekTime }, () => {
-      createStream(stream.video, seekTime).then(() => {
-        if (!stream.hasError) this.initHls();
-      });
-    });
+    this.setState({ isLoading: true, currTimeOffset: seekTime }, createStream.bind(null, stream.video, seekTime));
   }
 
   onVideoPlaying() {

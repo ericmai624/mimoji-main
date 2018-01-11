@@ -34,13 +34,6 @@ const Label = styled.label`
 `;
 
 class App extends Component {
-  constructor(props) {
-    super(props);
-    
-    this.loadCastFramework = this.loadCastFramework.bind(this);
-    this.initializeCastApi = this.initializeCastApi.bind(this);
-  }
-  
   componentDidMount() {
     const { getIpAddress, toggleFullscreen } = this.props;
     

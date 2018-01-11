@@ -57,15 +57,10 @@ class FileBrowser extends Component {
     const { isOptionsVisible, file } = this.state;
     
     streamToGoogleCast(option);
-    createStream(file.filePath)
-      .then(() => {
-        if (fileBrowser.isVisible) toggleFileBrowserDialog();
-        if (isOptionsVisible) this.toggleCastOptions();
-        if (!app.isPlayerEnabled) togglePlayer();
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+    createStream(file.filePath);
+    if (fileBrowser.isVisible) toggleFileBrowserDialog();
+    if (isOptionsVisible) this.toggleCastOptions();
+    if (!app.isPlayerEnabled) togglePlayer();
   }
 
   addTextTrack(location, label, encoding, offset) {

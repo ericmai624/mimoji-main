@@ -9,7 +9,7 @@ const chokidar = require('chokidar');
 const jschardet = require('jschardet');
 const iconv = require('iconv-lite');
 const log = console.log.bind(console);
-const { createHash } = require('crypto');
+const { randomBytes } = require('crypto');
 const { sep } = path;
 
 const streams = {};
@@ -65,9 +65,9 @@ const remove = (filePath) => {
     });
 };
 
-const terminate = (id) => {
-  if (!streams[id]) return;
-  let { command, watcher } = streams[id];
+const terminate = (stream, id) => {
+  if (!stream) return;
+  let { command, watcher } = stream;
   watcher.close();
   command.kill();
   delete streams[id];
@@ -78,9 +78,10 @@ const terminate = (id) => {
 const create = async (req, res) => {
   let { video, seek } = req.body;
   if (!video || video === '') return res.end();
-  let id = createHash('sha256').update(video).digest('hex');
+  // let id = createHash('sha256').update(video).digest('hex');
+  let id = randomBytes(8).toString('hex');
 
-  terminate(id);
+  _.each(streams, terminate);
 
   try {
     let directory = await make(path.join(os.tmpdir(), 'onecast'));
@@ -104,7 +105,8 @@ const create = async (req, res) => {
       .on('unlink', file => {
         newStream.fileCount--;
         // if (newStream.fileCount <= 6) newStream.command.kill('SIGCONT');
-      });
+      })
+      .on('error', log);
     streams[id] = newStream;
   } catch (err) {
     log('An error has occured when creating new stream process: ', err);
@@ -123,31 +125,40 @@ const serve = (req, res) => {
     switch (ext) {
     case '.m3u8':
       res.set({ 'Content-Type': 'application/x-mpegURL' });
-      return fs.createReadStream(filePath, { highWaterMark: 128 * 1024}).pipe(res);
-    case '.ts':
-      let readStream = fs.createReadStream(filePath);
 
-      readStream.on('end', () => {
-        if (finishedQueue.length > 2) {
-          let trash = finishedQueue.shift();
-          remove(trash);
-          uniqueFilePath.delete(filePath);
-        }
-        if (!uniqueFilePath.has(filePath)) {
-          uniqueFilePath.add(filePath);
-          finishedQueue.push(filePath);
-        }
-      });
-  
+      fs.createReadStream(filePath, { highWaterMark: 128 * 1024})
+        .on('error', err => {
+          throw err;
+        })
+        .pipe(res);
+      break;
+    case '.ts':
       res.set({ 'Content-Type': 'video/MP2T' });
-      return readStream.pipe(res);
+
+      fs.createReadStream(filePath)
+        .on('end', () => {
+          if (finishedQueue.length > 2) {
+            let trash = finishedQueue.shift();
+            remove(trash);
+            uniqueFilePath.delete(filePath);
+          }
+          if (!uniqueFilePath.has(filePath)) {
+            uniqueFilePath.add(filePath);
+            finishedQueue.push(filePath);
+          }
+        })
+        .on('error', err => {
+          throw err;
+        })
+        .pipe(res);
+      break;
     default:
       throw new Error('Unsupported format');
       break;
     }
   } catch (err) {
     log(chalk.red(err));
-    return res.sendStatus(500);
+    res.sendStatus(500);
   }
 };
 
@@ -187,7 +198,9 @@ const loadSubtitle = async (req, res) => {
 const cleanup = (req, res) => {
   log(chalk.blueBright('terminate request id: ', req.body.id));
   try {
-    terminate(req.body.id);
+    const { id } = req.body;
+    const stream = streams[id];
+    terminate(stream, id);
     res.sendStatus(200);
   } catch (err) {
     log(err);
