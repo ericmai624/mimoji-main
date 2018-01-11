@@ -5,7 +5,7 @@
   "license": "MIT",
   "scripts": {
     "start": "node server",
-    "dev": "nodemon server",
+    "dev": "concurrently \"nodemon server\" \"react-scripts start\"",
     "client": "react-scripts start",
     "build": "react-scripts build",
     "cast": "nodemon receiver",
@@ -46,6 +46,7 @@
   },
   "devDependencies": {
     "@types/hls.js": "^0.8.0",
+    "concurrently": "^3.5.1",
     "electron": "1.7.10"
   }
 }

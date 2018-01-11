@@ -73,8 +73,7 @@ class CastPlayer extends Component {
       IS_MUTED_CHANGED,
       PLAYER_STATE_CHANGED
     } = cast.framework.RemotePlayerEventType;
-    const { stream, updateStreamTime } = this.props;
-    const { isPaused, isMuted, currTimeOffset, volume } = this.state;
+    const { isPaused, isMuted, volume } = this.state;
 
     this.player = new cast.framework.RemotePlayer();
     this.controller = new cast.framework.RemotePlayerController(this.player);
@@ -194,7 +193,6 @@ class CastPlayer extends Component {
 
   updateTime(prev = Date.now() - 1000) {
     const { chrome } = window;
-    const { currTimeOffset } = this.state;
     const { stream, updateStreamTime } = this.props;
     const { playerState } = this.player;
     const isPlaying = playerState === chrome.cast.media.PlayerState.PLAYING;

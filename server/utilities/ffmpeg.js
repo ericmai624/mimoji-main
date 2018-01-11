@@ -35,8 +35,8 @@ const getFramerate = metadata => {
   return result;
 };
 
-const processMedia = ({ video, seek, id, location, metadata }) => {
-  let command = ffmpeg(video);
+const processMedia = (input, seek, metadata, output, cb) => {
+  let command = ffmpeg(input);
   let bitrate = 12000; // output bitrate
   let framerate = getFramerate(metadata);
   let inputOptions = ['-hide_banner', '-y', '-copyts', '-loglevel panic'];
@@ -66,11 +66,11 @@ const processMedia = ({ video, seek, id, location, metadata }) => {
     '-hls_list_size 0',
     // `-hls_base_url http://172.16.1.19:3000/api/stream/video/${id}/`,
     '-hls_segment_type mpegts',
-    `-hls_segment_filename ${path.join(location, 'file_%05d.ts')}`,
+    `-hls_segment_filename ${path.join(output, 'file_%05d.ts')}`,
     '-hls_flags program_date_time+append_list'
   ];
 
-  if (seek) inputOptions.push(`-ss ${seek}`);
+  if (seek && typeof seek === 'number') inputOptions.push(`-ss ${seek}`);
   console.log(chalk.cyan('seeking: ', seek ? seek : 0));
 
   command
@@ -86,19 +86,18 @@ const processMedia = ({ video, seek, id, location, metadata }) => {
       console.log('Stderr output: ' + stderrLine);
     })
     .on('error', (err) => {
-      console.log(chalk.red(err));
+      cb(err);
     })
     .on('end', () => {
       console.log(chalk.cyan('process finished'));
     })
-    .save(path.join(location, 'playlist.m3u8'));
+    .save(path.join(output, 'playlist.m3u8'));
 
     
   return command;
 };
 
 const getMetadata = (file) => {
-  console.log(file);
   return new Promise((resolve, reject) => {
     ffmpeg.ffprobe(file, (err, metadata) => {
       if (err) reject(err);

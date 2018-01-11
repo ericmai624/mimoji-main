@@ -46,7 +46,7 @@ const arrangeContent = (input, dir) => {
 
 const getHomedirWin32 = (cb) => {
   exec('wmic logicaldisk get name', (err, stdout, stderr) => {
-    if (err) return cb(err, null) ;
+    if (err) return cb(err, null);
     let content = stdout.split('\n').slice(1).map(partition => {
       let letter = partition.trim();
       if (letter === '') return null;

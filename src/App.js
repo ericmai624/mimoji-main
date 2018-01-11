@@ -19,9 +19,7 @@ fontawesome.library.add(solid, regular);
 
 const LabelWrapper = styled.div`
   height: 100%;
-  grid-row: 2;
   font-size: 2em;
-  margin-top: -50px;
 `;
 
 const Label = styled.label`

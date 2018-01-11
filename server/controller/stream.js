@@ -8,6 +8,7 @@ const util = require('../utilities');
 const chokidar = require('chokidar');
 const jschardet = require('jschardet');
 const iconv = require('iconv-lite');
+const log = console.log.bind(console);
 const { createHash } = require('crypto');
 const { sep } = path;
 
@@ -20,7 +21,7 @@ const open = (path, cb, retry = 0) => {
   return fs.open(path, 'r', (err, fd) => {
     if (!err) return cb(null, fd);
     if (err && err.code === 'ENOENT' && retry < 20) {
-      console.log(chalk.white(`waiting for ${path}`));
+      log(chalk.white(`waiting for ${path}`));
       return setTimeout(_.partial(open, path, cb, retry + 1), 1000);
     }
     return cb(err);
@@ -31,12 +32,12 @@ const make = (dir) => {
   return new Promise((resolve, reject) => {
     fs.mkdir(dir, (err) => {
       if (err && err.code !== 'EEXIST') reject(err);
-      resolve();
+      resolve(dir);
     });
   });
 };
 
-const remove = async (filePath) => {
+const remove = (filePath) => {
   let isFulfilled = false;
   return fs.statAsync(filePath)
     .then((stats) => {
@@ -58,63 +59,64 @@ const remove = async (filePath) => {
       return fs.rmdirAsync(filePath);
     })
     .catch((err) => {
-      if (isFulfilled) return console.log(chalk.green('removed ', filePath));
+      if (isFulfilled) return log(chalk.green('removed ', filePath));
 
-      console.log(chalk.red(err));
+      log(chalk.red(err));
     });
-};
-
-const isSupported = (metadata) => {
-  let { streams } = metadata;
-  return streams.filter(s => s['codec_type'] === 'video' && s['codec_name'] === 'h264').length > 0;
 };
 
 const terminate = (id) => {
   if (!mediaProcesses[id]) return;
-  let { location, command, watcher } = mediaProcesses[id];
-  command.kill();
+  let { command, watcher } = mediaProcesses[id];
   watcher.close();
-  remove(location);
+  command.kill();
   delete mediaProcesses[id];
   finishedQueue.length = 0;
   uniqueFilePath.clear();
 };
 
-const create = (req, res) => {
+const create = async (req, res) => {
   let { video, seek } = req.body;
   if (!video || video === '') return res.end();
   let id = createHash('sha256').update(video).digest('hex');
-  let directory = path.join(os.tmpdir(), 'onecast');
+  // let directory = path.join(os.tmpdir(), 'onecast');
 
   terminate(id);
 
-  make(directory) // create directory, ignore if already exists
-    .then(() => {
-      return Promise.all([ fs.mkdtempAsync(directory + sep), util.ffmpeg.getMetadata(video) ]);
-    })
-    .then(([location, metadata]) => {
-      // console.log(metadata);
-      mediaProcesses[id] = { id, video, seek, location, metadata };
-      mediaProcesses[id].command = util.ffmpeg.processMedia(mediaProcesses[id]);
-      mediaProcesses[id].fileCount = 0;
-      mediaProcesses[id].watcher = chokidar.watch(location, { ignored: /\.tmp$/ })
-        .on('add', file => {
-          if (path.extname(file) === '.m3u8') return res.json({ id, duration: metadata.format.duration });
-          mediaProcesses[id].fileCount++;
-          // if (mediaProcesses[id].fileCount > 10) mediaProcesses[id].command.kill('SIGSTOP');
-        })
-        .on('unlink', file => {
-          mediaProcesses[id].fileCount--;
-          // if (mediaProcesses[id].fileCount <= 6) mediaProcesses[id].command.kill('SIGCONT');
-        });
-    })
-    .catch(err => console.log(chalk.red(err)));
+  try {
+    let directory = await make(path.join(os.tmpdir(), 'onecast'));
+    let [output, metadata] = await Promise.all([ fs.mkdtempAsync(directory + sep), util.ffmpeg.getMetadata(video) ]);
+
+    const newStream = { input: video, output };
+    newStream.command = util.ffmpeg.processMedia(video, seek, metadata, output, err => {
+      if (err) {
+        log(chalk.red('ffmpeg error: ', err));
+        remove(output);
+      }
+    });
+    newStream.fileCount = 0;
+    newStream.watcher = chokidar.watch(output, { ignored: /\.tmp$/ })
+      .on('add', file => {
+        if (path.extname(file) === '.m3u8') return res.json({ id, duration: metadata.format.duration });
+        newStream.fileCount++;
+        // if (newStream.fileCount > 10) newStream.command.kill('SIGSTOP');
+      })
+      .on('unlink', file => {
+        newStream.fileCount--;
+        // if (newStream.fileCount <= 6) newStream.command.kill('SIGCONT');
+      });
+    mediaProcesses[id] = newStream;
+  } catch (err) {
+    log('An error has occured when creating new stream process: ', err);
+    terminate(id);
+    res.sendStatus(500);
+  }
 };
 
 const serve = (req, res) => {
   let { id, file } = req.params;
-  let { location } = mediaProcesses[id];
-  let filePath = path.join(location, file);
+  let { output } = mediaProcesses[id];
+  let filePath = path.join(output, file);
   let ext = path.extname(filePath);
 
   try {
@@ -123,9 +125,9 @@ const serve = (req, res) => {
       res.set({ 'Content-Type': 'application/x-mpegURL' });
       return fs.createReadStream(filePath, { highWaterMark: 128 * 1024}).pipe(res);
     case '.ts':
-      let stream = fs.createReadStream(filePath);
+      let readStream = fs.createReadStream(filePath);
 
-      stream.on('end', () => {
+      readStream.on('end', () => {
         if (finishedQueue.length > 2) {
           let trash = finishedQueue.shift();
           remove(trash);
@@ -137,18 +139,14 @@ const serve = (req, res) => {
         }
       });
   
-      return fs.stat(filePath, (err, stat) => {
-        let headers = { 'Content-Type': 'video/MP2T' };
-        if (stat) headers['Content-Length'] = stat.size;
-        res.set(headers);
-        return stream.pipe(res);
-      });
+      res.set({ 'Content-Type': 'video/MP2T' });
+      return readStream.pipe(res);
     default:
       throw new Error('Unsupported format');
       break;
     }
   } catch (err) {
-    console.log(chalk.red(err));
+    log(chalk.red(err));
     return res.sendStatus(500);
   }
 };
@@ -162,7 +160,7 @@ const addSubtitle = (req, res) => {
   return res.json(id);
 };
 
-const loadSubtitle = (req, res) => {
+const loadSubtitle = async (req, res) => {
   let { id } = req.params;
   if (!id) return res.end();
   let location = subtitles[id];
@@ -170,28 +168,33 @@ const loadSubtitle = (req, res) => {
   offset = offset ? parseFloat(offset) : 0;
   let ext = path.extname(location);
   
-  console.log(chalk.white('loading subtitle: ', location));
+  log(chalk.white('loading subtitle: ', location));
 
-  fs.readFileAsync(location)
-    .then(buffer => {
-      let charset = jschardet.detect(buffer);
-      let str = iconv.decode(buffer, charset.encoding);
-      res.set({ 'Content-Type': 'text/vtt' }); // set response header
-      
-      if (!offset && ext === '.vtt') return res.send(str);
-      let sub = util.subtitleParser(str, offset, ext);
-      return res.send(sub);
-    }) 
-    .catch((err) => {
-      console.log(chalk.red(err));
-      res.sendStatus(500);
-    });
+  try {
+    let buffer = await fs.readFileAsync(location);
+    let charset = jschardet.detect(buffer);
+    let str = iconv.decode(buffer, charset.encoding);
+    res.set({ 'Content-Type': 'text/vtt' }); // set response header
+    
+    if (!offset && ext === '.vtt') return res.send(str);
+    let sub = util.subtitleParser(str, offset, ext);
+    return res.send(sub);
+  } catch (err) {
+    log(chalk.red(err));
+    res.sendStatus(500);
+  }
 };
 
 const cleanup = (req, res) => {
-  console.log(chalk.blueBright('terminate request id: ', req.body.id));
-  terminate(req.body.id);
-  res.sendStatus(200);
+  log(chalk.blueBright('terminate request id: ', req.body.id));
+  try {
+    terminate(req.body.id);
+    res.sendStatus(200);
+  } catch (err) {
+    log(err);
+    res.sendStatus(500);
+  }
+
 };
 
 module.exports = { create, serve, addSubtitle, loadSubtitle, cleanup };
