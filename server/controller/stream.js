@@ -12,7 +12,7 @@ const log = console.log.bind(console);
 const { createHash } = require('crypto');
 const { sep } = path;
 
-const mediaProcesses = {};
+const streams = {};
 const subtitles = {};
 const finishedQueue = [];
 const uniqueFilePath = new Set();
@@ -66,11 +66,11 @@ const remove = (filePath) => {
 };
 
 const terminate = (id) => {
-  if (!mediaProcesses[id]) return;
-  let { command, watcher } = mediaProcesses[id];
+  if (!streams[id]) return;
+  let { command, watcher } = streams[id];
   watcher.close();
   command.kill();
-  delete mediaProcesses[id];
+  delete streams[id];
   finishedQueue.length = 0;
   uniqueFilePath.clear();
 };
@@ -79,13 +79,13 @@ const create = async (req, res) => {
   let { video, seek } = req.body;
   if (!video || video === '') return res.end();
   let id = createHash('sha256').update(video).digest('hex');
-  // let directory = path.join(os.tmpdir(), 'onecast');
 
   terminate(id);
 
   try {
     let directory = await make(path.join(os.tmpdir(), 'onecast'));
-    let [output, metadata] = await Promise.all([ fs.mkdtempAsync(directory + sep), util.ffmpeg.getMetadata(video) ]);
+    let [output, metadata] = await Promise.all(
+      [ fs.mkdtempAsync(directory + sep), util.ffmpeg.getMetadata(video) ]);
 
     const newStream = { input: video, output };
     newStream.command = util.ffmpeg.processMedia(video, seek, metadata, output, err => {
@@ -105,7 +105,7 @@ const create = async (req, res) => {
         newStream.fileCount--;
         // if (newStream.fileCount <= 6) newStream.command.kill('SIGCONT');
       });
-    mediaProcesses[id] = newStream;
+    streams[id] = newStream;
   } catch (err) {
     log('An error has occured when creating new stream process: ', err);
     terminate(id);
@@ -115,7 +115,7 @@ const create = async (req, res) => {
 
 const serve = (req, res) => {
   let { id, file } = req.params;
-  let { output } = mediaProcesses[id];
+  let { output } = streams[id];
   let filePath = path.join(output, file);
   let ext = path.extname(filePath);
 

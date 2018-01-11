@@ -3,6 +3,7 @@ const _ = require('lodash');
 const path = require('path');
 const Promise = require('bluebird');
 const fs = Promise.promisifyAll(require('fs'));
+const log = console.log.bind(console);
 const { spawn, exec } = require('child_process');
 
 const videoExts = [
@@ -78,37 +79,33 @@ const readdirWin32 = (location, nav) => {
   });
 };
 
-const readDir = (req, res) => {
+const readdir = async (req, res) => {
   let { dir, nav } = req.query;
 
-  if (process.platform === 'win32') {
-    if (dir === '') {
-      return getHomedirWin32((err, result) => {
-        if (!err) return res.json(result);
-        console.log('failed to get home directory: ', err);
-        return res.sendStatus(500);
-      });
+  try {
+    if (process.platform === 'win32') {
+      if (dir === '') {
+        return getHomedirWin32((err, result) => {
+          if (!err) return res.json(result);
+          log('failed to get home directory: ', err);
+          return res.sendStatus(500);
+        });
+      }
+      let response = await readdirWin32(dir, nav);
+      return res.json(response);
     }
-    return readdirWin32(dir, nav)
-      .then(result => res.json(result))
-      .catch(err => res.sendStatus(500));
+
+    let directory = dir === '' ? homedir() : dir;
+    if (nav === '..') directory = path.join(directory, nav);
+  
+    // MacOSX or Linux
+    let files = await fs.readdirAsync(directory);
+    let content = arrangeContent(files, directory);
+    return res.json({ directory, content });
+  } catch (err) {
+    log(err);
+    res.sendStatus(404);
   }
-
-
-  // MacOSX or Linux
-  let directory = dir === '' ? homedir() : dir;
-  if (nav === '..') directory = path.join(directory, nav);
-
-  return fs.readdirAsync(directory)
-    .then((items) => {
-      console.log(items);
-      let content = arrangeContent(items, directory);
-      return res.json({ directory, content });
-    })
-    .catch((err) => {
-      console.log(err);
-      res.sendStatus(404);
-    });
 };
 
-module.exports = { readDir };
+module.exports = { readdir };

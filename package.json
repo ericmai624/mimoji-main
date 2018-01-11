@@ -5,7 +5,7 @@
   "license": "MIT",
   "scripts": {
     "start": "node server",
-    "dev": "concurrently \"nodemon server\" \"react-scripts start\"",
+    "dev": "concurrently --prefix-colors white,blue \"nodemon server\" \"react-scripts start\"",
     "client": "react-scripts start",
     "build": "react-scripts build",
     "cast": "nodemon receiver",
@@ -23,6 +23,7 @@
     "body-parser": "^1.18.2",
     "chalk": "^2.3.0",
     "chokidar": "^2.0.0",
+    "concurrently": "^3.5.1",
     "express": "^4.16.2",
     "fluent-ffmpeg": "^2.1.2",
     "hls.js": "^0.8.9",
@@ -46,7 +47,6 @@
   },
   "devDependencies": {
     "@types/hls.js": "^0.8.0",
-    "concurrently": "^3.5.1",
     "electron": "1.7.10"
   }
 }

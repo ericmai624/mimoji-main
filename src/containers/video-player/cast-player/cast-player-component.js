@@ -48,7 +48,7 @@ class CastPlayer extends Component {
   }
   
   componentWillUnmount() {
-    this.stopTimer();
+    this.cleanup();
   }
 
   componentDidMount() {
@@ -69,11 +69,13 @@ class CastPlayer extends Component {
     const { 
       IS_CONNECTED_CHANGED,
       IS_PAUSED_CHANGED,
+      CURRENT_TIME_CHANGED,
       VOLUME_LEVEL_CHANGED,
       IS_MUTED_CHANGED,
       PLAYER_STATE_CHANGED
     } = cast.framework.RemotePlayerEventType;
-    const { isPaused, isMuted, volume } = this.state;
+    const { isPaused, isMuted, volume, currTimeOffset } = this.state;
+    const { updateStreamTime } = this.props;
 
     this.player = new cast.framework.RemotePlayer();
     this.controller = new cast.framework.RemotePlayerController(this.player);
@@ -93,6 +95,10 @@ class CastPlayer extends Component {
       }
     });
 
+    controller.addEventListener(CURRENT_TIME_CHANGED, event => {
+      if (event.value) updateStreamTime(currTimeOffset + event.value);
+    });
+
     controller.addEventListener(VOLUME_LEVEL_CHANGED, () => {
       if (volume !== player.volumelevel) {
         this.setState({ volume: player.volumeLevel });
@@ -105,22 +111,19 @@ class CastPlayer extends Component {
       }
     });
 
-    controller.addEventListener(PLAYER_STATE_CHANGED, () => {
-      const { playerState } = player;
-
-      if (playerState === chrome.cast.media.PlayerState.PLAYING) {
+    controller.addEventListener(PLAYER_STATE_CHANGED, event => {
+      const { value } = event;
+      const { PLAYING, PAUSED, BUFFERING } = chrome.cast.media.PlayerState;
+      if (value === PLAYING) {
         this.updateTime();
-        this.setState({ isBuffering: false });
-      }
-      if (playerState === chrome.cast.media.PlayerState.PAUSED) {
+        this.setState({ isPaused: false, isBuffering: false });
+      } else if (value === PAUSED) {
         this.stopTimer();
-        this.setState({ isBuffering: false });
-      }
-      if (playerState === chrome.cast.media.PlayerState.BUFFERING) {
+        this.setState({ isPaused: true, isBuffering: false });
+      } else if (value === BUFFERING) {
         this.stopTimer();
         this.setState({ isBuffering: true });
       }
-      console.log(player);
     });
   }
 
@@ -156,11 +159,14 @@ class CastPlayer extends Component {
   }
 
   setTextTrack() {
-    let { chrome } = window;
-    let { ip, textTrack } = this.props;
+    const { chrome } = window;
+    const { ip, textTrack } = this.props;
 
-    let sub = new chrome.cast.media.Track(1 /* track id */, chrome.cast.media.TrackType.TEXT);
-    sub.trackContentId = `http://${ip.address}:6300/api/stream/subtitle/${textTrack.id}?offset=${textTrack.offset}&encoding=${textTrack.encoding}`;
+    const sub = new chrome.cast.media.Track(1 /* track id */, chrome.cast.media.TrackType.TEXT);
+    const host = `http://${ip.address}:6300`;
+    const pathname = `/api/stream/subtitle/${textTrack.id}`;
+    const query = `offset=${textTrack.offset}&encoding=${textTrack.encoding}`;
+    sub.trackContentId = `${host}${pathname}?${query}`;
     sub.trackContentType = 'text/vtt';
     sub.subType = chrome.cast.media.TextTrackType.SUBTITLES;
     sub.name = textTrack.label;
@@ -233,13 +239,14 @@ class CastPlayer extends Component {
   stop() {
     console.log('video has stopped');
     if (this.controller) this.controller.stop();
-    this.stopTimer();
     this.cleanup();
   }
 
   cleanup() {
     console.log('cleaning up Cast Player');
-    const { stream, togglePlayer, resetStream, resetTextTrack } = this.props;
+    const { app, stream, togglePlayer, resetStream, resetTextTrack } = this.props;
+    if (stream.id === '') return;
+    this.stopTimer(); // stop the currentTime timer
 
     const method = 'post';
     const headers = new Headers();
@@ -250,7 +257,7 @@ class CastPlayer extends Component {
 
     resetStream();
     resetTextTrack();
-    togglePlayer();
+    if (app.isPlayerEnabled) togglePlayer();
   }
 
   render() {
@@ -277,7 +284,7 @@ class CastPlayer extends Component {
   }
 }
 
-const mapStateToProps = state => ({ ip: state.ip, cast: state.cast, stream: state.stream, textTrack: state.textTrack });
+const mapStateToProps = state => ({ ip: state.ip, app: state.app, stream: state.stream, textTrack: state.textTrack });
 
 const mapDispatchToProps = (dispatch) => ({ 
   createStream: bindActionCreators(createStream, dispatch),
