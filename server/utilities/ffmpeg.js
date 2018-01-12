@@ -6,6 +6,7 @@ const ffmpeg = require('fluent-ffmpeg');
 const chalk = require('chalk');
 const Promise = require('bluebird');
 const platform = os.platform();
+const log = console.log.bind(console);
 const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
 const ffprobePath = require('@ffprobe-installer/ffprobe').path;
 
@@ -22,6 +23,8 @@ if (platform === 'darwin') {
 }
 */
 
+const isNumber = num => typeof num === 'number';
+
 const getFramerate = metadata => {
   let result = 24;
 
@@ -30,12 +33,12 @@ const getFramerate = metadata => {
   if (tracks.length < 1) return result;
 
   let [a, b] = tracks[0]['r_frame_rate'].split('/').map(Number);
-  if (typeof a === 'number' && typeof b === 'number' && a !== 0 && b !== 0) result = Math.round(a / b);
+  if (isNumber(a) && isNumber(b) && a !== 0 && b !== 0) result = a / b;
   
   return result;
 };
 
-const processMedia = (input, seek, metadata, output, cb) => {
+const processMedia = (input, seek, metadata, output, onError, onFinished) => {
   let command = ffmpeg(input);
   let bitrate = 12000; // output bitrate
   let framerate = getFramerate(metadata);
@@ -64,14 +67,13 @@ const processMedia = (input, seek, metadata, output, cb) => {
     '-hls_time 4',
     '-start_number 0',
     '-hls_list_size 0',
-    // `-hls_base_url http://172.16.1.19:3000/api/stream/video/${id}/`,
     '-hls_segment_type mpegts',
     `-hls_segment_filename ${path.join(output, 'file_%05d.ts')}`,
     '-hls_flags program_date_time+append_list'
   ];
 
-  if (seek && typeof seek === 'number') inputOptions.push(`-ss ${seek}`);
-  console.log(chalk.cyan('seeking: ', seek ? seek : 0));
+  if (seek && isNumber(seek)) inputOptions.push(`-ss ${seek}`);
+  log(chalk.cyan('seeking: ', seek ? seek : 0));
 
   command
     .inputOptions(inputOptions)
@@ -86,13 +88,14 @@ const processMedia = (input, seek, metadata, output, cb) => {
       console.log('Stderr output: ' + stderrLine);
     })
     .on('error', (err) => {
-      cb(err);
+      log(chalk.red('ffmpeg error: ', err));
+      onError(err);
     })
     .on('end', () => {
       console.log(chalk.cyan('process finished'));
+      onFinished();
     })
     .save(path.join(output, 'playlist.m3u8'));
-
     
   return command;
 };

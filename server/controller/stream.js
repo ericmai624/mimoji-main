@@ -67,9 +67,10 @@ const remove = (filePath) => {
 
 const terminate = (stream, id) => {
   if (!stream) return;
-  let { command, watcher } = stream;
+  let { output, command, watcher } = stream;
   watcher.close();
   command.kill();
+  if (!stream.isProcessing) remove(output);
   delete streams[id];
   finishedQueue.length = 0;
   uniqueFilePath.clear();
@@ -78,7 +79,6 @@ const terminate = (stream, id) => {
 const create = async (req, res) => {
   let { video, seek } = req.body;
   if (!video || video === '') return res.end();
-  // let id = createHash('sha256').update(video).digest('hex');
   let id = randomBytes(8).toString('hex');
 
   _.each(streams, terminate);
@@ -88,26 +88,28 @@ const create = async (req, res) => {
     let [output, metadata] = await Promise.all(
       [ fs.mkdtempAsync(directory + sep), util.ffmpeg.getMetadata(video) ]);
 
-    const newStream = { input: video, output };
-    newStream.command = util.ffmpeg.processMedia(video, seek, metadata, output, err => {
-      if (err) {
-        log(chalk.red('ffmpeg error: ', err));
-        setTimeout(remove.bind(null, output), 5000);
-      }
-    });
-    newStream.fileCount = 0;
-    newStream.watcher = chokidar.watch(output, { ignored: /\.tmp$/ })
+    const stream = { input: video, output };
+
+    stream.fileCount = 0;
+    stream.isProcessing = true;
+    
+    const onProcessError = () => setTimeout(remove.bind(null, output), 5000);
+    const onProcessFinished = () => stream.isProcessing = false;
+
+    stream.command = util.ffmpeg.processMedia(video, seek, metadata, output, onProcessError, onProcessFinished);
+
+    stream.watcher = chokidar.watch(output, { ignored: /\.tmp$/ })
       .on('add', file => {
         if (path.extname(file) === '.m3u8') return res.json({ id, duration: metadata.format.duration });
-        newStream.fileCount++;
-        // if (newStream.fileCount > 10) newStream.command.kill('SIGSTOP');
+        stream.fileCount++;
+        // if (stream.fileCount > 10) stream.command.kill('SIGSTOP');
       })
       .on('unlink', file => {
-        newStream.fileCount--;
-        // if (newStream.fileCount <= 6) newStream.command.kill('SIGCONT');
+        stream.fileCount--;
+        // if (stream.fileCount <= 6) stream.command.kill('SIGCONT');
       })
       .on('error', log);
-    streams[id] = newStream;
+    streams[id] = stream;
   } catch (err) {
     log('An error has occured when creating new stream process: ', err);
     terminate(id);
@@ -199,6 +201,7 @@ const loadSubtitle = async (req, res) => {
 
 const cleanup = (req, res) => {
   log(chalk.blueBright('terminate request id: ', req.body.id));
+  log(streams);
   try {
     const { id } = req.body;
     const stream = streams[id];
