@@ -92,7 +92,7 @@ const create = async (req, res) => {
     newStream.command = util.ffmpeg.processMedia(video, seek, metadata, output, err => {
       if (err) {
         log(chalk.red('ffmpeg error: ', err));
-        remove(output);
+        setTimeout(remove.bind(null, output), 5000);
       }
     });
     newStream.fileCount = 0;
@@ -117,6 +117,7 @@ const create = async (req, res) => {
 
 const serve = (req, res) => {
   let { id, file } = req.params;
+  if (!streams[id]) return res.end();
   let { output } = streams[id];
   let filePath = path.join(output, file);
   let ext = path.extname(filePath);
@@ -165,7 +166,8 @@ const serve = (req, res) => {
 const addSubtitle = (req, res) => {
   let { location } = req.body;
   if (!location || location === '') return res.end();
-  let id = createHash('sha256').update(location).digest('hex');
+  // let id = createHash('sha256').update(location).digest('hex');
+  let id = randomBytes(8).toString('hex');
   subtitles[id] = location;
 
   return res.json(id);
@@ -173,10 +175,10 @@ const addSubtitle = (req, res) => {
 
 const loadSubtitle = async (req, res) => {
   let { id } = req.params;
-  if (!id) return res.end();
+  if (!id || !subtitles[id]) return res.end();
   let location = subtitles[id];
   let { offset, encoding } = req.query;
-  offset = offset ? parseFloat(offset) : 0;
+  offset = parseFloat(offset);
   let ext = path.extname(location);
 
   try {
@@ -206,7 +208,6 @@ const cleanup = (req, res) => {
     log(err);
     res.sendStatus(500);
   }
-
 };
 
 module.exports = { create, serve, addSubtitle, loadSubtitle, cleanup };
