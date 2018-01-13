@@ -1,4 +1,5 @@
 import React, { Component, Fragment } from 'react';
+import io from 'socket.io-client';
 import fontawesome from '@fortawesome/fontawesome';
 import solid from '@fortawesome/fontawesome-free-solid';
 import regular from '@fortawesome/fontawesome-free-regular';
@@ -34,6 +35,10 @@ const Label = styled.label`
 `;
 
 class App extends Component {
+  componentWillMount() {
+    window.io = io('http://localhost:6300');
+  }
+  
   componentDidMount() {
     const { getIpAddress, toggleFullscreen } = this.props;
     

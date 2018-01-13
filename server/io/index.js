@@ -32,6 +32,7 @@ module.exports = server => {
           stream.fileCount--;
         };
         let output = await stream.create(video, seek, streams);
+        log(`output is ${output}`);
         stream.watch(output, onPlayListReady, onFileRemoved);
         socket.emit('stream created', { id: stream.getId(), duration: stream.getDuration() });
         log(`Created new stream with id: ${stream.id}, process took ${Date.now() - start}ms`);

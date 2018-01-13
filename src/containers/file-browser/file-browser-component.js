@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import io from 'socket.io-client';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
@@ -33,8 +32,6 @@ class FileBrowser extends Component {
   componentDidMount() {
     const { fileBrowser } = this.props;
     this.fetch(fileBrowser.directory);
-
-    window.io = io('http://localhost:6300');
   }
 
   fetch(dir, nav) {
@@ -62,7 +59,7 @@ class FileBrowser extends Component {
   stream(option) {
     const { io } = window;
     const { app, fileBrowser, toggleFileBrowserDialog, togglePlayer, streamToGoogleCast, updateStreamInfo } = this.props;
-    const { isOptionsVisible, file } = this.state;
+    const { isOptionsVisible } = this.state;
     
     streamToGoogleCast(option);
 

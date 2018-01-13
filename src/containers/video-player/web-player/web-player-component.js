@@ -40,7 +40,7 @@ class WebPlayer extends Component {
     this.setVolume = this.setVolume.bind(this);
     this.muteOrUnmute = this.muteOrUnmute.bind(this);
     this.toggleFullscreen = this.toggleFullscreen.bind(this);
-    this.stopTimer = this.stopTimer.bind(this);
+    this.stopControlsTimer = this.stopControlsTimer.bind(this);
     this.cleanup = this.cleanup.bind(this);
   }
 
@@ -103,8 +103,6 @@ class WebPlayer extends Component {
 
   showControls(e) {
     const { isControlsVisible } = this.state;
-    if (e) e.stopPropagation();
-    if (typeof this.timerId === 'number') this.stopTimer();
     if (!isControlsVisible) this.setState({ isControlsVisible: true });
   }
 
@@ -115,9 +113,10 @@ class WebPlayer extends Component {
 
   onVideoMouseMove(e) {
     const { app } = this.props;
+    this.stopControlsTimer();
     if (app.isPlayerEnabled) this.showControls(); // show controls
 
-    this.timerId = setTimeout(this.hideControls, 4000);
+    this.controlsTimer = setTimeout(this.hideControls, 4000);
   }
 
   seek(seekTime) {
@@ -200,9 +199,11 @@ class WebPlayer extends Component {
     else exitFullscreen.call(document);
   }
 
-  stopTimer() { 
-    clearTimeout(this.timerId);
-    this.timerId = undefined;
+  stopControlsTimer() {
+    if (this.controlsTimer) {
+      clearTimeout(this.controlsTimer);
+      this.controlsTimer = null;
+    }
   }
 
   cleanup() {
@@ -213,7 +214,7 @@ class WebPlayer extends Component {
     io.emit('close stream', { id: stream.id });
 
     if (app.isFullscreenEnabled) this.toggleFullscreen();
-    this.stopTimer();
+    this.stopControlsTimer();
     resetStream();
     resetTextTrack();
     if (app.isPlayerEnabled) togglePlayer();

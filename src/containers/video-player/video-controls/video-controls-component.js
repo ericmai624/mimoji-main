@@ -1,5 +1,4 @@
 import React, { Component, Fragment } from 'react';
-import _ from 'lodash';
 import FontAwesomeIcon from '@fortawesome/react-fontawesome';
 import moment from 'moment';
 import momentDurationSetup from 'moment-duration-format';
@@ -8,6 +7,7 @@ import {
   Container,
   Showtime,
   ProgressContainer,
+  SeekTime,
   Progress,
   Bridge,
   VolumeContainer,
@@ -26,31 +26,51 @@ class VideoControls extends Component {
 
     this.state = { 
       showVolumeRange: false,
-      showSubSettings: false
+      showSubSettings: false,
+      seekTime: 0,
+      seekTimePos: 0,
+      isSeekTimeVisible: false
     };
 
+    this.getSeekPosition = this.getSeekPosition.bind(this);
+    this.getSeekTime = this.getSeekTime.bind(this);
+    this.hideSeekTime = this.hideSeekTime.bind(this);
     this.handleSeek = this.handleSeek.bind(this);
     this.onVolumeMouseEnter = this.onVolumeMouseEnter.bind(this);
     this.onVolumeMouseLeave = this.onVolumeMouseLeave.bind(this);
     this.toggleSubSettings = this.toggleSubSettings.bind(this);
   }
+
+  getSeekPosition(pos) {
+    const { progress } = this;
+    let left = progress.offsetLeft + progress.offsetParent.offsetLeft;
+    return pos - left;
+  }
+
+  getSeekTime(e) {
+    e.stopPropagation();
+    const { duration } = this.props;
+    const { progress } = this;
+
+    const offsetLeft = progress.offsetLeft;
+    const parentOffsetLeft = progress.offsetParent.offsetLeft;
+
+    const pos = (e.pageX - offsetLeft - parentOffsetLeft) / progress.clientWidth;
+    // console.log(`offsetleft: ${offsetLeft}, pos: ${pos}`);
+    this.setState({ seekTime: pos * duration, seekTimePos: e.pageX - parentOffsetLeft, isSeekTimeVisible: true });
+  }
+
+  hideSeekTime(e) {
+    e.stopPropagation();
+    this.setState({ isSeekTimeVisible: false });
+  }
   
   handleSeek(e) {
     e.stopPropagation();
-    const { duration, seek } = this.props;
-    const { progress } = this;
+    const { seek } = this.props;
+    const { seekTime } = this.state;
 
-    let offsetLeft = 0;
-    let node = progress;
-    let n = 2; // number of parent nodes excluding root div
-    while (n >= 0) {
-      offsetLeft += node.offsetLeft;
-      node = node.parentNode;
-      n--;
-    }
-
-    const pos = (e.pageX - offsetLeft) / progress.clientWidth;
-    seek(_.floor(pos * duration));
+    seek(seekTime);
   }
 
   onVolumeMouseEnter(e) {
@@ -83,10 +103,11 @@ class VideoControls extends Component {
       currentTime,
       duration
     } = this.props;
-    const { showVolumeRange, showSubSettings } = this.state;
+    const { showVolumeRange, showSubSettings, seekTime, seekTimePos, isSeekTimeVisible } = this.state;
 
     const format = duration > 3599 ? 'hh:mm:ss' : 'mm:ss';
     const displayedTime = moment.duration(currentTime, 'seconds').format(format, { trim: false });
+    const cursorTime = moment.duration(seekTime, 'seconds').format(format, { trim: false });
     const endTime = moment.duration(duration, 'seconds').format(format, { trim: false });
 
     let volumeIcon = (<FontAwesomeIcon icon={['fas', 'volume-up']}/>);
@@ -100,19 +121,26 @@ class VideoControls extends Component {
 
     return (
       <Fragment>
-        <Container 
+        <Container
+          id='video-controls'
           className='flex flex-align-center flex-space-around absolute'
           isControlsVisible={isControlsVisible}
         >
           <ControlButton onClick={playOrPause} icon={['fas', isPaused ? 'play' : 'pause']}/>
           <ControlButton onClick={stop} icon={['fas', 'stop']}/>
-          <ProgressContainer onClick={this.handleSeek}>
-            <Progress 
-              value={currentTime} 
-              max={duration}
-              innerRef={(el) => this.progress = el}
+          <ProgressContainer 
+            onClick={this.handleSeek}
+            onMouseMove={this.getSeekTime}
+            onMouseLeave={this.hideSeekTime}
+            innerRef={(el) => this.progress = el}
+          >
+            <SeekTime 
+              className='flex-center absolute'
+              style={{left: `${seekTimePos - 25}px`, display: isSeekTimeVisible ? 'flex' : 'none'}}
             >
-            </Progress>
+              {cursorTime}
+            </SeekTime>
+            <Progress value={currentTime} max={duration} />
           </ProgressContainer>
           <Showtime>
             {displayedTime} / {endTime}
@@ -147,7 +175,8 @@ class VideoControls extends Component {
           <ControlButton onClick={this.toggleSubSettings}>
             <FontAwesomeIcon icon={['fas', 'language']} size='lg'/>
           </ControlButton>
-          {toggleFullscreen ? <ControlButton onClick={toggleFullscreen} icon={['fas', isFullscreenEnabled ? 'compress' : 'expand']}/> : null}
+          {toggleFullscreen ? 
+            <ControlButton onClick={toggleFullscreen} icon={['fas', isFullscreenEnabled ? 'compress' : 'expand']}/> : null}
         </Container>
         {showSubSettings ? 
           <SubSettings

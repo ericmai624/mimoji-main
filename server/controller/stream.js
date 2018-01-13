@@ -58,7 +58,6 @@ class Stream {
     const directory = await this.make(path.join(os.tmpdir(), 'onecast'));
     const [output, metadata] = await Promise.all(
       [ fs.mkdtempAsync(directory + path.sep), util.ffmpeg.getMetadata(input) ]);
-    log(`output is ${output}`);
     this.input = input;
     this.output = output;
     this.metadata = metadata;
@@ -69,8 +68,8 @@ class Stream {
 
   watch(folder, onAddCallback, onUnlinkCallback) {
     this.watcher = chokidar.watch(folder, { ignored: /\.tmp$/ });
-    this.watcher.on('add', onAddCallback);
-    this.watcher.on('unlink', onUnlinkCallback);
+    this.watcher.on('add', onAddCallback.bind(this));
+    this.watcher.on('unlink', onUnlinkCallback.bind(this));
     this.watcher.on('error', log);
   }
 

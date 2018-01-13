@@ -2,8 +2,9 @@ import styled from 'styled-components';
 
 const ctrlBg = 'rgba(65, 68, 86, 0.8)';
 const orange = 'rgba(228, 75, 54, 0.9)';
-const borderRadius = '4px';
-const progressHeight = '8px';
+const white = 'rgb(255, 255, 255)';
+const borderRadius = 4;
+const progressHeight = 12;
 
 export const Container = styled.div`
   width: 800px;
@@ -21,45 +22,68 @@ export const Container = styled.div`
 `;
 
 export const Showtime = styled.div`
-  color: rgb(255, 255, 255);
+  color: ${white};
   user-select: none;
 `;
 
 export const ProgressContainer = styled.div`
   display: block;
   width: 320px;
-  height: ${progressHeight};
+  height: ${progressHeight}px;
   border: none;
-  border-radius: ${borderRadius};
-  overflow: hidden;
+  border-radius: ${borderRadius}px;
   cursor: pointer;
   line-height: 0;
-  transition: transform 0.25s ease-in-out;
   background: transparent;
+`;
 
-  &:hover {
-    transform: scaleY(2);
-    transition: transform 0.25s ease-in-out;    
+export const SeekTime = styled.div`
+  font-size: 12px;
+  color: ${white};
+  background: rgba(0, 0, 0, 0.85);
+  padding: 5px;
+  width: 50px;
+  height: 12px;
+  bottom: 34px;
+  border-radius: 4px;
+  box-sizing: content-box;
+  z-index: 108;
+  box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.26);
+
+  &:before {
+    content: '';
+    position: absolute;
+    left: calc(50% - 5px);
+    bottom: -4px;
+    border-width: 5px 5px 0 5px;
+    border-style: solid;
+    border-color: rgba(0, 0, 0, 0.85) transparent transparent  transparent;
   }
 `;
 
 export const Progress = styled.progress`
   display: block;
   width: 100%;
-  height: ${progressHeight};
+  height: ${progressHeight}px;
   border: none;
-  border-radius: ${borderRadius};
+  border-radius: ${borderRadius}px;
   color: ${orange};
+  -webkit-appearance: none;
 
   &::-webkit-progress-value {
     background: ${orange};
     border: none;
-    border-radius: ${borderRadius};
+    border-radius: ${borderRadius}px;
+  }
+  &::-webkit-progress-inner-element {
+    overflow: hidden;
+    border: none;
+    border-radius: ${borderRadius}px;
   }
   &::-moz-progress-bar {
     background: ${orange};
     border: none;
-    border-radius: ${borderRadius};
+    border-radius: ${borderRadius}px;
   }
 `;
 
@@ -76,7 +100,7 @@ export const VolumeContainer = styled.div`
   width: 42px;
   height: 24px;
   font-size: 24px;
-  color: rgb(255, 255, 255);
+  color: ${white};
   box-sizing: border-box;
   z-index: 50;
 `;
@@ -170,7 +194,7 @@ export const Sub = styled.div`
   padding: 0px 1px;
   vertical-align: middle;
   text-align: center;
-  background: rgb(255, 255, 255);
+  background: ${white};
   color: rgba(48, 47, 42, 1);
   font-size: 10px;
   font-weight: bold;
@@ -178,7 +202,7 @@ export const Sub = styled.div`
   transition: background 0.25s ease-out;
 
   &:hover {
-    color: rgb(255, 255, 255);
+    color: ${white};
     background: ${orange};
     transition: background 0.25s ease-in;
   }
