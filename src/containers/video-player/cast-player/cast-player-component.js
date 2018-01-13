@@ -22,11 +22,13 @@ class CastPlayer extends Component {
       isPaused: false,
       isMuted: false,
       isBuffering: false,
+      isSeeking: false,
       volume: 1,
       currTimeOffset: 0
     };
     
     this.initSession = this.initSession.bind(this);
+    this.initPlayer = this.initPlayer.bind(this);
     this.setEventListeners = this.setEventListeners.bind(this);
     this.removeEventListeners = this.removeEventListeners.bind(this);
     this.cast = this.cast.bind(this);
@@ -34,7 +36,6 @@ class CastPlayer extends Component {
     this.updateTime = this.updateTime.bind(this);
     this.stopTimer = this.stopTimer.bind(this);
     this.setTextTrack = this.setTextTrack.bind(this);
-    this.updateTextTrack = this.updateTextTrack.bind(this);
     this.muteOrUnmute = this.muteOrUnmute.bind(this);
     this.playOrPause = this.playOrPause.bind(this);
     this.setVolume = this.setVolume.bind(this);
@@ -70,8 +71,21 @@ class CastPlayer extends Component {
     return Promise.resolve();
   }
 
+  initPlayer() {
+    const { cast } = window;
+    if (this.controller) {
+      this.removeEventListeners(this.controller);
+      this.player = null;
+      this.controller = null;
+    }
+    this.player = new cast.framework.RemotePlayer();
+    this.controller = new cast.framework.RemotePlayerController(this.player);
+    this.setEventListeners(this.controller);
+  }
+
   setEventListeners(controller) {
-    console.log('Registering Event Listeners...');
+    console.log('Registering Event Listeners');
+    const start = Date.now();
     const { 
       IS_CONNECTED_CHANGED,
       IS_PAUSED_CHANGED,
@@ -87,7 +101,29 @@ class CastPlayer extends Component {
     controller.addEventListener(VOLUME_LEVEL_CHANGED, this.onVolumeLevelChanged);
     controller.addEventListener(IS_MUTED_CHANGED, this.onMutedChanged);
     controller.addEventListener(PLAYER_STATE_CHANGED, this.onPlayerStateChanged);
-    console.log('Registered Event Listeners');
+    console.log(`Registered Event Listeners, took %c${Date.now() - start}ms`, 'color: #d80a52;');
+  }
+
+  removeEventListeners(controller) {
+    if (!controller) return;
+    console.log('Unregistering Event Listeners');
+    const start = Date.now();
+    const { 
+      IS_CONNECTED_CHANGED,
+      IS_PAUSED_CHANGED,
+      CURRENT_TIME_CHANGED,
+      VOLUME_LEVEL_CHANGED,
+      IS_MUTED_CHANGED,
+      PLAYER_STATE_CHANGED
+    } = window.cast.framework.RemotePlayerEventType;
+
+    controller.removeEventListener(IS_CONNECTED_CHANGED, this.onConnectionChanged);
+    controller.removeEventListener(IS_PAUSED_CHANGED, this.onPausedChanged);
+    controller.removeEventListener(CURRENT_TIME_CHANGED, this.onCurrentTimeChanged);
+    controller.removeEventListener(VOLUME_LEVEL_CHANGED, this.onVolumeLevelChanged);
+    controller.removeEventListener(IS_MUTED_CHANGED, this.onMutedChanged);
+    controller.removeEventListener(PLAYER_STATE_CHANGED, this.onPlayerStateChanged);
+    console.log(`Unregistered Event Listeners, took %c${Date.now() - start}ms`, 'color: #d80a52;');
   }
 
   onConnectionChanged() {
@@ -120,7 +156,11 @@ class CastPlayer extends Component {
   }
 
   onPlayerStateChanged({ value }) {
-    const { IDLE, PLAYING, PAUSED, BUFFERING } = window.chrome.cast.media.PlayerState;
+    const { PLAYING, PAUSED, BUFFERING } = window.chrome.cast.media.PlayerState;
+    const { stream, createStream } = this.props;
+    const { isSeeking, currTimeOffset } = this.state;
+    console.log(`%cPlayer state has changed to ${value}`, 'background:#e0821d; color:white;');
+
     if (value === PLAYING) {
       this.updateTime();
       this.setState({ isPaused: false, isBuffering: false });
@@ -130,33 +170,16 @@ class CastPlayer extends Component {
     } else if (value === BUFFERING) {
       this.stopTimer();
       this.setState({ isBuffering: true });
-    } else if (value === IDLE) {
-      console.log(value);
+    } else if (!value) {
+      if (isSeeking) {
+        this.setState({ isSeeking: false }, createStream.bind(null, stream.video, currTimeOffset));
+      }
     }
   }
 
-  removeEventListeners(controller) {
-    console.log('Unregistering Event Listeners...');
-    const { 
-      IS_CONNECTED_CHANGED,
-      IS_PAUSED_CHANGED,
-      CURRENT_TIME_CHANGED,
-      VOLUME_LEVEL_CHANGED,
-      IS_MUTED_CHANGED,
-      PLAYER_STATE_CHANGED
-    } = window.cast.framework.RemotePlayerEventType;
-
-    controller.removeEventListener(IS_CONNECTED_CHANGED, this.onConnectionChanged);
-    controller.removeEventListener(IS_PAUSED_CHANGED, this.onPausedChanged);
-    controller.removeEventListener(CURRENT_TIME_CHANGED, this.onCurrentTimeChanged);
-    controller.removeEventListener(VOLUME_LEVEL_CHANGED, this.onVolumeLevelChanged);
-    controller.removeEventListener(IS_MUTED_CHANGED, this.onMutedChanged);
-    controller.removeEventListener(PLAYER_STATE_CHANGED, this.onPlayerStateChanged);
-    console.log('Unregistered Event Listeners');
-  }
-
   cast() {
-    console.log('Initiating Google Cast...');
+    console.log('%cCasting video to Google Cast...', 'color:#1b5dc6');
+    const start = Date.now();
     const { cast, chrome } = window;
     const { ip, stream, textTrack } = this.props;
 
@@ -181,12 +204,32 @@ class CastPlayer extends Component {
     // start streaming
     this.castSession.loadMedia(request)
       .then(() => {
-        console.log('load success');
+        console.log(`%cCast process complete, took %c${Date.now() - start}ms`, 'color:#1b5dc6;', 'color:#d80a52;');
         this.setState({ isLoading: false });
-        this.player = new cast.framework.RemotePlayer();
-        this.controller = new cast.framework.RemotePlayerController(this.player);
-        this.setEventListeners(this.controller);
+        this.initPlayer();
+        console.log('Can seek: ', this.player.canSeek);
+        console.log(`%cPlaying stream id ${stream.id} @ %c${this.state.currTimeOffset}s`, 'color:#1b5dc6;', 'color:#d80a52;');
       }, (err) => console.log('Error code: ', err));
+  }
+
+  seek(time) {
+    console.log(`%cSeeking ${time}`, 'background:#1b5dc6; color:white;');
+    const { stream, createStream, updateStreamTime } = this.props;
+    
+    this.stopTimer(); // Stop show time timer
+
+    if (this.seekTimer) {
+      clearTimeout(this.seekTimer);
+      this.seekTimer = null;
+    }
+
+    updateStreamTime(time);
+    this.setState({ isLoading: true, isSeeking: true, currTimeOffset: time }, () => {
+      if (this.controller) {
+        this.controller.stop();
+        // this.seekTimer = setTimeout(this.controller.stop, 3000);
+      }
+    });
   }
 
   setTextTrack() {
@@ -207,30 +250,8 @@ class CastPlayer extends Component {
     return sub;
   }
 
-  updateTextTrack() {
-    const { chrome } = window;
-    const tracksInfoRequest = new chrome.cast.media.EditTracksInfoRequest([1]);
-    console.log(tracksInfoRequest);
-  }
-
-  seek(time) {
-    console.log('Seeking ', time);
-    const { stream, createStream, updateStreamTime } = this.props;
-    const { player, controller } = this;
-    const callback = createStream.bind(null, stream.video, time);
-    
-    this.stopTimer();
-    if (controller) {
-      this.removeEventListeners(controller);
-      controller.stop();
-    }
-    if (player) player.playerState = window.chrome.cast.media.PlayerState.IDLE;
-
-    updateStreamTime(time);
-    this.setState({ isLoading: true, currTimeOffset: time }, callback);
-  }
-
   updateTime(prev = Date.now() - 1000) {
+    if (!this.player) return;
     const { PLAYING: playing } = window.chrome.cast.media.PlayerState;
     const { stream, updateStreamTime } = this.props;
     const { playerState } = this.player;

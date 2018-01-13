@@ -2,6 +2,7 @@ const chalk = require('chalk');
 const os = require('os');
 const Promise = require('bluebird');
 const fs = Promise.promisifyAll(require('fs'));
+const rimraf = require('rimraf');
 const path = require('path');
 const _ = require('lodash');
 const util = require('../utilities');
@@ -14,8 +15,6 @@ const { sep } = path;
 
 const streams = {};
 const subtitles = {};
-const finishedQueue = [];
-const uniqueFilePath = new Set();
 
 const open = (path, cb, retry = 0) => {
   return fs.open(path, 'r', (err, fd) => {
@@ -37,6 +36,7 @@ const make = (dir) => {
   });
 };
 
+/*
 const remove = (filePath) => {
   let isFulfilled = false;
   return fs.statAsync(filePath)
@@ -64,52 +64,116 @@ const remove = (filePath) => {
       log(chalk.red(err));
     });
 };
+*/
 
-const terminate = (stream, id) => {
-  if (!stream) return;
-  let { output, command, watcher } = stream;
-  watcher.close();
-  command.kill();
-  if (!stream.isProcessing) remove(output);
-  delete streams[id];
-  finishedQueue.length = 0;
-  uniqueFilePath.clear();
-};
+class Stream {
+  constructor() {
+    this.id = randomBytes(8).toString('hex');
+    this.input = null;
+    this.output = null;
+    this.metadata = {};
+    this.fileCount = 0;
+    this.isProcessing = true;
+    this.command = null;
+    this.watcher = null;
+    this.finishedQueue = [];
+    this.uniqueFilePath = new Set();
+
+    this.clean = this.clean.bind(this);
+    this.finish = this.finish.bind(this);
+  }
+
+  getId() {
+    return this.id;
+  }
+
+  getDuration() {
+    if (this.metadata.format) return this.metadata.format.duration;
+    else return null;
+  }
+
+  getFilePath(file) {
+    return path.join(this.output, file);
+  }
+
+  create(input, seek, metadata, output) {
+    this.input = input;
+    this.output = output;
+    this.metadata = metadata;
+    this.command = util.ffmpeg.processMedia(input, seek, metadata, output, this.clean, this.finish);
+    streams[this.id] = this;
+  }
+
+  watch(folder, onAddCallback, onUnlinkCallback) {
+    this.watcher = chokidar.watch(folder, { ignored: /\.tmp$/ });
+    this.watcher.on('add', onAddCallback);
+    this.watcher.on('unlink', onUnlinkCallback);
+    this.watcher.on('error', log);
+  }
+
+  enqueue(file) {
+    if (!this.uniqueFilePath.has(file)) {
+      this.uniqueFilePath.add(file);
+      this.finishedQueue.push(file);
+    }
+  }
+
+  dequeue() {
+    let file = this.finishedQueue.shift();
+    this.uniqueFilePath.delete(file);
+    return file;
+  }
+
+  remove(location) {
+    console.log(chalk.green(`Removing ${location}`));
+    return rimraf(location, { maxBusyTries: 10 }, err => {
+      if (err) log(chalk.red(`${err} occured when trying to remove ${location}`));
+    });
+  } 
+
+  clean() {
+    return this.remove(this.output);
+  }
+
+  finish() {
+    this.isProcessing = false;
+    return this.isProcessing;
+  }
+
+  terminate() {
+    this.watcher.close();
+    this.command.kill();
+    if (!this.isProcessing) this.remove(this.output);
+    delete streams[this.id];
+  }
+}
 
 const create = async (req, res) => {
+  log('Request to create new stream...');
   let { video, seek } = req.body;
   if (!video || video === '') return res.end();
-  let id = randomBytes(8).toString('hex');
 
-  _.each(streams, terminate);
+  _.each(streams, s => s.terminate());
 
   try {
     let directory = await make(path.join(os.tmpdir(), 'onecast'));
     let [output, metadata] = await Promise.all(
       [ fs.mkdtempAsync(directory + sep), util.ffmpeg.getMetadata(video) ]);
-
-    const stream = { input: video, output };
-
-    stream.fileCount = 0;
-    stream.isProcessing = true;
     
-    const onProcessError = () => setTimeout(remove.bind(null, output), 5000);
-    const onProcessFinished = () => stream.isProcessing = false;
+    let stream = new Stream();
 
-    stream.command = util.ffmpeg.processMedia(video, seek, metadata, output, onProcessError, onProcessFinished);
-
-    stream.watcher = chokidar.watch(output, { ignored: /\.tmp$/ })
-      .on('add', file => {
-        if (path.extname(file) === '.m3u8') return res.json({ id, duration: metadata.format.duration });
-        stream.fileCount++;
-        // if (stream.fileCount > 10) stream.command.kill('SIGSTOP');
-      })
-      .on('unlink', file => {
-        stream.fileCount--;
-        // if (stream.fileCount <= 6) stream.command.kill('SIGCONT');
-      })
-      .on('error', log);
-    streams[id] = stream;
+    let onPlayListReady = file => {
+      if (path.extname(file) === '.m3u8') {
+        return res.json({ id: stream.getId(), duration: stream.getDuration() });
+      }
+      stream.fileCount++;
+    };
+    let unlink = file => {
+      stream.fileCount--;
+    };
+    stream.create(video, seek, metadata, output);
+    stream.watch(output, onPlayListReady, unlink);
+    log('Created new stream with id: ', stream.id);
   } catch (err) {
     log('An error has occured when creating new stream process: ', err);
     terminate(id);
@@ -119,9 +183,9 @@ const create = async (req, res) => {
 
 const serve = (req, res) => {
   let { id, file } = req.params;
-  if (!streams[id]) return res.end();
-  let { output } = streams[id];
-  let filePath = path.join(output, file);
+  let stream = streams[id];
+  if (!stream) return res.end();
+  let filePath = stream.getFilePath(file);
   let ext = path.extname(filePath);
 
   try {
@@ -140,15 +204,8 @@ const serve = (req, res) => {
 
       fs.createReadStream(filePath)
         .on('end', () => {
-          if (finishedQueue.length > 2) {
-            let trash = finishedQueue.shift();
-            remove(trash);
-            uniqueFilePath.delete(filePath);
-          }
-          if (!uniqueFilePath.has(filePath)) {
-            uniqueFilePath.add(filePath);
-            finishedQueue.push(filePath);
-          }
+          if (stream.finishedQueue.length > 2) stream.remove(stream.dequeue());
+          stream.enqueue(filePath);
         })
         .on('error', err => {
           throw err;
@@ -201,11 +258,10 @@ const loadSubtitle = async (req, res) => {
 
 const cleanup = (req, res) => {
   log(chalk.blueBright('terminate request id: ', req.body.id));
-  log(streams);
   try {
     const { id } = req.body;
     const stream = streams[id];
-    terminate(stream, id);
+    stream.terminate();
     res.sendStatus(200);
   } catch (err) {
     log(err);
