@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
 import { togglePlayer } from 'stores/app';
-import { createStream, updateStreamTime, resetStream } from 'stores/stream';
+import { updateStreamInfo, updateStreamTime, resetStream } from 'stores/stream';
 import { toggleFileBrowserDialog } from 'stores/file-browser';
 import { resetTextTrack } from 'stores/text-track';
 
@@ -49,18 +49,17 @@ class CastPlayer extends Component {
     this.onPlayerStateChanged = this.onPlayerStateChanged.bind(this);
   }
 
-  componentDidUpdate(prevProps, prevState) {
-    const { stream: prev } = prevProps;
-    const { stream: curr } = this.props;
-
-    const isNewStream = curr.id !== prev.id;
-    if (isNewStream && !curr.hasError) this.cast();
+  componentDidMount() {
+    const { io } = window;
+    io.on('playlist ready', this.cast);
   }
 
   componentWillUnmount() {
     console.log('Component is unmounting...');
     const { controller } = this;
+    const { io } = window;
     if (controller) this.removeEventListeners(controller);
+    io.off('playlist ready', this.cast);
   }
   
   initSession() {
@@ -157,8 +156,6 @@ class CastPlayer extends Component {
 
   onPlayerStateChanged({ value }) {
     const { PLAYING, PAUSED, BUFFERING } = window.chrome.cast.media.PlayerState;
-    const { stream, createStream } = this.props;
-    const { isSeeking, currTimeOffset } = this.state;
     console.log(`%cPlayer state has changed to ${value}`, 'background:#e0821d; color:white;');
 
     if (value === PLAYING) {
@@ -170,10 +167,6 @@ class CastPlayer extends Component {
     } else if (value === BUFFERING) {
       this.stopTimer();
       this.setState({ isBuffering: true });
-    } else if (!value) {
-      if (isSeeking) {
-        this.setState({ isSeeking: false }, createStream.bind(null, stream.video, currTimeOffset));
-      }
     }
   }
 
@@ -214,7 +207,8 @@ class CastPlayer extends Component {
 
   seek(time) {
     console.log(`%cSeeking ${time}`, 'background:#1b5dc6; color:white;');
-    const { stream, createStream, updateStreamTime } = this.props;
+    const { io } = window;
+    const { stream, updateStreamTime, updateStreamInfo } = this.props;
     
     this.stopTimer(); // Stop show time timer
 
@@ -227,7 +221,10 @@ class CastPlayer extends Component {
     this.setState({ isLoading: true, isSeeking: true, currTimeOffset: time }, () => {
       if (this.controller) {
         this.controller.stop();
-        // this.seekTimer = setTimeout(this.controller.stop, 3000);
+        this.seekTimer = setTimeout(() => {
+          io.emit('new stream', { video: stream.video, seek: time });
+          io.once('stream created', updateStreamInfo);
+        }, 1000);
       }
     });
   }
@@ -298,23 +295,16 @@ class CastPlayer extends Component {
 
   cleanup() {
     console.log('Cleaning up Cast Player...');
+    const { io } = window;
     const { app, stream, togglePlayer, resetStream, resetTextTrack } = this.props;
     if (stream.id === '') return;
     this.stopTimer(); // stop the currentTime timer
 
-    const method = 'post';
-    const headers = new Headers();
-    const body = JSON.stringify({ id: stream.id });
-    headers.append('Content-Type', 'application/json');
-
-    fetch('/api/stream/terminate', { method, headers, body });
+    io.emit('close stream', { id: stream.id });
 
     resetStream();
     resetTextTrack();
-    if (app.isPlayerEnabled) {
-      console.log('toggling player');
-      togglePlayer();
-    }
+    if (app.isPlayerEnabled) togglePlayer();
     console.log('Cleaned Cast Player');
   }
 
@@ -346,7 +336,7 @@ class CastPlayer extends Component {
 const mapStateToProps = state => ({ ip: state.ip, app: state.app, stream: state.stream, textTrack: state.textTrack });
 
 const mapDispatchToProps = (dispatch) => ({ 
-  createStream: bindActionCreators(createStream, dispatch),
+  updateStreamInfo: bindActionCreators(updateStreamInfo, dispatch),
   togglePlayer: bindActionCreators(togglePlayer, dispatch),
   toggleFileBrowserDialog: bindActionCreators(toggleFileBrowserDialog, dispatch),
   updateStreamTime: bindActionCreators(updateStreamTime, dispatch),

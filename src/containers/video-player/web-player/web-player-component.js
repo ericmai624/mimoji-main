@@ -8,7 +8,7 @@ import VideoControls from 'containers/video-player/video-controls/video-controls
 import TextTrack from 'containers/video-player/text-track/text-track-component';
 
 import { togglePlayer } from 'stores/app';
-import { createStream, updateStreamTime, resetStream } from 'stores/stream';
+import { updateStreamInfo, updateStreamTime, resetStream } from 'stores/stream';
 import { toggleFileBrowserDialog } from 'stores/file-browser';
 import { resetTextTrack } from 'stores/text-track';
 
@@ -44,17 +44,16 @@ class WebPlayer extends Component {
     this.cleanup = this.cleanup.bind(this);
   }
 
-  componentDidUpdate(prevProps, prevState) {
-    const { stream: prev } = prevProps;
-    const { stream: curr } = this.props;
-  
-    const isNewStream = curr.id !== prev.id;
-    if (isNewStream && !curr.hasError) this.initHls();
+  componentDidMount() {
+    const { io } = window;
+    io.on('playlist ready', this.initHls);
   }
 
   componentWillUnmount() {
+    const { io } = window;
     if (this.hls) this.hls.destroy();
     if (this.timerId !== undefined) this.stopTimer();
+    io.off('playlist ready', this.initHls);
   }
   
   initHls() {
@@ -122,11 +121,23 @@ class WebPlayer extends Component {
   }
 
   seek(seekTime) {
-    const { stream, createStream } = this.props;
+    const { io } = window;
+    const { stream, updateStreamInfo, updateStreamTime } = this.props;
 
     if (this.hls) this.hls.destroy(); // destroy current hls stream
+    if (this.seekTimer) {
+      clearTimeout(this.seekTimer);
+      this.seekTimer = null;
+    }
+    
+    updateStreamTime(seekTime);
 
-    this.setState({ isLoading: true, currTimeOffset: seekTime }, createStream.bind(null, stream.video, seekTime));
+    this.setState({ isLoading: true, currTimeOffset: seekTime }, () => {
+      this.seekTimer = setTimeout(() => {
+        io.emit('new stream', { video: stream.video, seek: seekTime });
+        io.once('stream created', updateStreamInfo);
+      }, 1000);
+    });
   }
 
   onVideoPlaying() {
@@ -195,21 +206,17 @@ class WebPlayer extends Component {
   }
 
   cleanup() {
+    const { io } = window;
     const { app, stream, togglePlayer, resetStream, resetTextTrack } = this.props;
     if (this.hls) this.hls.destroy();
 
-    const method = 'post';
-    const headers = new Headers();
-    const body = JSON.stringify({ id: stream.id });
-    headers.append('Content-Type', 'application/json');
-
-    fetch('/api/stream/terminate', { method, headers, body });
+    io.emit('close stream', { id: stream.id });
 
     if (app.isFullscreenEnabled) this.toggleFullscreen();
     this.stopTimer();
     resetStream();
     resetTextTrack();
-    togglePlayer();
+    if (app.isPlayerEnabled) togglePlayer();
   }
   
   render() {
@@ -272,7 +279,7 @@ const mapStateToProps = (state) => ({
 });
 
 const mapDispatchToProps = (dispatch) => ({ 
-  createStream: bindActionCreators(createStream, dispatch),
+  updateStreamInfo: bindActionCreators(updateStreamInfo, dispatch),
   togglePlayer: bindActionCreators(togglePlayer, dispatch),
   toggleFileBrowserDialog: bindActionCreators(toggleFileBrowserDialog, dispatch),
   updateStreamTime: bindActionCreators(updateStreamTime, dispatch),

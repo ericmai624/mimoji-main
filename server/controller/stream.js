@@ -36,36 +36,6 @@ const make = (dir) => {
   });
 };
 
-/*
-const remove = (filePath) => {
-  let isFulfilled = false;
-  return fs.statAsync(filePath)
-    .then((stats) => {
-      if (stats.isFile()) return fs.unlinkAsync(filePath);
-      else if (stats.isDirectory()) return fs.readdirAsync(filePath);
-      else throw new Error('Unknow file.');
-    })
-    .then((files) => {
-      if (!files) {
-        isFulfilled = true;
-        throw files;
-      }
-
-      let tasks = [];
-      _.each(files, (file) => tasks.push(remove(path.join(filePath, file))));
-      return Promise.all(tasks);
-    })
-    .then(() => {
-      return fs.rmdirAsync(filePath);
-    })
-    .catch((err) => {
-      if (isFulfilled) return log(chalk.green('removed ', filePath));
-
-      log(chalk.red(err));
-    });
-};
-*/
-
 class Stream {
   constructor() {
     this.id = randomBytes(8).toString('hex');
@@ -96,12 +66,12 @@ class Stream {
     return path.join(this.output, file);
   }
 
-  create(input, seek, metadata, output) {
+  create(input, seek, metadata, output, storage) {
     this.input = input;
     this.output = output;
     this.metadata = metadata;
     this.command = util.ffmpeg.processMedia(input, seek, metadata, output, this.clean, this.finish);
-    streams[this.id] = this;
+    storage[this.id] = this;
   }
 
   watch(folder, onAddCallback, onUnlinkCallback) {
@@ -147,39 +117,6 @@ class Stream {
     delete streams[this.id];
   }
 }
-
-const create = async (req, res) => {
-  log('Request to create new stream...');
-  let { video, seek } = req.body;
-  if (!video || video === '') return res.end();
-
-  _.each(streams, s => s.terminate());
-
-  try {
-    let directory = await make(path.join(os.tmpdir(), 'onecast'));
-    let [output, metadata] = await Promise.all(
-      [ fs.mkdtempAsync(directory + sep), util.ffmpeg.getMetadata(video) ]);
-    
-    let stream = new Stream();
-
-    let onPlayListReady = file => {
-      if (path.extname(file) === '.m3u8') {
-        return res.json({ id: stream.getId(), duration: stream.getDuration() });
-      }
-      stream.fileCount++;
-    };
-    let unlink = file => {
-      stream.fileCount--;
-    };
-    stream.create(video, seek, metadata, output);
-    stream.watch(output, onPlayListReady, unlink);
-    log('Created new stream with id: ', stream.id);
-  } catch (err) {
-    log('An error has occured when creating new stream process: ', err);
-    terminate(id);
-    res.sendStatus(500);
-  }
-};
 
 const serve = (req, res) => {
   let { id, file } = req.params;
@@ -256,17 +193,4 @@ const loadSubtitle = async (req, res) => {
   }
 };
 
-const cleanup = (req, res) => {
-  log(chalk.blueBright('terminate request id: ', req.body.id));
-  try {
-    const { id } = req.body;
-    const stream = streams[id];
-    stream.terminate();
-    res.sendStatus(200);
-  } catch (err) {
-    log(err);
-    res.sendStatus(500);
-  }
-};
-
-module.exports = { create, serve, addSubtitle, loadSubtitle, cleanup };
+module.exports = { streams, Stream, make, serve, addSubtitle, loadSubtitle };

@@ -1,7 +1,8 @@
 const express = require('express');
-const path = require('path');
-const fs = require('fs');
 const app = express();
+const server = require('http').Server(app);
+const io = require('./io')(server);
+const path = require('path');
 
 const middleware = require('./middleware');
 const routes = require('./routes');
@@ -21,4 +22,4 @@ app.use('/api/stream', (req, res, next) => {
   next();
 }, routes.stream);
 
-app.listen(6300, () => console.log('Ready to accept connections on port 6300'));
+server.listen(6300, () => console.log('Ready to accept connections on port 6300'));
