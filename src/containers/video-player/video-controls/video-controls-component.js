@@ -32,19 +32,12 @@ class VideoControls extends Component {
       isSeekTimeVisible: false
     };
 
-    this.getSeekPosition = this.getSeekPosition.bind(this);
     this.getSeekTime = this.getSeekTime.bind(this);
     this.hideSeekTime = this.hideSeekTime.bind(this);
     this.handleSeek = this.handleSeek.bind(this);
     this.onVolumeMouseEnter = this.onVolumeMouseEnter.bind(this);
     this.onVolumeMouseLeave = this.onVolumeMouseLeave.bind(this);
     this.toggleSubSettings = this.toggleSubSettings.bind(this);
-  }
-
-  getSeekPosition(pos) {
-    const { progress } = this;
-    let left = progress.offsetLeft + progress.offsetParent.offsetLeft;
-    return pos - left;
   }
 
   getSeekTime(e) {
@@ -56,7 +49,7 @@ class VideoControls extends Component {
     const parentOffsetLeft = progress.offsetParent.offsetLeft;
 
     const pos = (e.pageX - offsetLeft - parentOffsetLeft) / progress.clientWidth;
-    // console.log(`offsetleft: ${offsetLeft}, pos: ${pos}`);
+
     this.setState({ seekTime: pos * duration, seekTimePos: e.pageX - parentOffsetLeft, isSeekTimeVisible: true });
   }
 
