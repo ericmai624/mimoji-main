@@ -1,12 +1,8 @@
 const chalk = require('chalk');
-const path = require('path');
-const Promise = require('bluebird');
-const fs = Promise.promisifyAll(require('fs'));
-const os = require('os');
-const { each } = require('lodash');
-const util = require('../utilities');
 const log = console.log.bind(console);
-const { Stream, streams, make } = require('../controller').stream;
+const { extname } = require('path');
+const { each } = require('lodash');
+const { Stream, streams } = require('../controller').stream;
 
 module.exports = server => {
   const io = require('socket.io')(server);
@@ -22,14 +18,11 @@ module.exports = server => {
       
       try {
         each(streams, s => s.terminate()); // stop all processes and remove all files first
-        let directory = await make(path.join(os.tmpdir(), 'onecast'));
-        let [output, metadata] = await Promise.all(
-          [ fs.mkdtempAsync(directory + path.sep), util.ffmpeg.getMetadata(video) ]);
         
         let stream = new Stream();
     
         let onPlayListReady = file => {
-          if (path.extname(file) === '.m3u8') {
+          if (extname(file) === '.m3u8') {
             log(`Playlist is ready. Process took ${Date.now() - start}ms`);
             return socket.emit('playlist ready');
           }
@@ -38,7 +31,7 @@ module.exports = server => {
         let onFileRemoved = file => {
           stream.fileCount--;
         };
-        stream.create(video, seek, metadata, output, streams);
+        let output = await stream.create(video, seek, streams);
         stream.watch(output, onPlayListReady, onFileRemoved);
         socket.emit('stream created', { id: stream.getId(), duration: stream.getDuration() });
         log(`Created new stream with id: ${stream.id}, process took ${Date.now() - start}ms`);

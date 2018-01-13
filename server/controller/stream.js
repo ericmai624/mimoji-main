@@ -4,7 +4,6 @@ const Promise = require('bluebird');
 const fs = Promise.promisifyAll(require('fs'));
 const rimraf = require('rimraf');
 const path = require('path');
-const _ = require('lodash');
 const util = require('../utilities');
 const chokidar = require('chokidar');
 const jschardet = require('jschardet');
@@ -15,26 +14,6 @@ const { sep } = path;
 
 const streams = {};
 const subtitles = {};
-
-const open = (path, cb, retry = 0) => {
-  return fs.open(path, 'r', (err, fd) => {
-    if (!err) return cb(null, fd);
-    if (err && err.code === 'ENOENT' && retry < 20) {
-      log(chalk.white(`waiting for ${path}`));
-      return setTimeout(_.partial(open, path, cb, retry + 1), 1000);
-    }
-    return cb(err);
-  });
-};
-
-const make = (dir) => {
-  return new Promise((resolve, reject) => {
-    fs.mkdir(dir, (err) => {
-      if (err && err.code !== 'EEXIST') reject(err);
-      resolve(dir);
-    });
-  });
-};
 
 class Stream {
   constructor() {
@@ -66,12 +45,26 @@ class Stream {
     return path.join(this.output, file);
   }
 
-  create(input, seek, metadata, output, storage) {
+  make(folder) {
+    return new Promise((resolve, reject) => {
+      fs.mkdir(folder, (err) => {
+        if (err && err.code !== 'EEXIST') reject(err);
+        resolve(folder);
+      });
+    });
+  }
+
+  async create(input, seek, storage) {
+    const directory = await this.make(path.join(os.tmpdir(), 'onecast'));
+    const [output, metadata] = await Promise.all(
+      [ fs.mkdtempAsync(directory + path.sep), util.ffmpeg.getMetadata(input) ]);
+    log(`output is ${output}`);
     this.input = input;
     this.output = output;
     this.metadata = metadata;
     this.command = util.ffmpeg.processMedia(input, seek, metadata, output, this.clean, this.finish);
     storage[this.id] = this;
+    return output;
   }
 
   watch(folder, onAddCallback, onUnlinkCallback) {
@@ -193,4 +186,4 @@ const loadSubtitle = async (req, res) => {
   }
 };
 
-module.exports = { streams, Stream, make, serve, addSubtitle, loadSubtitle };
+module.exports = { streams, Stream, serve, addSubtitle, loadSubtitle };
