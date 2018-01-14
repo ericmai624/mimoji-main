@@ -29,19 +29,19 @@
     <div>
       <div class="flex flex-center absolute"
         style="z-index: 99; display: inline-blck; width: 40px; height: 40px; right: 20px; top: 20px; background: transparent;">
-        <button class="no-background" is="google-cast-button"
+        <button id="cast-button" class="no-background" is="google-cast-button"
           style="border: none; outline: none; cursor: pointer;"></button>
         <script>
           const initializeCastApi = () => {
-            cast.framework.CastContext.getInstance().setOptions({
+            window.cast.framework.CastContext.getInstance().setOptions({
               receiverApplicationId: chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID
               // receiverApplicationId: '7DDC0933'
             });
-            cast.framework.CastContext.getInstance().requestSession()
-              .then(() => {
-
-              })
-              .catch(err => console.log(err));
+            var cast = document.getElementById('cast-button');
+            console.log(cast);
+            setTimeout(function() {
+              cast.click();
+            }, 5000); 
           }
           window['__onGCastApiAvailable'] = (isAvailable) => {
             if (isAvailable) initializeCastApi();

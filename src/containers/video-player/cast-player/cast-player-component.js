@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import _ from 'lodash';
+import { partial } from 'lodash';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
@@ -182,6 +182,8 @@ class CastPlayer extends Component {
     const { ip, stream, textTrack } = this.props;
 
     if (!this.castSession) this.castSession = cast.framework.CastContext.getInstance().getCurrentSession();
+    if (!this.castSession) {
+    }
 
     const mediaSource = `http://${ip.address}:6300/api/stream/video/${stream.id}/playlist.m3u8`;
     const mediaInfo = new chrome.cast.media.MediaInfo(mediaSource);
@@ -260,7 +262,7 @@ class CastPlayer extends Component {
     const isPlaying = playerState === playing;
    
     updateStreamTime(stream.currentTime + 1);
-    if (isPlaying) this.timer = setTimeout(_.partial(this.updateTime, Date.now()), 2000 - (Date.now() - prev));
+    if (isPlaying) this.timer = setTimeout(partial(this.updateTime, Date.now()), 2000 - (Date.now() - prev));
   }
 
   stopTimer() {
