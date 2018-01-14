@@ -5,7 +5,7 @@ import { Container } from './button-styles';
 const FileBrowserButton = ({ children, className, onClick, icon, width, height, size, style, color, background }) => {
   return (
     <Container
-      className={`flex flex-center transition-color${className ? ' ' + className : ''}`}
+      className={`flex flex-center transition-color pointer${className ? ' ' + className : ''}`}
       onClick={onClick}
       style={style}
       w={width}

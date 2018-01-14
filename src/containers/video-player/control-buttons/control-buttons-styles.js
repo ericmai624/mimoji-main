@@ -8,12 +8,9 @@ export const Container = styled.div`
   height: ${({ height }) => height ? height : '24px'};
   font-size: ${({ size }) => size ? size : '24px'};
   color: ${({ color }) => color ? color.normal : white};
-  cursor: pointer;
-  transition: color 0.25s ease-out;
   z-index: 50;
 
   &:hover {
     color: ${({ color }) => color ? color.hover : orange};
-    transition: color 0.25s ease-in;
   }
 `;

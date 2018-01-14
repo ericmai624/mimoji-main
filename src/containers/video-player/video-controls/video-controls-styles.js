@@ -2,8 +2,7 @@ import styled from 'styled-components';
 
 const ctrlBg = 'rgba(65, 68, 86, 0.8)';
 const orange = 'rgba(228, 75, 54, 0.9)';
-const white = 'rgb(255, 255, 255)';
-const borderRadius = 4;
+const borderRadius = 6;
 const progressHeight = 12;
 
 export const Container = styled.div`
@@ -21,25 +20,19 @@ export const Container = styled.div`
   box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
 `;
 
-export const Showtime = styled.div`
-  color: ${white};
-  user-select: none;
-`;
-
 export const ProgressContainer = styled.div`
   display: block;
   width: 320px;
   height: ${progressHeight}px;
   border: none;
   border-radius: ${borderRadius}px;
-  cursor: pointer;
   line-height: 0;
-  background: transparent;
 `;
 
 export const SeekTime = styled.div`
+  visibility: ${({ isVisible }) => isVisible ? 'visible' : 'hidden'};
+  opacity: ${({ isVisible }) => isVisible ? 1 : 0};
   font-size: 12px;
-  color: ${white};
   background: rgba(0, 0, 0, 0.85);
   padding: 5px;
   width: 50px;
@@ -49,6 +42,7 @@ export const SeekTime = styled.div`
   box-sizing: content-box;
   z-index: 108;
   box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.26);
+  transition: opacity 0.25s ease;
 
   &:before {
     content: '';
@@ -57,7 +51,7 @@ export const SeekTime = styled.div`
     bottom: -4px;
     border-width: 5px 5px 0 5px;
     border-style: solid;
-    border-color: rgba(0, 0, 0, 0.85) transparent transparent  transparent;
+    border-color: rgba(0, 0, 0, 0.85) transparent transparent transparent;
   }
 `;
 
@@ -89,7 +83,6 @@ export const Progress = styled.progress`
 
 export const Bridge = styled.div`
   display: ${({ showVolumeRange }) => showVolumeRange ? 'block' : 'none'};
-  background: transparent;
   width: 42px;
   height: 35px;
   z-index: 1;
@@ -100,7 +93,6 @@ export const VolumeContainer = styled.div`
   width: 42px;
   height: 24px;
   font-size: 24px;
-  color: ${white};
   box-sizing: border-box;
   z-index: 50;
 `;
@@ -129,7 +121,6 @@ export const VolumeRange = styled.input.attrs({
   height: 6px;
   border-radius: 2px;
   outline: none;
-  cursor: pointer;
   -webkit-appearance: none;
 
   &::-webkit-slider-thumb {
@@ -185,26 +176,3 @@ export const VolumeRange = styled.input.attrs({
     outline: none;
   }
 `;
-
-/*
-export const Sub = styled.div`
-  width: 26px;
-  height: 20px;
-  line-height: 20px;
-  padding: 0px 1px;
-  vertical-align: middle;
-  text-align: center;
-  background: ${white};
-  color: rgba(48, 47, 42, 1);
-  font-size: 10px;
-  font-weight: bold;
-  border-radius: 2px;
-  transition: background 0.25s ease-out;
-
-  &:hover {
-    color: ${white};
-    background: ${orange};
-    transition: background 0.25s ease-in;
-  }
-`;
-*/

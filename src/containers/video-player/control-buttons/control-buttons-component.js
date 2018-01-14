@@ -7,7 +7,7 @@ const ControlButton = ({ children, onClick, className, icon, color, width, heigh
   return (
     <Container
       onClick={onClick}
-      className={`flex flex-center${className ? ' ' + className : ''}`}
+      className={`flex flex-center transition-color pointer${className ? ' ' + className : ''}`}
       color={color}
       width={width}
       height={height}

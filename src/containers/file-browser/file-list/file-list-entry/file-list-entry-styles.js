@@ -13,7 +13,6 @@ export const Entry = styled.li`
   padding: 16px;
   align-items: center;
   border-bottom: 1px solid rgba(155, 155, 155, 0.8);
-  cursor: pointer;
   transition: color 0.15s ease-out;
 
   &:hover {

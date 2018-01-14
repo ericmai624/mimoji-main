@@ -11,7 +11,7 @@ import {
 const FileBrowserListEntry = ({ content, onDoubleClickDirectory, onDoubleClickFile, navigateUpDir }) => {
   return (
     <List>
-      <Entry className='flex' onDoubleClick={navigateUpDir}>
+      <Entry className='flex pointer' onDoubleClick={navigateUpDir}>
         <Icon>
           <FontAwesomeIcon icon={['far', 'folder']}/>
         </Icon>
@@ -26,7 +26,7 @@ const FileBrowserListEntry = ({ content, onDoubleClickDirectory, onDoubleClickFi
         else icon = ['far', 'file'];
 
         return (
-          <Entry className='flex'
+          <Entry className='flex pointer'
             key={i} 
             onDoubleClick={type === 'directory' ? (e) => onDoubleClickDirectory(e, entry) : (e) => onDoubleClickFile(e, entry)}
           >

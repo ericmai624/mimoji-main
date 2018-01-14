@@ -9,10 +9,7 @@ body {
   padding: 0;
 }
 
-#root {
-  /* display: grid;
-  grid-template-columns: 1fr;
-  grid-template-rows: 50px calc(100vh - 50px); */
+#app {
   width: 100%;
   height: 100vh;
   background: url('/assets/background/466681.jpg') no-repeat center center fixed;
@@ -81,6 +78,10 @@ body {
 
 .no-background {
   background: transparent;
+}
+
+.pointer {
+  cursor: pointer;
 }
 
 video::-webkit-media-controls {

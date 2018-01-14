@@ -32,6 +32,7 @@ class WebPlayer extends Component {
     this.showControls = this.showControls.bind(this);
     this.hideControls = this.hideControls.bind(this);
     this.onVideoMouseMove = this.onVideoMouseMove.bind(this);
+    this.onControlsMouseOver = this.onControlsMouseOver.bind(this);
     this.seek = this.seek.bind(this);
     this.onVideoPlaying = this.onVideoPlaying.bind(this);
     this.onVideoPaused = this.onVideoPaused.bind(this);
@@ -101,7 +102,7 @@ class WebPlayer extends Component {
     else this.setState({ isPaused: true }, video.pause.bind(video));
   }
 
-  showControls(e) {
+  showControls() {
     const { isControlsVisible } = this.state;
     if (!isControlsVisible) this.setState({ isControlsVisible: true });
   }
@@ -112,11 +113,20 @@ class WebPlayer extends Component {
   }
 
   onVideoMouseMove(e) {
+    e.stopPropagation();
     const { app } = this.props;
     this.stopControlsTimer();
     if (app.isPlayerEnabled) this.showControls(); // show controls
 
     this.controlsTimer = setTimeout(this.hideControls, 4000);
+  }
+
+  onControlsMouseOver(e) {
+    e.stopPropagation();
+    const { isControlsVisible } = this.state;
+    this.stopControlsTimer();
+
+    if (!isControlsVisible) this.setState({ isControlsVisible: true });
   }
 
   seek(seekTime) {
@@ -255,6 +265,7 @@ class WebPlayer extends Component {
         </video>
         <VideoControls
           seek={this.seek}
+          onControlsMouseOver={this.onControlsMouseOver}
           toggleFileBrowserDialog={toggleFileBrowserDialog}
           playOrPause={this.playOrPause}
           muteOrUnmute={this.muteOrUnmute}

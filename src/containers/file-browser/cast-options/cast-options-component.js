@@ -16,10 +16,10 @@ const CastOptions = ({ isVisible, cast, stream, toggleCastOptions }) => {
         />
       </Title>
       <Options className='no-list-style'>
-        <Option onClick={e => stream(true)} className='flex flex-align-center'>
+        <Option onClick={e => stream(true)} className='flex flex-align-center pointer'>
           Play on Chromecast
         </Option>
-        <Option onClick={e => stream(false)} className='flex flex-align-center'>
+        <Option onClick={e => stream(false)} className='flex flex-align-center pointer'>
           Play in the browser
         </Option>
       </Options>

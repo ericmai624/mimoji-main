@@ -5,7 +5,6 @@ import momentDurationSetup from 'moment-duration-format';
 
 import { 
   Container,
-  Showtime,
   ProgressContainer,
   SeekTime,
   Progress,
@@ -45,12 +44,10 @@ class VideoControls extends Component {
     const { duration } = this.props;
     const { progress } = this;
 
-    const offsetLeft = progress.offsetLeft;
-    const parentOffsetLeft = progress.offsetParent.offsetLeft;
+    const seekTimePos = e.pageX - progress.offsetParent.offsetLeft;
+    const seekTime = (seekTimePos - progress.offsetLeft) / progress.clientWidth * duration;
 
-    const pos = (e.pageX - offsetLeft - parentOffsetLeft) / progress.clientWidth;
-
-    this.setState({ seekTime: pos * duration, seekTimePos: e.pageX - parentOffsetLeft, isSeekTimeVisible: true });
+    this.setState({ seekTime, seekTimePos, isSeekTimeVisible: true });
   }
 
   hideSeekTime(e) {
@@ -62,7 +59,6 @@ class VideoControls extends Component {
     e.stopPropagation();
     const { seek } = this.props;
     const { seekTime } = this.state;
-
     seek(seekTime);
   }
 
@@ -81,7 +77,8 @@ class VideoControls extends Component {
   }
 
   render() {
-    const { 
+    const {
+      onControlsMouseOver,
       toggleFileBrowserDialog, 
       playOrPause, 
       muteOrUnmute, 
@@ -118,28 +115,31 @@ class VideoControls extends Component {
           id='video-controls'
           className='flex flex-align-center flex-space-around absolute'
           isControlsVisible={isControlsVisible}
+          onMouseOver={onControlsMouseOver}
         >
           <ControlButton onClick={playOrPause} icon={['fas', isPaused ? 'play' : 'pause']}/>
           <ControlButton onClick={stop} icon={['fas', 'stop']}/>
-          <ProgressContainer 
+          <ProgressContainer
+            className='pointer no-background'
             onClick={this.handleSeek}
             onMouseMove={this.getSeekTime}
             onMouseLeave={this.hideSeekTime}
             innerRef={(el) => this.progress = el}
           >
             <SeekTime 
-              className='flex-center absolute'
-              style={{left: `${seekTimePos - 25}px`, display: isSeekTimeVisible ? 'flex' : 'none'}}
+              className='flex flex-center absolute white-font'
+              style={{left: `${seekTimePos - 30}px`}}
+              isVisible={isSeekTimeVisible}
             >
               {cursorTime}
             </SeekTime>
             <Progress value={currentTime} max={duration} />
           </ProgressContainer>
-          <Showtime>
+          <div className='white-font no-select'>
             {displayedTime} / {endTime}
-          </Showtime>
+          </div>
           <VolumeContainer
-            className='relative'
+            className='relative white-font'
             onMouseOver={this.onVolumeMouseEnter}
             onMouseLeave={this.onVolumeMouseLeave}
           >
@@ -154,6 +154,7 @@ class VideoControls extends Component {
               <VolumeRange
                 value={volume}
                 onChange={setVolume}
+                className='pointer'
                 style={{
                   background: 'linear-gradient(to right, rgba(228, 75, 54, 0.9) 0%,' 
                               + `rgba(228, 75, 54, 0.9) ${volume * 100}%,` 
@@ -163,7 +164,7 @@ class VideoControls extends Component {
               >
               </VolumeRange>
             </VolumeRangeWrapper>
-            <Bridge className='relative' showVolumeRange={showVolumeRange}></Bridge>
+            <Bridge className='relative no-background' showVolumeRange={showVolumeRange}></Bridge>
           </VolumeContainer>
           <ControlButton onClick={this.toggleSubSettings}>
             <FontAwesomeIcon icon={['fas', 'language']} size='lg'/>

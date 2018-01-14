@@ -11,7 +11,6 @@ export const Container = styled.div`
   font-size: ${({ s }) => s ? s : '24px'};
   color: ${({ c }) => c ? c.normal : black};
   background: ${({ bg }) => bg ? bg.normal : transparent};
-  cursor: pointer;
 
   &:hover {
     color: ${({ c }) => c ? c.hover : orange};
