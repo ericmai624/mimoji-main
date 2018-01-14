@@ -59,6 +59,7 @@ class VideoControls extends Component {
     e.stopPropagation();
     const { seek } = this.props;
     const { seekTime } = this.state;
+    console.log(`handleSeek is seeking ${seekTime}`);
     seek(seekTime);
   }
 
@@ -120,7 +121,7 @@ class VideoControls extends Component {
           <ControlButton onClick={playOrPause} icon={['fas', isPaused ? 'play' : 'pause']}/>
           <ControlButton onClick={stop} icon={['fas', 'stop']}/>
           <ProgressContainer
-            className='pointer no-background'
+            className='flex flex-center pointer no-background'
             onClick={this.handleSeek}
             onMouseMove={this.getSeekTime}
             onMouseLeave={this.hideSeekTime}

@@ -28,26 +28,28 @@
     </noscript>
     <div>
       <div class="flex flex-center absolute"
-        style="z-index: 99; display: inline-blck; width: 40px; height: 40px; right: 20px; top: 20px; background: transparent;">
+        style="z-index: 99; width: 40px; height: 40px; right: 20px; top: 20px; background: transparent;">
         <button id="cast-button" class="no-background" is="google-cast-button"
           style="border: none; outline: none; cursor: pointer;"></button>
+        <script type="text/javascript" 
+          src="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1"></script>
         <script>
-          const initializeCastApi = () => {
-            window.cast.framework.CastContext.getInstance().setOptions({
+          var initializeCastApi = function() {
+            var context = cast.framework.CastContext.getInstance();
+            context.setOptions({
               receiverApplicationId: chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID
               // receiverApplicationId: '7DDC0933'
             });
-            var cast = document.getElementById('cast-button');
-            console.log(cast);
-            setTimeout(function() {
-              cast.click();
-            }, 5000); 
+            console.log(context);
+            context.requestSession()
+              .then(function() {
+
+              }, console.log);
           }
-          window['__onGCastApiAvailable'] = (isAvailable) => {
+          window['__onGCastApiAvailable'] = function(isAvailable) {
             if (isAvailable) initializeCastApi();
           };
         </script>
-        <script src="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1" async></script>
       </div>
       <div id="app"></div>
     </div>

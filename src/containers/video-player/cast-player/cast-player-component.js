@@ -32,6 +32,7 @@ class CastPlayer extends Component {
     this.setEventListeners = this.setEventListeners.bind(this);
     this.removeEventListeners = this.removeEventListeners.bind(this);
     this.cast = this.cast.bind(this);
+    this.switch = this.switch.bind(this);
     this.seek = this.seek.bind(this);
     this.updateTime = this.updateTime.bind(this);
     this.stopTimer = this.stopTimer.bind(this);
@@ -39,6 +40,7 @@ class CastPlayer extends Component {
     this.muteOrUnmute = this.muteOrUnmute.bind(this);
     this.playOrPause = this.playOrPause.bind(this);
     this.setVolume = this.setVolume.bind(this);
+    this.stopMediaSession = this.stopMediaSession.bind(this);
     this.stop = this.stop.bind(this);
     this.cleanup = this.cleanup.bind(this);
     this.onConnectionChanged = this.onConnectionChanged.bind(this);
@@ -69,10 +71,20 @@ class CastPlayer extends Component {
   
   initSession() {
     console.log('cast session');
-    const { cast } = window;
-    const castSession = cast.framework.CastContext.getInstance().getCurrentSession();
-    if (!castSession) return cast.framework.CastContext.getInstance().requestSession();
-    return Promise.resolve();
+    const { chrome } = window;
+    const applicationIDs = chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID;
+    const sessionRequest = new chrome.cast.SessionRequest(applicationIDs);
+    const apiConfig = new chrome.cast.ApiConfig(sessionRequest,
+      session => {
+        console.log('apiConfig session callback: ', session);
+      },
+      receiver => {
+        console.log(`apiConfig receiver callback: ${receiver}`);
+      });
+  
+    chrome.cast.initialize(apiConfig, () => {
+      console.log('init session success');
+    }, console.log);
   }
 
   initPlayer() {
@@ -101,7 +113,7 @@ class CastPlayer extends Component {
 
     controller.addEventListener(IS_CONNECTED_CHANGED, this.onConnectionChanged);
     controller.addEventListener(IS_PAUSED_CHANGED, this.onPausedChanged);
-    controller.addEventListener(CURRENT_TIME_CHANGED, this.onCurrentTimeChanged);
+    // controller.addEventListener(CURRENT_TIME_CHANGED, this.onCurrentTimeChanged);
     controller.addEventListener(VOLUME_LEVEL_CHANGED, this.onVolumeLevelChanged);
     controller.addEventListener(IS_MUTED_CHANGED, this.onMutedChanged);
     controller.addEventListener(PLAYER_STATE_CHANGED, this.onPlayerStateChanged);
@@ -123,7 +135,7 @@ class CastPlayer extends Component {
 
     controller.removeEventListener(IS_CONNECTED_CHANGED, this.onConnectionChanged);
     controller.removeEventListener(IS_PAUSED_CHANGED, this.onPausedChanged);
-    controller.removeEventListener(CURRENT_TIME_CHANGED, this.onCurrentTimeChanged);
+    // controller.removeEventListener(CURRENT_TIME_CHANGED, this.onCurrentTimeChanged);
     controller.removeEventListener(VOLUME_LEVEL_CHANGED, this.onVolumeLevelChanged);
     controller.removeEventListener(IS_MUTED_CHANGED, this.onMutedChanged);
     controller.removeEventListener(PLAYER_STATE_CHANGED, this.onPlayerStateChanged);
@@ -165,7 +177,7 @@ class CastPlayer extends Component {
 
     if (value === PLAYING) {
       this.updateTime();
-      this.setState({ isPaused: false, isBuffering: false });
+      this.setState({ isLoading: false, isPaused: false, isBuffering: false });
     } else if (value === PAUSED) {
       this.stopTimer();
       this.setState({ isPaused: true, isBuffering: false });
@@ -181,9 +193,8 @@ class CastPlayer extends Component {
     const { cast, chrome } = window;
     const { ip, stream, textTrack } = this.props;
 
-    if (!this.castSession) this.castSession = cast.framework.CastContext.getInstance().getCurrentSession();
-    if (!this.castSession) {
-    }
+    this.castSession = cast.framework.CastContext.getInstance().getCurrentSession();
+    if (!this.castSession) this.initSession();
 
     const mediaSource = `http://${ip.address}:6300/api/stream/video/${stream.id}/playlist.m3u8`;
     const mediaInfo = new chrome.cast.media.MediaInfo(mediaSource);
@@ -202,20 +213,32 @@ class CastPlayer extends Component {
       request.activeTrackIds = [1];
     }
     // start streaming
-    this.castSession.loadMedia(request)
-      .then(() => {
-        console.log(`%cCast process complete, took %c${Date.now() - start}ms`, 'color:#1b5dc6;', 'color:#d80a52;');
-        this.setState({ isLoading: false });
-        this.initPlayer();
-        console.log('Can seek: ', this.player.canSeek);
-        console.log(`%cPlaying stream id ${stream.id} @ %c${this.state.currTimeOffset}s`, 'color:#1b5dc6;', 'color:#d80a52;');
-      }, (err) => console.log('Error code: ', err));
+    if (this.castSession) {
+      this.castSession.loadMedia(request)
+        .then(() => {
+          console.log(`%cCast process complete, took %c${Date.now() - start}ms`, 'color:#1b5dc6;', 'color:#d80a52;');
+          this.initPlayer();
+          this.mediaSession = this.castSession.getMediaSession();
+          console.log(`%cPlaying stream id ${stream.id} @ %c${this.state.currTimeOffset}s`, 'color:#1b5dc6;', 'color:#d80a52;');
+        }, (err) => console.log('Error code: ', err));
+    }
+  }
+
+  switch() {
+    const { io } = window;
+    const { stream, updateStreamInfo } = this.props;
+    const { currTimeOffset } = this.state;
+
+    this.stopMediaSession(() => {
+      console.log(`creating new stream @ seek %c${currTimeOffset}`, 'color:#d80a52;');
+      io.emit('new stream', { video: stream.video, seek: currTimeOffset });
+      io.once('stream created', updateStreamInfo);
+    });
   }
 
   seek(time) {
     console.log(`%cSeeking ${time}`, 'background:#1b5dc6; color:white;');
-    const { io } = window;
-    const { stream, updateStreamTime, updateStreamInfo } = this.props;
+    const { updateStreamTime } = this.props;
     
     this.stopTimer(); // Stop show time timer
 
@@ -224,15 +247,10 @@ class CastPlayer extends Component {
       this.seekTimer = null;
     }
 
-    updateStreamTime(time);
+    updateStreamTime(time); // reflect seek time on progress bar
+
     this.setState({ isLoading: true, isSeeking: true, currTimeOffset: time }, () => {
-      if (this.controller) {
-        this.controller.stop();
-        this.seekTimer = setTimeout(() => {
-          io.emit('new stream', { video: stream.video, seek: time });
-          io.once('stream created', updateStreamInfo);
-        }, 1000);
-      }
+      this.seekTimer = setTimeout(this.switch, 1000);
     });
   }
 
@@ -255,13 +273,13 @@ class CastPlayer extends Component {
   }
 
   updateTime(prev = Date.now() - 1000) {
-    if (!this.player) return;
-    const { PLAYING: playing } = window.chrome.cast.media.PlayerState;
-    const { stream, updateStreamTime } = this.props;
-    const { playerState } = this.player;
-    const isPlaying = playerState === playing;
-   
-    updateStreamTime(stream.currentTime + 1);
+    if (!this.mediaSession || !this.player) return;
+    const { chrome } = window;
+    const { updateStreamTime } = this.props;
+    const { currTimeOffset } = this.state;
+    const isPlaying = this.player.playerState === chrome.cast.media.PlayerState.PLAYING;
+
+    updateStreamTime(this.mediaSession.getEstimatedTime() + currTimeOffset);
     if (isPlaying) this.timer = setTimeout(partial(this.updateTime, Date.now()), 2000 - (Date.now() - prev));
   }
 
@@ -294,17 +312,25 @@ class CastPlayer extends Component {
     });
   }
 
+  stopMediaSession(cb) {
+    if (this.mediaSession) {
+      this.mediaSession.stop(null, cb, console.log);
+      this.mediaSession = null;
+    }
+  }
+
   stop() {
     console.log('video has stopped');
-    if (this.controller) this.controller.stop();
-    this.cleanup();
+    this.stopMediaSession(this.cleanup);
   }
 
   cleanup() {
-    console.log('Cleaning up Cast Player...');
+    console.log('Cleaning up tmp files...');
     const { io } = window;
     const { app, stream, togglePlayer, resetStream, resetTextTrack } = this.props;
+
     if (stream.id === '') return;
+
     this.stopTimer(); // stop the currentTime timer
 
     io.emit('close stream', { id: stream.id });
@@ -312,7 +338,7 @@ class CastPlayer extends Component {
     resetStream();
     resetTextTrack();
     if (app.isPlayerEnabled) togglePlayer();
-    console.log('Cleaned Cast Player');
+    console.log('Cleaned tmp files');
   }
 
   render() {

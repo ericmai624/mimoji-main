@@ -21,9 +21,8 @@ export const Container = styled.div`
 `;
 
 export const ProgressContainer = styled.div`
-  display: block;
   width: 320px;
-  height: ${progressHeight}px;
+  height: ${progressHeight * 2}px;
   border: none;
   border-radius: ${borderRadius}px;
   line-height: 0;

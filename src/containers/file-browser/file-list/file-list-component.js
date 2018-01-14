@@ -12,13 +12,7 @@ import {
 } from './file-list-styles';
 
 const FileBrowserList = ({ 
-  fileBrowser, 
-  isVisible, 
-  onDoubleClickDirectory, 
-  onDoubleClickFile, 
-  toggleFileBrowserDialog, 
-  navigateUpDir 
-}) => (
+  fileBrowser, isVisible, onDoubleClickDirectory, onDoubleClickFile, toggleFileBrowserDialog, navigateUpDir }) => (
   <Container className='grid' isVisible={isVisible}>
     <Side className='flex flex-center'>
       <h2>File Browser</h2>
@@ -34,7 +28,7 @@ const FileBrowserList = ({
         <FileBrowserButton onClick={toggleFileBrowserDialog} icon={['fas', 'times']} />
       </Nav>
       <FileBrowserListEntry
-        content={fileBrowser.content} 
+        content={fileBrowser.content}
         onDoubleClickDirectory={onDoubleClickDirectory} 
         onDoubleClickFile={onDoubleClickFile}
         navigateUpDir={navigateUpDir}

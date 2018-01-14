@@ -39,10 +39,27 @@ const arrangeContent = (input, dir) => {
     } catch (err) {
       console.log('skipped ', path.join(dir, name));
     }
-
   });
 
-  return content;
+  return content.sort((a, b) => {
+    if (a.type === 'directory' && b.type === 'directory') {
+      return a.name.toUpperCase().charCodeAt(0) - b.name.toUpperCase().charCodeAt(0);
+    } else if (a.type === 'directory' && b.type !== 'directory') {
+      return -1;
+    } else if (a.type !== 'directory' && b.type === 'directory') {
+      return 1;
+    } else {
+      if (a.type === 'video' && b.type === 'video') {
+        return a.name.toUpperCase().charCodeAt(0) - b.name.toUpperCase().charCodeAt(0);
+      } else if (a.type !== 'video' && b.type === 'video') {
+        return 1;
+      } else if (a.type === 'video' && b.type !== 'video') {
+        return -1;
+      } else {
+        return a.name.toUpperCase().charCodeAt(0) - b.name.toUpperCase().charCodeAt(0);
+      }
+    }
+  });
 };
 
 const getHomedirWin32 = (cb) => {

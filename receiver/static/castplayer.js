@@ -1,3 +1,5 @@
+window.cast.receiver.logger.setLevelValue(window.cast.receiver.LoggerLevel.DEBUG);
+
 const context = cast.framework.CastReceiverContext.getInstance();
 const playerManager = context.getPlayerManager();
 
