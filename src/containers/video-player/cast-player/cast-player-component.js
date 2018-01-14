@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
 import { togglePlayer } from 'stores/app';
-import { updateStreamInfo, updateStreamTime, resetStream } from 'stores/stream';
+import { updateStreamInfo, updateStreamTime, rejectStream, resetStream } from 'stores/stream';
 import { toggleFileBrowserDialog } from 'stores/file-browser';
 import { resetTextTrack } from 'stores/text-track';
 
@@ -51,15 +51,20 @@ class CastPlayer extends Component {
 
   componentDidMount() {
     const { io } = window;
+    const { rejectStream } = this.props;
     io.on('playlist ready', this.cast);
+    io.on('stream rejected', rejectStream);
   }
 
   componentWillUnmount() {
     console.log('Component is unmounting...');
-    const { controller } = this;
     const { io } = window;
+    const { controller } = this;
+    const { rejectStream } = this.props;
+
     if (controller) this.removeEventListeners(controller);
     io.off('playlist ready', this.cast);
+    io.off('stream rejected', rejectStream);
   }
   
   initSession() {
@@ -311,6 +316,15 @@ class CastPlayer extends Component {
   render() {
     const { isLoading, isPaused, isMuted, volume } = this.state;
     const { stream, toggleFileBrowserDialog } = this.props;
+
+    if (stream.hasError) {
+      return (
+        <Container className='flex flex-center absolute'>
+          <span style={{color: 'white'}}>Something went wrong...</span>
+        </Container>
+      );
+    }
+
     return (
       <Container className='flex flex-center absolute'>
         {isLoading ? <Loader size={42} /> : null}
@@ -340,6 +354,7 @@ const mapDispatchToProps = (dispatch) => ({
   togglePlayer: bindActionCreators(togglePlayer, dispatch),
   toggleFileBrowserDialog: bindActionCreators(toggleFileBrowserDialog, dispatch),
   updateStreamTime: bindActionCreators(updateStreamTime, dispatch),
+  rejectStream: bindActionCreators(rejectStream, dispatch),
   resetStream: bindActionCreators(resetStream, dispatch),
   resetTextTrack: bindActionCreators(resetTextTrack, dispatch)
 });

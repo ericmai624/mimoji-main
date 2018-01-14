@@ -38,6 +38,7 @@ module.exports = server => {
         log(`Created new stream with id: ${stream.id}, process took ${Date.now() - start}ms`);
       } catch (err) {
         log(`Failed to create stream with ${err}`);
+        socket.emit('stream rejected');
       }
     });
 

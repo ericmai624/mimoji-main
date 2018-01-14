@@ -8,7 +8,7 @@ import VideoControls from 'containers/video-player/video-controls/video-controls
 import TextTrack from 'containers/video-player/text-track/text-track-component';
 
 import { togglePlayer } from 'stores/app';
-import { updateStreamInfo, updateStreamTime, resetStream } from 'stores/stream';
+import { updateStreamInfo, updateStreamTime, rejectStream, resetStream } from 'stores/stream';
 import { toggleFileBrowserDialog } from 'stores/file-browser';
 import { resetTextTrack } from 'stores/text-track';
 
@@ -47,14 +47,18 @@ class WebPlayer extends Component {
 
   componentDidMount() {
     const { io } = window;
+    const { rejectStream } = this.props;
     io.on('playlist ready', this.initHls);
+    io.on('stream rejected', rejectStream);
   }
 
   componentWillUnmount() {
     const { io } = window;
+    const { rejectStream } = this.props;
     if (this.hls) this.hls.destroy();
     if (this.timerId !== undefined) this.stopTimer();
     io.off('playlist ready', this.initHls);
+    io.off('stream rejected', rejectStream);
   }
   
   initHls() {
@@ -295,6 +299,7 @@ const mapDispatchToProps = (dispatch) => ({
   togglePlayer: bindActionCreators(togglePlayer, dispatch),
   toggleFileBrowserDialog: bindActionCreators(toggleFileBrowserDialog, dispatch),
   updateStreamTime: bindActionCreators(updateStreamTime, dispatch),
+  rejectStream: bindActionCreators(rejectStream, dispatch),
   resetStream: bindActionCreators(resetStream, dispatch),
   resetTextTrack: bindActionCreators(resetTextTrack, dispatch)
 });

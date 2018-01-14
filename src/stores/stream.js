@@ -6,6 +6,8 @@ export const updateStreamInfo = data => ({ type: 'STREAM_INFO_UPDATED', payload:
 
 export const updateStreamTime = (currentTime) => ({ type: 'STREAM_TIME_UPDATES', currentTime });
 
+export const rejectStream = () => ({ type: 'STREAM_REJECTED' });
+
 export const resetStream = () => ({ type: 'STREAM_RESETS' });
 
 const initState = {
@@ -24,6 +26,7 @@ const handlers = {
     duration: action.payload.duration
   }),
   STREAM_TIME_UPDATES: (state, action) => ({ ...state, currentTime: action.currentTime }),
+  STREAM_REJECTED: (state) => ({ ...state, hasError: true }),
   STREAM_RESETS: () => initState
 };
 
