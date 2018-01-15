@@ -18,6 +18,7 @@ export const Container = styled.div`
   box-sizing: border-box;
   transition: opacity 0.25s ease-in-out;
   box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
+  z-index: 101;
 `;
 
 export const ProgressContainer = styled.div`

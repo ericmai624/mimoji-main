@@ -17,7 +17,7 @@ const FileBrowserList = ({
     <Side className='flex flex-center'>
       <h2>File Browser</h2>
     </Side>
-    <Main>
+    <Main className='grid'>
       <Nav className='flex flex-align-center flex-space-between'>
         <Directory className='ellipsis'>
           <span>{fileBrowser.directory}</span>
@@ -29,6 +29,7 @@ const FileBrowserList = ({
       </Nav>
       <FileBrowserListEntry
         content={fileBrowser.content}
+        isFetching={fileBrowser.fetching}
         onDoubleClickDirectory={onDoubleClickDirectory} 
         onDoubleClickFile={onDoubleClickFile}
         navigateUpDir={navigateUpDir}

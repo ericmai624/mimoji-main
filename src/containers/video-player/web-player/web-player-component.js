@@ -32,7 +32,7 @@ class WebPlayer extends Component {
     this.showControls = this.showControls.bind(this);
     this.hideControls = this.hideControls.bind(this);
     this.onVideoMouseMove = this.onVideoMouseMove.bind(this);
-    this.onControlsMouseOver = this.onControlsMouseOver.bind(this);
+    this.onControlsMouseMove = this.onControlsMouseMove.bind(this);
     this.seek = this.seek.bind(this);
     this.onVideoPlaying = this.onVideoPlaying.bind(this);
     this.onVideoPaused = this.onVideoPaused.bind(this);
@@ -67,7 +67,6 @@ class WebPlayer extends Component {
     const source = `/api/stream/video/${stream.id}/playlist.m3u8`;
 
     this.hls = new Hls({ 
-      debug: true,
       maxBufferLength: 10, /* in seconds */
       maxBufferSize: 100 * 1000 * 1000, /* Chrome max buffer size 150MB */
       manifestLoadingMaxRetry: 3,
@@ -125,7 +124,7 @@ class WebPlayer extends Component {
     this.controlsTimer = setTimeout(this.hideControls, 4000);
   }
 
-  onControlsMouseOver(e) {
+  onControlsMouseMove(e) {
     e.stopPropagation();
     const { isControlsVisible } = this.state;
     this.stopControlsTimer();
@@ -252,7 +251,7 @@ class WebPlayer extends Component {
         className='flex flex-center absolute'
         onMouseMove={this.onVideoMouseMove}
       >
-        {isLoading ? <Loader size={42} /> : null}
+        {isLoading ? <Loader className={'flex flex-center absolute'} size={42} /> : null}
         <video
           autoPlay={true}
           playsInline={true}
@@ -269,7 +268,7 @@ class WebPlayer extends Component {
         </video>
         <VideoControls
           seek={this.seek}
-          onControlsMouseOver={this.onControlsMouseOver}
+          onControlsMouseMove={this.onControlsMouseMove}
           toggleFileBrowserDialog={toggleFileBrowserDialog}
           playOrPause={this.playOrPause}
           muteOrUnmute={this.muteOrUnmute}

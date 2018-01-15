@@ -1,15 +1,11 @@
 import styled from 'styled-components';
 
-export const Container = styled.div.attrs({
-  size: ({ size }) => size,
-  color: ({ color }) => color ? color : 'rgb(255, 255, 255)',
-  bg: ({ bg }) => bg ? bg : 'transparent'
-})`
+export const Container = styled.div`
   width: ${({ size }) => size}px;
   height: ${({ size }) => size}px;
   font-size: ${({ size }) => size}px;
-  color: ${({ color }) => color};
-  background: ${({ bg }) => bg};
+  color: ${({ color }) => color ? color : 'rgb(255, 255, 255)'};
+  background: ${({ bg }) => bg ? bg : 'transparent'};
   top: 50%;
   left: 50%;
   margin-top: -${({ size }) => size / 2}px;

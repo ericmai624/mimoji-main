@@ -17,6 +17,7 @@ export const Container = styled.div`
 `;
 
 export const Side = styled.div`
+  height: auto;
   grid-column: 1;
   border-radius: 5px;
   background: ${bg};  
@@ -24,12 +25,19 @@ export const Side = styled.div`
 
 export const Main = styled.div`
   border-radius: 5px;
+  width: 100%;
+  height: auto;
   user-select: none;
   grid-column: 2;
   padding: 28px;
   overflow: auto;
   color: ${fontColor};
   background: ${bg};
+  box-sizing: border-box;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: 36px 1fr;
+  align-items: center;
+  justify-content: center;
 `;
 
 export const Directory = styled.div`
@@ -47,5 +55,6 @@ export const Directory = styled.div`
 `;
 
 export const Nav = styled.div`
-
+  grid-column: 1/4;
+  grid-row: 1;
 `;

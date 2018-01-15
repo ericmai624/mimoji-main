@@ -79,7 +79,7 @@ class VideoControls extends Component {
 
   render() {
     const {
-      onControlsMouseOver,
+      onControlsMouseMove,
       toggleFileBrowserDialog, 
       playOrPause, 
       muteOrUnmute, 
@@ -116,7 +116,7 @@ class VideoControls extends Component {
           id='video-controls'
           className='flex flex-align-center flex-space-around absolute'
           isControlsVisible={isControlsVisible}
-          onMouseOver={onControlsMouseOver}
+          onMouseMove={onControlsMouseMove}
         >
           <ControlButton onClick={playOrPause} icon={['fas', isPaused ? 'play' : 'pause']}/>
           <ControlButton onClick={stop} icon={['fas', 'stop']}/>

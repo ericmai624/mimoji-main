@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import { partial } from 'lodash';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
@@ -45,7 +44,6 @@ class CastPlayer extends Component {
     this.cleanup = this.cleanup.bind(this);
     this.onConnectionChanged = this.onConnectionChanged.bind(this);
     this.onPausedChanged = this.onPausedChanged.bind(this);
-    this.onCurrentTimeChanged = this.onCurrentTimeChanged.bind(this);
     this.onMutedChanged = this.onMutedChanged.bind(this);
     this.onVolumeLevelChanged = this.onVolumeLevelChanged.bind(this);
     this.onPlayerStateChanged = this.onPlayerStateChanged.bind(this);
@@ -105,7 +103,6 @@ class CastPlayer extends Component {
     const { 
       IS_CONNECTED_CHANGED,
       IS_PAUSED_CHANGED,
-      CURRENT_TIME_CHANGED,
       VOLUME_LEVEL_CHANGED,
       IS_MUTED_CHANGED,
       PLAYER_STATE_CHANGED
@@ -113,7 +110,6 @@ class CastPlayer extends Component {
 
     controller.addEventListener(IS_CONNECTED_CHANGED, this.onConnectionChanged);
     controller.addEventListener(IS_PAUSED_CHANGED, this.onPausedChanged);
-    // controller.addEventListener(CURRENT_TIME_CHANGED, this.onCurrentTimeChanged);
     controller.addEventListener(VOLUME_LEVEL_CHANGED, this.onVolumeLevelChanged);
     controller.addEventListener(IS_MUTED_CHANGED, this.onMutedChanged);
     controller.addEventListener(PLAYER_STATE_CHANGED, this.onPlayerStateChanged);
@@ -127,7 +123,6 @@ class CastPlayer extends Component {
     const { 
       IS_CONNECTED_CHANGED,
       IS_PAUSED_CHANGED,
-      CURRENT_TIME_CHANGED,
       VOLUME_LEVEL_CHANGED,
       IS_MUTED_CHANGED,
       PLAYER_STATE_CHANGED
@@ -135,7 +130,6 @@ class CastPlayer extends Component {
 
     controller.removeEventListener(IS_CONNECTED_CHANGED, this.onConnectionChanged);
     controller.removeEventListener(IS_PAUSED_CHANGED, this.onPausedChanged);
-    // controller.removeEventListener(CURRENT_TIME_CHANGED, this.onCurrentTimeChanged);
     controller.removeEventListener(VOLUME_LEVEL_CHANGED, this.onVolumeLevelChanged);
     controller.removeEventListener(IS_MUTED_CHANGED, this.onMutedChanged);
     controller.removeEventListener(PLAYER_STATE_CHANGED, this.onPlayerStateChanged);
@@ -143,7 +137,7 @@ class CastPlayer extends Component {
   }
 
   onConnectionChanged() {
-    if (this.player && !this.player.isConnected) {
+    if (!this.player.isConnected) {
       console.log('RemotePlayerController: Player disconnected');
       this.cleanup();
     }
@@ -152,13 +146,6 @@ class CastPlayer extends Component {
   onPausedChanged({ value }) {
     const { isPaused } = this.state;
     if (isPaused !== value) this.setState({ isPaused: value });
-  }
-
-  onCurrentTimeChanged({ value }) {
-    const { currTimeOffset } = this.state;
-    const { updateStreamTime } = this.props;
-
-    if (value) updateStreamTime(currTimeOffset + value);
   }
 
   onVolumeLevelChanged({ value }) {
@@ -184,6 +171,10 @@ class CastPlayer extends Component {
     } else if (value === BUFFERING) {
       this.stopTimer();
       this.setState({ isBuffering: true });
+    } else {
+      const { stream } = this.props;
+      // The show is ended
+      if (stream.currentTime >= (stream.duration - 1)) this.cleanup(); 
     }
   }
 
@@ -194,7 +185,6 @@ class CastPlayer extends Component {
     const { ip, stream, textTrack } = this.props;
 
     this.castSession = cast.framework.CastContext.getInstance().getCurrentSession();
-    if (!this.castSession) this.initSession();
 
     const mediaSource = `http://${ip.address}:6300/api/stream/video/${stream.id}/playlist.m3u8`;
     const mediaInfo = new chrome.cast.media.MediaInfo(mediaSource);
@@ -227,11 +217,10 @@ class CastPlayer extends Component {
   switch() {
     const { io } = window;
     const { stream, updateStreamInfo } = this.props;
-    const { currTimeOffset } = this.state;
 
     this.stopMediaSession(() => {
-      console.log(`creating new stream @ seek %c${currTimeOffset}`, 'color:#d80a52;');
-      io.emit('new stream', { video: stream.video, seek: currTimeOffset });
+      console.log(`creating new stream @ seek %c${stream.currentTime}`, 'color:#d80a52;');
+      io.emit('new stream', { video: stream.video, seek: stream.currentTime });
       io.once('stream created', updateStreamInfo);
     });
   }
@@ -272,21 +261,25 @@ class CastPlayer extends Component {
     return sub;
   }
 
-  updateTime(prev = Date.now() - 1000) {
+  updateTime(timestamp) {
     if (!this.mediaSession || !this.player) return;
-    const { chrome } = window;
+    this.lastTimeUpdate = this.lastTimeUpdate || timestamp - 1000;
+    const { requestAnimationFrame, chrome } = window;
     const { updateStreamTime } = this.props;
     const { currTimeOffset } = this.state;
     const isPlaying = this.player.playerState === chrome.cast.media.PlayerState.PLAYING;
 
-    updateStreamTime(this.mediaSession.getEstimatedTime() + currTimeOffset);
-    if (isPlaying) this.timer = setTimeout(partial(this.updateTime, Date.now()), 2000 - (Date.now() - prev));
+    if (timestamp - this.lastTimeUpdate > 999) {
+      updateStreamTime(this.mediaSession.getEstimatedTime() + currTimeOffset);
+      this.lastTimeUpdate = timestamp;
+    }
+    if (isPlaying) this.timer = requestAnimationFrame(this.updateTime);
   }
 
   stopTimer() {
     console.log('Stopping timer...');
     if (this.timer) {
-      clearTimeout(this.timer);
+      window.cancelAnimationFrame(this.timer);
       console.log(`Timer ${this.timer} has stopped`);
       this.timer = null;
     }
@@ -338,6 +331,7 @@ class CastPlayer extends Component {
     resetStream();
     resetTextTrack();
     if (app.isPlayerEnabled) togglePlayer();
+
     console.log('Cleaned tmp files');
   }
 
@@ -355,7 +349,7 @@ class CastPlayer extends Component {
 
     return (
       <Container className='flex flex-center absolute'>
-        {isLoading ? <Loader size={42} /> : null}
+        {isLoading ? <Loader className={'flex flex-center absolute'} size={42} /> : null}
         <VideoControls 
           seek={this.seek}
           toggleFileBrowserDialog={toggleFileBrowserDialog}

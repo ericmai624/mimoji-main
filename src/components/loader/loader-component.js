@@ -3,13 +3,14 @@ import FontAwesomeIcon from '@fortawesome/react-fontawesome';
 
 import { Container } from './loader-styles';
 
-const Loader = ({ size, color, background }) => {
+const Loader = ({ className, size, color, background, style }) => {
   return (
     <Container 
-      className='flex flex-center absolute'
+      className={className}
       size={size}
       color={color}
       bg={background}
+      style={style}
     >
       <FontAwesomeIcon icon={['fas', 'spinner']} spin/>
     </Container>

@@ -3,9 +3,21 @@ import styled from 'styled-components';
 const iconSize = '24px';
 const lightgray = 'rgba(219, 219, 219, 0.5)';
 
+export const LoaderWrapper = styled.div`
+  grid-area: 2/2/2/2;
+  visibility: ${({ isVisible }) => isVisible ? 'visible' : 'hidden'};
+  opacity: ${({ isVisible }) => isVisible ? 1 : 0};
+`;
+
 export const List = styled.ul`
+  visibility: ${({ isVisible }) => isVisible ? 'visible' : 'hidden'};
+  opacity: ${({ isVisible }) => isVisible ? 1 : 0};
+  grid-column: 1/4;
+  grid-row: 2;
   list-style: none;
   max-height: 480px;
+  height: 100%;
+  transition: opacity 0.15s ease;
 `;
 
 export const Entry = styled.li`
@@ -14,6 +26,7 @@ export const Entry = styled.li`
   align-items: center;
   border-bottom: 1px solid rgba(155, 155, 155, 0.8);
   transition: color 0.15s ease-out;
+  box-sizing: border-box;
 
   &:hover {
     background: ${lightgray};
