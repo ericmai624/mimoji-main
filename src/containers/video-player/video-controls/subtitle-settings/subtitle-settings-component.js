@@ -29,10 +29,10 @@ class SubSettings extends Component {
         <ContainerR className='absolute white-font'>
           <Preference>
             <Option className='ellipsis'>
-              <span>Encoding: </span>
+              <span>Encoding: Auto</span>
             </Option>
             <Option className='ellipsis'>
-              <span>Offset: </span>
+              <span>Offset: 0</span>
             </Option>
           </Preference>
           <Btns className='flex' onClick={toggleSubSettings}>

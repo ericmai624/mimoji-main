@@ -20,8 +20,6 @@ class CastPlayer extends Component {
       isLoading: true,
       isPaused: false,
       isMuted: false,
-      isBuffering: false,
-      isSeeking: false,
       volume: 1,
       currTimeOffset: 0
     };
@@ -164,13 +162,13 @@ class CastPlayer extends Component {
 
     if (value === PLAYING) {
       this.updateTime();
-      this.setState({ isLoading: false, isPaused: false, isBuffering: false });
+      this.setState({ isLoading: false, isPaused: false });
     } else if (value === PAUSED) {
       this.stopTimer();
-      this.setState({ isPaused: true, isBuffering: false });
+      this.setState({ isPaused: true });
     } else if (value === BUFFERING) {
       this.stopTimer();
-      this.setState({ isBuffering: true });
+      // this.setState({ isBuffering: true });
     } else {
       const { stream } = this.props;
       // The show is ended
@@ -189,12 +187,12 @@ class CastPlayer extends Component {
     const mediaSource = `http://${ip.address}:6300/api/stream/video/${stream.id}/playlist.m3u8`;
     const mediaInfo = new chrome.cast.media.MediaInfo(mediaSource);
     mediaInfo.contentType = 'application/vnd.apple.mpegurl';
-    mediaInfo.streamType = chrome.cast.media.StreamType.LIVE;
+    mediaInfo.streamType = chrome.cast.media.StreamType.OTHER;
     // style text track
     mediaInfo.textTrackStyle = new chrome.cast.media.TextTrackStyle();
     mediaInfo.textTrackStyle.backgroundColor = '#00000000';
     mediaInfo.textTrackStyle.fontFamily = '\'Roboto\', sans-serif';
-    mediaInfo.textTrackStyle.fontScale = 1.2;
+    mediaInfo.textTrackStyle.fontScale = 1.1;
 
     const request = new chrome.cast.media.LoadRequest(mediaInfo);
 
@@ -238,7 +236,7 @@ class CastPlayer extends Component {
 
     updateStreamTime(time); // reflect seek time on progress bar
 
-    this.setState({ isLoading: true, isSeeking: true, currTimeOffset: time }, () => {
+    this.setState({ isLoading: true, currTimeOffset: time }, () => {
       this.seekTimer = setTimeout(this.switch, 1000);
     });
   }
