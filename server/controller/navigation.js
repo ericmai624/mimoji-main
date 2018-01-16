@@ -1,10 +1,10 @@
-const { homedir } = require('os');
 const _ = require('lodash');
 const path = require('path');
 const Promise = require('bluebird');
 const fs = Promise.promisifyAll(require('fs'));
 const log = console.log.bind(console);
-const { spawn, exec } = require('child_process');
+const { homedir } = require('os');
+const { exec } = require('child_process');
 
 const videoExts = [
   '.webm', '.mkv', '.flv', '.vob', '.ogv', '.ogg', '.avi', 
@@ -96,32 +96,27 @@ const readdirWin32 = (location, nav) => {
   });
 };
 
-const readdir = async (req, res) => {
-  let { dir, nav } = req.query;
-
+const readdir = async (dir, nav) => {
   try {
     if (process.platform === 'win32') {
-      if (dir === '') {
+      if (!dir) {
         return getHomedirWin32((err, result) => {
-          if (!err) return res.json(result);
+          if (!err) return result;
           log('failed to get home directory: ', err);
-          return res.sendStatus(500);
         });
       }
-      let response = await readdirWin32(dir, nav);
-      return res.json(response);
+      return await readdirWin32(dir, nav);
     }
 
-    let directory = dir === '' ? homedir() : dir;
+    let directory = dir || homedir();
     if (nav === '..') directory = path.join(directory, nav);
   
     // MacOSX or Linux
     let files = await fs.readdirAsync(directory);
     let content = arrangeContent(files, directory);
-    return res.json({ directory, content });
+    return { directory, content };
   } catch (err) {
     log(err);
-    res.sendStatus(404);
   }
 };
 

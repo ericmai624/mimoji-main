@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
 import { toggleLoading, togglePlayer, streamToGoogleCast } from 'stores/app';
-import { toggleFileBrowserDialog, fetchContent } from 'stores/file-browser';
+import { toggleFileBrowserDialog, requestContent } from 'stores/file-browser';
 import { setStreamSource, updateStreamInfo } from 'stores/stream';
 import { genTextTrackId } from 'stores/text-track';
 
@@ -20,7 +20,7 @@ class FileBrowser extends Component {
       isOptionsVisible: false
     };
     
-    this.fetch = this.fetch.bind(this);
+    this.getContent = this.getContent.bind(this);
     this.onDoubleClickDirectory = this.onDoubleClickDirectory.bind(this);
     this.onDoubleClickFile = this.onDoubleClickFile.bind(this);
     this.setPlayerManager = this.setPlayerManager.bind(this);
@@ -31,18 +31,19 @@ class FileBrowser extends Component {
   }
   
   componentDidMount() {
-    const { fileBrowser } = this.props;
-    this.fetch(fileBrowser.directory);
+    this.getContent();
   }
 
-  fetch(dir, nav) {
-    const { fetchContent } = this.props;
-    return fetchContent(dir, nav);
+  getContent(dir, nav) {
+    const { io } = window;
+    const { requestContent } = this.props;
+    io.emit('request content', { dir, nav });
+    io.on('return content request', requestContent);
   }
 
   onDoubleClickDirectory(e, file) {
     e.preventDefault();
-    this.fetch(file.filePath);
+    this.getContent(file.filePath);
   }
 
   onDoubleClickFile(e, file) {
@@ -93,7 +94,7 @@ class FileBrowser extends Component {
   navigateUpDir(e) {
     e.preventDefault();
     const { fileBrowser } = this.props;
-    this.fetch(fileBrowser.directory, '..');
+    this.getContent(fileBrowser.directory, '..');
   }
 
   toggleCastOptions(e) {
@@ -105,6 +106,15 @@ class FileBrowser extends Component {
   render() {
     const { isOptionsVisible } = this.state;
     const { fileBrowser, toggleFileBrowserDialog } = this.props;
+
+    if (fileBrowser.hasError) {
+      return (
+        <Container 
+          id='file-browser' className='flex flex-center absolute full-size white-font' isVisible={fileBrowser.isVisible}>
+          Something went wrong
+        </Container>
+      );
+    }
 
     return (
       <Container id='file-browser' className='flex flex-center absolute full-size' isVisible={fileBrowser.isVisible}>
@@ -133,7 +143,7 @@ const mapStateToProps = (state) => ({
 });
 
 const mapDispatchToProps = (dispatch) => ({ 
-  fetchContent: bindActionCreators(fetchContent, dispatch),
+  requestContent: bindActionCreators(requestContent, dispatch),
   toggleFileBrowserDialog: bindActionCreators(toggleFileBrowserDialog, dispatch),
   togglePlayer: bindActionCreators(togglePlayer, dispatch),
   toggleLoading: bindActionCreators(toggleLoading, dispatch),

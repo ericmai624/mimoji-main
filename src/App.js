@@ -31,7 +31,6 @@ const Wrapper = styled.div`
 `;
 
 const Label = styled.label`
-  user-select: none;
   font-size: 24px;
   color: rgba(228, 228, 228, 1);
   background-color: rgba(23, 69, 124, 0.9);
@@ -41,12 +40,11 @@ const Label = styled.label`
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
   padding: 0.6em 0.8em;
   margin: 0;
-  cursor: pointer;
 `;
 
 class App extends Component {
   componentWillMount() {
-    window.io = io('http://localhost:6300');
+    window.io = io('http://localhost:6300', { transports: ['websocket'] });
   }
   
   componentDidMount() {
@@ -69,7 +67,7 @@ class App extends Component {
         <Wrapper id='wrapper' className={`flex flex-center absolute${app.isInitializing ? ' blur' : ''}`}>
           {app.isPlayerEnabled ?
             (<VideoPlayer isChromecast={app.isChromecast} />) : 
-            (<Label onClick={toggleFileBrowserDialog}>Choose a Video</Label>)}
+            (<Label className='pointer no-select' onClick={toggleFileBrowserDialog}>Choose a Video</Label>)}
           <FileBrowser />
         </Wrapper>
         <Loading isInitializing={app.isInitializing}/>
