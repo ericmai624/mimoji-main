@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
-import { togglePlayer, streamToGoogleCast } from 'stores/app';
+import { toggleLoading, togglePlayer, streamToGoogleCast } from 'stores/app';
 import { toggleFileBrowserDialog, fetchContent } from 'stores/file-browser';
 import { setStreamSource, updateStreamInfo } from 'stores/stream';
 import { genTextTrackId } from 'stores/text-track';
@@ -23,7 +23,8 @@ class FileBrowser extends Component {
     this.fetch = this.fetch.bind(this);
     this.onDoubleClickDirectory = this.onDoubleClickDirectory.bind(this);
     this.onDoubleClickFile = this.onDoubleClickFile.bind(this);
-    this.stream = this.stream.bind(this);
+    this.setPlayerManager = this.setPlayerManager.bind(this);
+    this.wakeUpPlayer = this.wakeUpPlayer.bind(this);
     this.addTextTrack = this.addTextTrack.bind(this);
     this.navigateUpDir = this.navigateUpDir.bind(this);
     this.toggleCastOptions = this.toggleCastOptions.bind(this);
@@ -56,20 +57,30 @@ class FileBrowser extends Component {
     }
   }
 
-  stream(option) {
-    const { io } = window;
-    const { app, fileBrowser, toggleFileBrowserDialog, togglePlayer, streamToGoogleCast, updateStreamInfo } = this.props;
-    const { isOptionsVisible } = this.state;
-    
-    streamToGoogleCast(option);
-
-    io.emit('new stream', { video: this.selectedVideo, seek: 0 });
-
-    io.once('stream created', updateStreamInfo);
+  setPlayerManager(option) {
+    const { fileBrowser, toggleFileBrowserDialog, streamToGoogleCast } = this.props;
 
     if (fileBrowser.isVisible) toggleFileBrowserDialog();
-    if (isOptionsVisible) this.toggleCastOptions();
-    if (!app.isPlayerEnabled) togglePlayer();
+    streamToGoogleCast(option);
+
+    /* Wait 1 second for smoother transition */
+    setTimeout(this.wakeUpPlayer, 250);
+  }
+
+  wakeUpPlayer() {
+    const { io } = window;
+    const { app, updateStreamInfo, togglePlayer, toggleLoading } = this.props;
+    const { isOptionsVisible } = this.state;
+    io.emit('new stream', { video: this.selectedVideo, seek: 0 });
+  
+    io.once('stream created', data => {
+      updateStreamInfo(data);
+      if (!app.isPlayerEnabled) togglePlayer();
+    });
+
+    if (!app.isInitializing) toggleLoading();
+    // switch back to file browser mode
+    if (isOptionsVisible) setTimeout(this.toggleCastOptions, 1000);
   }
 
   addTextTrack(location, label, encoding, offset) {
@@ -86,6 +97,7 @@ class FileBrowser extends Component {
   }
 
   toggleCastOptions(e) {
+    if (e) e.stopPropagation();
     const { isOptionsVisible } = this.state;
     this.setState({ isOptionsVisible: !isOptionsVisible });
   }
@@ -106,7 +118,7 @@ class FileBrowser extends Component {
         />
         <CastOptions
           isVisible={isOptionsVisible}
-          stream={this.stream}
+          setPlayerManager={this.setPlayerManager}
           toggleCastOptions={this.toggleCastOptions}
         />
       </Container>
@@ -124,6 +136,7 @@ const mapDispatchToProps = (dispatch) => ({
   fetchContent: bindActionCreators(fetchContent, dispatch),
   toggleFileBrowserDialog: bindActionCreators(toggleFileBrowserDialog, dispatch),
   togglePlayer: bindActionCreators(togglePlayer, dispatch),
+  toggleLoading: bindActionCreators(toggleLoading, dispatch),
   streamToGoogleCast: bindActionCreators(streamToGoogleCast, dispatch),
   setStreamSource: bindActionCreators(setStreamSource, dispatch),
   updateStreamInfo: bindActionCreators(updateStreamInfo, dispatch),

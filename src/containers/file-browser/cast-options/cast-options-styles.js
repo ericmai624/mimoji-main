@@ -13,7 +13,7 @@ export const Container = styled.div`
   height: ${({ isVisible }) => isVisible ? height : 0}px;
   background: ${white};
   box-shadow: ${boxShadow};
-  transition: height 0.2s linear, opacity 0.2s linear;
+  transition: opacity 0.25s ease-in-out;
 `;
 
 export const Title = styled.div`
@@ -37,7 +37,7 @@ export const Option = styled.li`
   height: ${(height - 50) / 2}px;
   padding: 0 10px;
   box-sizing: border-box;
-  transition: background 0.2s ease;
+  transition: background 0.2s ease-in-out;
 
   &:hover {
     background: ${lightgray};

@@ -3,6 +3,7 @@ import Hls from 'hls.js';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
+import Loader from 'components/loader/loader-component';
 import VideoControls from 'containers/video-player/video-controls/video-controls-component';
 import TextTrack from 'containers/video-player/text-track/text-track-component';
 
@@ -46,8 +47,7 @@ class WebPlayer extends Component {
 
   componentDidMount() {
     const { io } = window;
-    const { toggleLoading, rejectStream } = this.props;
-    toggleLoading();
+    const { rejectStream } = this.props;
     io.on('playlist ready', this.initHls);
     io.on('stream rejected', rejectStream);
   }
@@ -63,7 +63,7 @@ class WebPlayer extends Component {
   
   initHls() {
     const { video } = this;
-    const { stream, toggleLoading } = this.props;
+    const { app, stream, toggleLoading } = this.props;
     const source = `/api/stream/video/${stream.id}/playlist.m3u8`;
 
     this.hls = new Hls({ 
@@ -77,7 +77,7 @@ class WebPlayer extends Component {
     this.hls.on(Hls.Events.MEDIA_ATTACHED, this.hls.loadSource.bind(this.hls, source));
 
     this.hls.on(Hls.Events.MANIFEST_PARSED, (evt, data) => {
-      toggleLoading();
+      if (app.isInitializing && !this.state.isSeeking) toggleLoading();
       this.setState({ isSeeking: false }, video.play.bind(video));
     });
     // hls error handling
@@ -253,6 +253,7 @@ class WebPlayer extends Component {
           className='flex flex-center absolute full-size'
           onMouseMove={this.onVideoMouseMove}
         >
+          {isSeeking ? <Loader className='flex flex-center absolute' size={42} /> : null}
           <video
             autoPlay={true}
             playsInline={true}

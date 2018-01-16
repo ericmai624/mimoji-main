@@ -8,5 +8,5 @@ export const Container = styled.div`
   z-index: ${({ isVisible }) => isVisible ? 2147483647 : -1};
   overflow: hidden;
   background ${overlay};
-  transition: opacity 0.2s ease, visibility 0.2s ease;
+  transition: opacity 0.25s ease-in-out;
 `;

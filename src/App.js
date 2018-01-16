@@ -19,8 +19,8 @@ fontawesome.library.add(solid, regular);
 
 const Wrapper = styled.div`
   transition: filter 0.4s ease-in-out;
-  background-image: url('/assets/background/466681.jpg');
-  background-position: center center;
+  background-image: url('/assets/background/bg.jpg');
+  background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
   overflow: hidden;
@@ -30,13 +30,9 @@ const Wrapper = styled.div`
   bottom: 0;
 `;
 
-const LabelWrapper = styled.div`
-  height: 100%;
-  font-size: 2em;
-`;
-
 const Label = styled.label`
   user-select: none;
+  font-size: 24px;
   color: rgba(228, 228, 228, 1);
   background-color: rgba(23, 69, 124, 0.9);
   outline: none;
@@ -46,7 +42,6 @@ const Label = styled.label`
   padding: 0.6em 0.8em;
   margin: 0;
   cursor: pointer;
-  line-height: 1.15;
 `;
 
 class App extends Component {
@@ -71,15 +66,13 @@ class App extends Component {
     
     return (
       <Fragment>
-        <Loading isInitializing={app.isInitializing}/>
-        <Wrapper id='wrapper' className={`fixed${app.isInitializing ? ' blur' : ''}`}>
-          {app.isPlayerEnabled ? 
+        <Wrapper id='wrapper' className={`flex flex-center absolute${app.isInitializing ? ' blur' : ''}`}>
+          {app.isPlayerEnabled ?
             (<VideoPlayer isChromecast={app.isChromecast} />) : 
-            (<LabelWrapper className='flex flex-center'>
-              <Label onClick={toggleFileBrowserDialog}>Choose a Video</Label>
-            </LabelWrapper>)}
+            (<Label onClick={toggleFileBrowserDialog}>Choose a Video</Label>)}
           <FileBrowser />
         </Wrapper>
+        <Loading isInitializing={app.isInitializing}/>
       </Fragment>
     );
   }

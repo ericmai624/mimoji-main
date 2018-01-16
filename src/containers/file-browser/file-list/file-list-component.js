@@ -17,7 +17,7 @@ const FileBrowserList = ({
     <Side className='flex flex-center'>
       <h2>File Browser</h2>
     </Side>
-    <Main className='grid'>
+    <Main className='grid flex-center no-select'>
       <Nav className='flex flex-align-center flex-space-between'>
         <Directory className='ellipsis'>
           <span>{fileBrowser.directory}</span>

@@ -7,6 +7,7 @@ import { updateStreamInfo, updateStreamTime, rejectStream, resetStream } from 's
 import { toggleFileBrowserDialog } from 'stores/file-browser';
 import { resetTextTrack } from 'stores/text-track';
 
+import Loader from 'components/loader/loader-component';
 import VideoControls from 'containers/video-player/video-controls/video-controls-component';
 
 import { Container } from './cast-player-styles';
@@ -50,8 +51,7 @@ class CastPlayer extends Component {
 
   componentDidMount() {
     const { io } = window;
-    const { toggleLoading, rejectStream } = this.props;
-    toggleLoading();
+    const { rejectStream } = this.props;
     io.on('playlist ready', this.cast);
     io.on('stream rejected', rejectStream);
   }
@@ -374,7 +374,7 @@ class CastPlayer extends Component {
   }
 
   render() {
-    const { isPaused, isMuted, volume } = this.state;
+    const { isSeeking, isPaused, isMuted, volume } = this.state;
     const { stream, toggleFileBrowserDialog } = this.props;
 
     if (stream.hasError) {
@@ -388,6 +388,7 @@ class CastPlayer extends Component {
     return (
       <Fragment>
         <Container className='flex flex-center absolute full-size'>
+          {isSeeking ? <Loader className='flex flex-center absolute' size={42} /> : null}
           <VideoControls 
             seek={this.seek}
             toggleFileBrowserDialog={toggleFileBrowserDialog}

@@ -17,7 +17,7 @@ export const List = styled.ul`
   list-style: none;
   max-height: 480px;
   height: 100%;
-  transition: opacity 0.15s ease;
+  transition: opacity 0.15s ease-in-out;
 `;
 
 export const Entry = styled.li`
@@ -25,13 +25,12 @@ export const Entry = styled.li`
   padding: 16px;
   align-items: center;
   border-bottom: 1px solid rgba(155, 155, 155, 0.8);
-  transition: color 0.15s ease-out;
   box-sizing: border-box;
+  transition: color 0.15s ease-in-out;
 
   &:hover {
     background: ${lightgray};
     color: rgb(228, 75, 54);
-    transition: color 0.15s ease-in;
   }
 `;
 

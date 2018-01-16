@@ -13,11 +13,11 @@ export const Container = styled.div`
   height: ${({ isVisible }) => isVisible ? '80%' : 0};
   max-height: 480px;
   overflow: auto;
-  transition: height 0.2s linear;
+  transition: opacity 0.2s ease-in-out;
 `;
 
 export const Side = styled.div`
-  height: auto;
+  height: 100%;
   grid-column: 1;
   border-radius: 5px;
   background: ${bg};  
@@ -26,18 +26,14 @@ export const Side = styled.div`
 export const Main = styled.div`
   border-radius: 5px;
   width: 100%;
-  height: auto;
-  user-select: none;
-  grid-column: 2;
   padding: 28px;
-  overflow: auto;
   color: ${fontColor};
   background: ${bg};
   box-sizing: border-box;
+  overflow: auto;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: 36px 1fr;
-  align-items: center;
-  justify-content: center;
+  grid-column: 2;
 `;
 
 export const Directory = styled.div`
