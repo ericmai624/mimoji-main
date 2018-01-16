@@ -72,7 +72,7 @@ class App extends Component {
     return (
       <Fragment>
         <Loading isInitializing={app.isInitializing}/>
-        <Wrapper id='wrapper' className={`fixed${app.isInitializing ? ' blur' : ' blur'}`}>
+        <Wrapper id='wrapper' className={`fixed${app.isInitializing ? ' blur' : ''}`}>
           {app.isPlayerEnabled ? 
             (<VideoPlayer isChromecast={app.isChromecast} />) : 
             (<LabelWrapper className='flex flex-center'>
