@@ -95,7 +95,7 @@ class FileBrowser extends Component {
     const { fileBrowser, toggleFileBrowserDialog } = this.props;
 
     return (
-      <Container className='flex flex-center absolute' hidden={!fileBrowser.isVisible}>
+      <Container id='file-browser' className='flex flex-center absolute full-size' isVisible={fileBrowser.isVisible}>
         <FileBrowserList 
           fileBrowser={fileBrowser}
           isVisible={!isOptionsVisible}

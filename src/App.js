@@ -13,8 +13,22 @@ import { getIpAddress } from 'stores/ip';
 
 import FileBrowser from 'containers/file-browser/file-browser-component';
 import VideoPlayer from 'containers/video-player/video-player-component';
+import Loading from 'components/loading-screen/loading-screen-component';
 
 fontawesome.library.add(solid, regular);
+
+const Wrapper = styled.div`
+  transition: filter 0.4s ease-in-out;
+  background-image: url('/assets/background/466681.jpg');
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  overflow: hidden;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+`;
 
 const LabelWrapper = styled.div`
   height: 100%;
@@ -32,6 +46,7 @@ const Label = styled.label`
   padding: 0.6em 0.8em;
   margin: 0;
   cursor: pointer;
+  line-height: 1.15;
 `;
 
 class App extends Component {
@@ -56,12 +71,15 @@ class App extends Component {
     
     return (
       <Fragment>
-        {app.isPlayerEnabled ? 
-          (<VideoPlayer isChromecast={app.isChromecast} />) : 
-          (<LabelWrapper className='flex flex-center'>
-            <Label onClick={toggleFileBrowserDialog}>Choose a Video</Label>
-          </LabelWrapper>)}
-        <FileBrowser />
+        <Loading isInitializing={app.isInitializing}/>
+        <Wrapper id='wrapper' className={`fixed${app.isInitializing ? ' blur' : ' blur'}`}>
+          {app.isPlayerEnabled ? 
+            (<VideoPlayer isChromecast={app.isChromecast} />) : 
+            (<LabelWrapper className='flex flex-center'>
+              <Label onClick={toggleFileBrowserDialog}>Choose a Video</Label>
+            </LabelWrapper>)}
+          <FileBrowser />
+        </Wrapper>
       </Fragment>
     );
   }

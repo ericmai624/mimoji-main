@@ -1,13 +1,12 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
-import { togglePlayer } from 'stores/app';
+import { toggleLoading, togglePlayer } from 'stores/app';
 import { updateStreamInfo, updateStreamTime, rejectStream, resetStream } from 'stores/stream';
 import { toggleFileBrowserDialog } from 'stores/file-browser';
 import { resetTextTrack } from 'stores/text-track';
 
-import Loader from 'components/loader/loader-component';
 import VideoControls from 'containers/video-player/video-controls/video-controls-component';
 
 import { Container } from './cast-player-styles';
@@ -17,7 +16,7 @@ class CastPlayer extends Component {
     super(props);
 
     this.state = {
-      isLoading: true,
+      isSeeking: false,
       isPaused: false,
       isMuted: false,
       volume: 1,
@@ -28,12 +27,14 @@ class CastPlayer extends Component {
     this.initPlayer = this.initPlayer.bind(this);
     this.setEventListeners = this.setEventListeners.bind(this);
     this.removeEventListeners = this.removeEventListeners.bind(this);
+    this.setMessageListeners = this.setMessageListeners.bind(this);
     this.cast = this.cast.bind(this);
     this.switch = this.switch.bind(this);
     this.seek = this.seek.bind(this);
     this.updateTime = this.updateTime.bind(this);
     this.stopTimer = this.stopTimer.bind(this);
     this.setTextTrack = this.setTextTrack.bind(this);
+    this.updateTextTrack = this.updateTextTrack.bind(this);
     this.muteOrUnmute = this.muteOrUnmute.bind(this);
     this.playOrPause = this.playOrPause.bind(this);
     this.setVolume = this.setVolume.bind(this);
@@ -49,9 +50,20 @@ class CastPlayer extends Component {
 
   componentDidMount() {
     const { io } = window;
-    const { rejectStream } = this.props;
+    const { toggleLoading, rejectStream } = this.props;
+    toggleLoading();
     io.on('playlist ready', this.cast);
     io.on('stream rejected', rejectStream);
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    const { textTrack: prev } = prevProps;
+    const { textTrack: curr } = this.props;
+    const isSame = prev.id === curr.id;
+    if (curr.isEnabled && !isSame && this.castSession) {
+      console.log(`Text track id is updated from ${prev.id} to ${curr.id}`);
+      this.updateTextTrack(this.castSession);
+    }
   }
 
   componentWillUnmount() {
@@ -161,8 +173,11 @@ class CastPlayer extends Component {
     console.log(`%cPlayer state has changed to ${value}`, 'background:#e0821d; color:white;');
 
     if (value === PLAYING) {
+      const { app, toggleLoading } = this.props;
+      const { isSeeking } = this.state;
       this.updateTime();
-      this.setState({ isLoading: false, isPaused: false });
+      if (app.isInitializing && !isSeeking) toggleLoading(); 
+      this.setState({ isSeeking: false, isPaused: false });
     } else if (value === PAUSED) {
       this.stopTimer();
       this.setState({ isPaused: true });
@@ -176,6 +191,12 @@ class CastPlayer extends Component {
     }
   }
 
+  setMessageListeners(session) {
+    session.addMessageListener('urn:x-cast:playermanager.ready', data => {
+      console.log(`received ${data} from receiver`);
+    });
+  }
+
   cast() {
     console.log('%cCasting video to Google Cast...', 'color:#1b5dc6');
     const start = Date.now();
@@ -183,6 +204,7 @@ class CastPlayer extends Component {
     const { ip, stream, textTrack } = this.props;
 
     this.castSession = cast.framework.CastContext.getInstance().getCurrentSession();
+    this.setMessageListeners(this.castSession);
 
     const mediaSource = `http://${ip.address}:6300/api/stream/video/${stream.id}/playlist.m3u8`;
     const mediaInfo = new chrome.cast.media.MediaInfo(mediaSource);
@@ -197,8 +219,10 @@ class CastPlayer extends Component {
     const request = new chrome.cast.media.LoadRequest(mediaInfo);
 
     if (textTrack.isEnabled) {
-      mediaInfo.tracks = [this.setTextTrack()];
-      request.activeTrackIds = [1];
+      /* Generate id for text track. Use random to avoid duplicates */
+      const id = Math.round(Math.random() * 100);
+      mediaInfo.tracks = [this.setTextTrack(id)];
+      request.activeTrackIds = [id];
     }
     // start streaming
     if (this.castSession) {
@@ -208,7 +232,8 @@ class CastPlayer extends Component {
           this.initPlayer();
           this.mediaSession = this.castSession.getMediaSession();
           console.log(`%cPlaying stream id ${stream.id} @ %c${this.state.currTimeOffset}s`, 'color:#1b5dc6;', 'color:#d80a52;');
-        }, (err) => console.log('Error code: ', err));
+        })
+        .catch((err) => console.log('Error code: ', err));
     }
   }
 
@@ -236,17 +261,17 @@ class CastPlayer extends Component {
 
     updateStreamTime(time); // reflect seek time on progress bar
 
-    this.setState({ isLoading: true, currTimeOffset: time }, () => {
+    this.setState({ isSeeking: true, currTimeOffset: time }, () => {
       this.seekTimer = setTimeout(this.switch, 1000);
     });
   }
 
-  setTextTrack() {
+  setTextTrack(id) {
     const { chrome } = window;
     const { ip, textTrack } = this.props;
     const { currTimeOffset } = this.state;
 
-    const sub = new chrome.cast.media.Track(1 /* track id */, chrome.cast.media.TrackType.TEXT);
+    const sub = new chrome.cast.media.Track(id /* track id */, chrome.cast.media.TrackType.TEXT);
     const host = `http://${ip.address}:6300`;
     const pathname = `/api/stream/subtitle/${textTrack.id}`;
     const query = `offset=${textTrack.offset - currTimeOffset}&encoding=${textTrack.encoding}`;
@@ -259,16 +284,31 @@ class CastPlayer extends Component {
     return sub;
   }
 
+  updateTextTrack(session) {
+    if (!session) return;
+    console.log('Updating text track with receiver');
+    const start = Date.now();
+    const { ip, textTrack } = this.props;
+    const { currTimeOffset } = this.state;
+    const host = `http://${ip.address}:6300`;
+    const pathname = `/api/stream/subtitle/${textTrack.id}`;
+    const query = `offset=${textTrack.offset - currTimeOffset}&encoding=${textTrack.encoding}`;
+
+    session.sendMessage('urn:x-cast:texttrack.add', { url: `${host}${pathname}?${query}` })
+      .then(() => console.log(`New text track info has been sent, process took ${Date.now() - start}ms`))
+      .catch(err => console.log(`Failed to send text track info with ${err}`));
+  }
+
   updateTime(timestamp) {
     if (!this.mediaSession || !this.player) return;
     this.lastTimeUpdate = this.lastTimeUpdate || timestamp - 1000;
     const { requestAnimationFrame, chrome } = window;
-    const { updateStreamTime } = this.props;
-    const { currTimeOffset } = this.state;
+    const { stream, updateStreamTime } = this.props;
     const isPlaying = this.player.playerState === chrome.cast.media.PlayerState.PLAYING;
 
     if (timestamp - this.lastTimeUpdate > 999) {
-      updateStreamTime(this.mediaSession.getEstimatedTime() + currTimeOffset);
+      // updateStreamTime(this.mediaSession.getEstimatedTime() + currTimeOffset);
+      updateStreamTime(1 + stream.currentTime);
       this.lastTimeUpdate = timestamp;
     }
     if (isPlaying) this.timer = requestAnimationFrame(this.updateTime);
@@ -334,7 +374,7 @@ class CastPlayer extends Component {
   }
 
   render() {
-    const { isLoading, isPaused, isMuted, volume } = this.state;
+    const { isPaused, isMuted, volume } = this.state;
     const { stream, toggleFileBrowserDialog } = this.props;
 
     if (stream.hasError) {
@@ -346,23 +386,24 @@ class CastPlayer extends Component {
     }
 
     return (
-      <Container className='flex flex-center absolute'>
-        {isLoading ? <Loader className={'flex flex-center absolute'} size={42} /> : null}
-        <VideoControls 
-          seek={this.seek}
-          toggleFileBrowserDialog={toggleFileBrowserDialog}
-          playOrPause={this.playOrPause}
-          muteOrUnmute={this.muteOrUnmute}
-          setVolume={this.setVolume}
-          stop={this.stop}
-          isControlsVisible={true}
-          isPaused={isPaused}
-          isMuted={isMuted}
-          volume={volume}
-          currentTime={stream.currentTime}
-          duration={stream.duration}
-        />
-      </Container>
+      <Fragment>
+        <Container className='flex flex-center absolute full-size'>
+          <VideoControls 
+            seek={this.seek}
+            toggleFileBrowserDialog={toggleFileBrowserDialog}
+            playOrPause={this.playOrPause}
+            muteOrUnmute={this.muteOrUnmute}
+            setVolume={this.setVolume}
+            stop={this.stop}
+            isControlsVisible={true}
+            isPaused={isPaused}
+            isMuted={isMuted}
+            volume={volume}
+            currentTime={stream.currentTime}
+            duration={stream.duration}
+          />
+        </Container>
+      </Fragment>
     );
   }
 }
@@ -371,6 +412,7 @@ const mapStateToProps = state => ({ ip: state.ip, app: state.app, stream: state.
 
 const mapDispatchToProps = (dispatch) => ({ 
   updateStreamInfo: bindActionCreators(updateStreamInfo, dispatch),
+  toggleLoading: bindActionCreators(toggleLoading, dispatch),
   togglePlayer: bindActionCreators(togglePlayer, dispatch),
   toggleFileBrowserDialog: bindActionCreators(toggleFileBrowserDialog, dispatch),
   updateStreamTime: bindActionCreators(updateStreamTime, dispatch),

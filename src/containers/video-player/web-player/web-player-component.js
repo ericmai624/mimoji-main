@@ -1,13 +1,12 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import Hls from 'hls.js';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
-import Loader from 'components/loader/loader-component';
 import VideoControls from 'containers/video-player/video-controls/video-controls-component';
 import TextTrack from 'containers/video-player/text-track/text-track-component';
 
-import { togglePlayer } from 'stores/app';
+import { toggleLoading, togglePlayer } from 'stores/app';
 import { updateStreamInfo, updateStreamTime, rejectStream, resetStream } from 'stores/stream';
 import { toggleFileBrowserDialog } from 'stores/file-browser';
 import { resetTextTrack } from 'stores/text-track';
@@ -19,7 +18,7 @@ class WebPlayer extends Component {
     super(props);
 
     this.state = {
-      isLoading: true,
+      isSeeking: false,
       isPaused: false,
       isMuted: false,
       isControlsVisible: true,
@@ -47,7 +46,8 @@ class WebPlayer extends Component {
 
   componentDidMount() {
     const { io } = window;
-    const { rejectStream } = this.props;
+    const { toggleLoading, rejectStream } = this.props;
+    toggleLoading();
     io.on('playlist ready', this.initHls);
     io.on('stream rejected', rejectStream);
   }
@@ -63,7 +63,7 @@ class WebPlayer extends Component {
   
   initHls() {
     const { video } = this;
-    const { stream } = this.props;
+    const { stream, toggleLoading } = this.props;
     const source = `/api/stream/video/${stream.id}/playlist.m3u8`;
 
     this.hls = new Hls({ 
@@ -77,7 +77,8 @@ class WebPlayer extends Component {
     this.hls.on(Hls.Events.MEDIA_ATTACHED, this.hls.loadSource.bind(this.hls, source));
 
     this.hls.on(Hls.Events.MANIFEST_PARSED, (evt, data) => {
-      this.setState({ isLoading: false }, video.play.bind(video));
+      toggleLoading();
+      this.setState({ isSeeking: false }, video.play.bind(video));
     });
     // hls error handling
     this.hls.on(Hls.Events.ERROR, (evt, data) => { 
@@ -144,7 +145,7 @@ class WebPlayer extends Component {
     
     updateStreamTime(seekTime);
 
-    this.setState({ isLoading: true, currTimeOffset: seekTime }, () => {
+    this.setState({ isSeeking: true, currTimeOffset: seekTime }, () => {
       this.seekTimer = setTimeout(() => {
         io.emit('new stream', { video: stream.video, seek: seekTime });
         io.once('stream created', updateStreamInfo);
@@ -235,7 +236,7 @@ class WebPlayer extends Component {
   
   render() {
     const { app, stream, toggleFileBrowserDialog } = this.props;
-    const { isLoading, isPaused, isMuted, isControlsVisible, volume, currTimeOffset } = this.state;
+    const { isSeeking, isPaused, isMuted, isControlsVisible, volume, currTimeOffset } = this.state;
 
     if (stream.hasError) {
       return (
@@ -246,44 +247,45 @@ class WebPlayer extends Component {
     }
 
     return (
-      <VideoContainer
-        id='video-player'
-        className='flex flex-center absolute'
-        onMouseMove={this.onVideoMouseMove}
-      >
-        {isLoading ? <Loader className={'flex flex-center absolute'} size={42} /> : null}
-        <video
-          autoPlay={true}
-          playsInline={true}
-          width='100%'
-          height='100%'
-          crossOrigin='anonymous'
-          onPlaying={this.onVideoPlaying}
-          onPause={this.onVideoPaused}
-          onTimeUpdate={this.onVideoTimeUpdate}
-          onEnded={this.stop}
-          ref={(el) => this.video = el}
+      <Fragment>
+        <VideoContainer
+          id='video-player'
+          className='flex flex-center absolute full-size'
+          onMouseMove={this.onVideoMouseMove}
         >
-          <TextTrack currTimeOffset={currTimeOffset} isLoading={isLoading}/>
-        </video>
-        <VideoControls
-          seek={this.seek}
-          onControlsMouseMove={this.onControlsMouseMove}
-          toggleFileBrowserDialog={toggleFileBrowserDialog}
-          playOrPause={this.playOrPause}
-          muteOrUnmute={this.muteOrUnmute}
-          toggleFullscreen={this.toggleFullscreen}
-          setVolume={this.setVolume}
-          stop={this.stop}
-          isControlsVisible={isControlsVisible}
-          isPaused={isPaused}
-          isMuted={isMuted}
-          isFullscreenEnabled={app.isFullscreenEnabled}
-          volume={volume}
-          currentTime={stream.currentTime}
-          duration={stream.duration}
-        />
-      </VideoContainer>
+          <video
+            autoPlay={true}
+            playsInline={true}
+            width='100%'
+            height='100%'
+            crossOrigin='anonymous'
+            onPlaying={this.onVideoPlaying}
+            onPause={this.onVideoPaused}
+            onTimeUpdate={this.onVideoTimeUpdate}
+            onEnded={this.stop}
+            ref={(el) => this.video = el}
+          >
+            <TextTrack currTimeOffset={currTimeOffset} isLoading={isSeeking}/>
+          </video>
+          <VideoControls
+            seek={this.seek}
+            onControlsMouseMove={this.onControlsMouseMove}
+            toggleFileBrowserDialog={toggleFileBrowserDialog}
+            playOrPause={this.playOrPause}
+            muteOrUnmute={this.muteOrUnmute}
+            toggleFullscreen={this.toggleFullscreen}
+            setVolume={this.setVolume}
+            stop={this.stop}
+            isControlsVisible={isControlsVisible}
+            isPaused={isPaused}
+            isMuted={isMuted}
+            isFullscreenEnabled={app.isFullscreenEnabled}
+            volume={volume}
+            currentTime={stream.currentTime}
+            duration={stream.duration}
+          />
+        </VideoContainer>
+      </Fragment>
     );
   }
 }
@@ -295,6 +297,7 @@ const mapStateToProps = (state) => ({
 
 const mapDispatchToProps = (dispatch) => ({ 
   updateStreamInfo: bindActionCreators(updateStreamInfo, dispatch),
+  toggleLoading: bindActionCreators(toggleLoading, dispatch),
   togglePlayer: bindActionCreators(togglePlayer, dispatch),
   toggleFileBrowserDialog: bindActionCreators(toggleFileBrowserDialog, dispatch),
   updateStreamTime: bindActionCreators(updateStreamTime, dispatch),
