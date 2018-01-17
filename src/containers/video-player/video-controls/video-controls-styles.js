@@ -9,12 +9,12 @@ export const Container = styled.div`
   width: 800px;
   height: 48px;
   padding: 0 45px;
+  border: none;
   border-radius: 10px;
   background: ${ctrlBg};
   opacity: ${({ isControlsVisible }) => isControlsVisible ? 1 : 0};
-  left: 50%;
+  left: calc(50% - 400px);
   bottom: 5%;
-  margin-left: -400px;
   box-sizing: border-box;
   transition: opacity 0.25s ease-in-out;
   box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
@@ -37,7 +37,7 @@ export const SeekTime = styled.div`
   padding: 5px;
   width: 50px;
   height: 12px;
-  bottom: 34px;
+  bottom: 22px;
   border-radius: 4px;
   box-sizing: content-box;
   z-index: 108;

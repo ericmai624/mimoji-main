@@ -26,17 +26,17 @@ const FileBrowserListEntry = ({ content, isPending, onDoubleClickDirectory, onDo
       <List className='no-list-style' isVisible={!isPending}>
         <Entry className='flex pointer no-select' onDoubleClick={navigateUpDir}>
           <Icon>
-            <FontAwesomeIcon icon={['far', 'folder']}/>
+            <FontAwesomeIcon icon={['fas', 'folder']}/>
           </Icon>
           <Span>..</Span>
         </Entry>
         {content.map((entry, i) => {
           let { name, type } = entry;
           let icon;
-          if (type === 'directory') icon = ['far', 'folder'];
+          if (type === 'directory') icon = ['fas', 'folder'];
           else if (type === 'video') icon = ['fas', 'film'];
-          else if (type === 'subtitle') icon = ['far', 'file-alt'];
-          else icon = ['far', 'file'];
+          else if (type === 'subtitle') icon = ['fas', 'file-alt'];
+          else icon = ['fas', 'file'];
 
           return (
             <Entry className='flex pointer no-select'

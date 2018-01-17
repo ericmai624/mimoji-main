@@ -325,13 +325,15 @@ class CastPlayer extends Component {
 
   playOrPause() {
     const { isPaused } = this.player;
-    const callback = this.controller.playOrPause.bind(this.controller);
+    const { controller } = this;
+    const callback = controller.playOrPause.bind(controller);
     this.setState({ isPaused: !isPaused }, callback);
   }
 
   muteOrUnmute() {
     const { isMuted } = this.player;
-    const callback = this.controller.muteOrUnmute.bind(this.controller);
+    const { controller } = this;
+    const callback = controller.muteOrUnmute.bind(controller);
     this.setState({ isMuted: !isMuted }, callback);
   }
 
@@ -344,7 +346,10 @@ class CastPlayer extends Component {
   }
 
   stopMediaSession(cb) {
+    const { isPaused } = this.player;
+
     if (this.mediaSession) {
+      if (!isPaused) this.controller.playOrPause();
       this.mediaSession.stop(null, cb, console.log);
       this.mediaSession = null;
     }

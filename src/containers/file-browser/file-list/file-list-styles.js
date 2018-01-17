@@ -28,7 +28,7 @@ export const Container = styled.div`
     top: -25px;
     bottom: 0;
     box-shadow: inset 0 0 0 700px rgba(255,255,255,0.3);
-    filter: blur(10px);
+    filter: blur(15px);
   }
 `;
 

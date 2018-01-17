@@ -44,9 +44,8 @@ class VideoControls extends Component {
     const { duration } = this.props;
     const { progress } = this;
 
-    const seekTimePos = e.pageX - progress.offsetParent.offsetLeft;
-    const seekTime = (seekTimePos - progress.offsetLeft) / progress.clientWidth * duration;
-
+    const seekTimePos = e.pageX - progress.offsetParent.offsetLeft - progress.offsetLeft + 1;
+    const seekTime = seekTimePos / progress.clientWidth * duration;
     this.setState({ seekTime, seekTimePos, isSeekTimeVisible: true });
   }
 
@@ -121,7 +120,7 @@ class VideoControls extends Component {
           <ControlButton onClick={playOrPause} icon={['fas', isPaused ? 'play' : 'pause']}/>
           <ControlButton onClick={stop} icon={['fas', 'stop']}/>
           <ProgressContainer
-            className='flex flex-center pointer no-background'
+            className='flex flex-center relative pointer no-background'
             onClick={this.handleSeek}
             onMouseMove={this.getSeekTime}
             onMouseLeave={this.hideSeekTime}

@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 
 const iconSize = '24px';
-const lightgray = 'rgba(219, 219, 219, 0.5)';
+const lightgray = 'rgba(219, 219, 219, 0.25)';
 
 export const Container = styled.div`
   overflow: auto;
@@ -25,7 +25,7 @@ export const Entry = styled.li`
 
   &:hover {
     background: ${lightgray};
-    color: rgb(228, 75, 54);
+    color: rgb(196, 70, 54);
   }
 `;
 
