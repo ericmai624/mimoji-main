@@ -1,12 +1,13 @@
 import styled from 'styled-components';
 
-const overlay = 'rgba(38, 38, 38, 0.9)';
-
 export const Container = styled.div`
   visibility: ${({ isVisible }) => isVisible ? 'visible' : 'hidden'};
   opacity: ${({ isVisible }) => isVisible ? 1 : 0};
   z-index: ${({ isVisible }) => isVisible ? 2147483647 : -1};
-  overflow: hidden;
-  background ${overlay};
+  background: ${({ hasOverlay }) => 
+    hasOverlay ? 
+      'rgba(0, 0, 0, 0.25)' : 
+      'url(\'/assets/background/209285.jpg\') center center no-repeat fixed'};
+  background-size: cover;
   transition: opacity 0.25s ease-in-out;
 `;

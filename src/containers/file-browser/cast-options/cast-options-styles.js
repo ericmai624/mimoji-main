@@ -9,11 +9,14 @@ const lightgray = 'rgba(219, 219, 219, 0.5)';
 export const Container = styled.div`
   visibility: ${({ isVisible }) => isVisible ? 'visible' : 'hidden'};
   opacity : ${({ isVisible }) => isVisible ? 1 : 0};
-  width: ${({ isVisible }) => isVisible ? '360px' : 0};
-  height: ${({ isVisible }) => isVisible ? height : 0}px;
+  display : ${({ isVisible }) => isVisible ? 'block' : 'none'};
+  width: 360px;
+  height: ${height}px;
+  left: calc(50% - 180px);
+  top: calc(50% - ${height / 2}px);
   background: ${white};
   box-shadow: ${boxShadow};
-  transition: opacity 0.25s ease-in-out;
+  transition: opacity 0.2s ease-in-out;
 `;
 
 export const Title = styled.div`

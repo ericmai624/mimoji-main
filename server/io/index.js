@@ -14,10 +14,12 @@ module.exports = server => {
     /* Read files */
     socket.on('request content', async ({ dir, nav }) => {
       try {
+        // throw new Error('test');
         const content = await readdir(dir, nav);
-        socket.emit('return content request', { data: content, error: false });
+        socket.emit('request content fulfilled', content);
       } catch (err) {
-        socket.emit('return content request', { data: {}, error: true });
+        log(`Failed to get content in ${dir} with ${err}`);
+        socket.emit('request content rejected');
       }
     });
 

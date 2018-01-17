@@ -1,24 +1,30 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 import FontAwesomeIcon from '@fortawesome/react-fontawesome';
 
 import Loader from 'components/loader/loader-component';
 
 import {
-  LoaderWrapper,
+  Container,
   List,
   Entry,
   Icon,
   Span
 } from './file-list-entry-styles';
 
-const FileBrowserListEntry = ({ content, isFetching, onDoubleClickDirectory, onDoubleClickFile, navigateUpDir }) => {
+const FileBrowserListEntry = ({ content, isPending, onDoubleClickDirectory, onDoubleClickFile, navigateUpDir }) => {
   return (
-    <Fragment>
-      <LoaderWrapper isVisible={isFetching} className='flex flex-center'>
-        <Loader className='flex flex-center' size={36} color={'black'}/> 
-      </LoaderWrapper>
-      <List isVisible={!isFetching}>
-        <Entry className='flex pointer' onDoubleClick={navigateUpDir}>
+    <Container className='flex relative'>
+      <Loader
+        className='flex flex-center absolute'
+        size={36}
+        color={'black'}
+        style={{
+          visibility: isPending ? 'visible' : 'hidden',
+          opacity: isPending ? 1 : 0
+        }}
+      />
+      <List className='no-list-style' isVisible={!isPending}>
+        <Entry className='flex pointer no-select' onDoubleClick={navigateUpDir}>
           <Icon>
             <FontAwesomeIcon icon={['far', 'folder']}/>
           </Icon>
@@ -33,7 +39,7 @@ const FileBrowserListEntry = ({ content, isFetching, onDoubleClickDirectory, onD
           else icon = ['far', 'file'];
 
           return (
-            <Entry className='flex pointer'
+            <Entry className='flex pointer no-select'
               key={i} 
               onDoubleClick={type === 'directory' ? (e) => onDoubleClickDirectory(e, entry) : (e) => onDoubleClickFile(e, entry)}
             >
@@ -45,7 +51,7 @@ const FileBrowserListEntry = ({ content, isFetching, onDoubleClickDirectory, onD
           );
         })}
       </List>
-    </Fragment>
+    </Container>
   );
 };
 

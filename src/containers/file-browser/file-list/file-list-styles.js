@@ -1,39 +1,54 @@
 import styled from 'styled-components';
 
 const fontColor = 'rgb(0, 0, 0)';
-const bg = 'rgba(255, 255, 255, 1)';
+const bg = 'rgba(255, 255, 255, 0.65)';
+const boxShadow = '0 0 15px 5px rgba(0, 0, 0, 0.12)';
 
 export const Container = styled.div`
   visibility: ${({ isVisible }) => isVisible ? 'visible' : 'hidden'};
   opacity: ${({ isVisible }) => isVisible ? 1 : 0};
-  grid-template-columns: 2fr 4fr;
-  grid-column-gap: 20px;
-  border-radius: 5px;
-  width: ${({ isVisible }) => isVisible ? '900px' : 0};
-  height: ${({ isVisible }) => isVisible ? '80%' : 0};
-  max-height: 480px;
-  overflow: auto;
+  width: 700px;
+  height: 80%;
+  max-height: 600px;
+  flex-direction: row;
   transition: opacity 0.2s ease-in-out;
-`;
-
-export const Side = styled.div`
-  height: 100%;
-  grid-column: 1;
+  background: ${({ isPlayerEnabled }) => isPlayerEnabled ? 'rgba(255,255,255,1)' : 'inherit'};
+  overflow: hidden;
   border-radius: 5px;
-  background: ${bg};  
+  box-shadow: ${boxShadow};
+
+  &:before {
+    content: '';
+    width: 750px;
+    height: calc(100% + 50px);
+    background: inherit;
+    position: absolute;
+    left: -25px;
+    right: 0;
+    top: -25px;
+    bottom: 0;
+    box-shadow: inset 0 0 0 700px rgba(255,255,255,0.3);
+    filter: blur(10px);
+  }
 `;
 
 export const Main = styled.div`
-  border-radius: 5px;
-  width: 100%;
-  padding: 28px;
+  width: 700px;
+  height: 100%;
+  padding: 25px;
+  left: calc(50% - 350px);
+  top: 50%;
+  transform: translateY(-50%);
   color: ${fontColor};
-  background: ${bg};
+  background-color: ${bg};
   box-sizing: border-box;
-  overflow: auto;
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: 36px 1fr;
-  grid-column: 2;
+  box-shadow: ${boxShadow};
+  flex-direction: column;
+`;
+
+export const Nav = styled.div`
+  flex-direction: row;
+  flex-shrink: 0;
 `;
 
 export const Directory = styled.div`
@@ -50,7 +65,3 @@ export const Directory = styled.div`
   }
 `;
 
-export const Nav = styled.div`
-  grid-column: 1/4;
-  grid-row: 1;
-`;

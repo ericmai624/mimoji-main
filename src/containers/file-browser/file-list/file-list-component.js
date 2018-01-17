@@ -5,19 +5,15 @@ import FileBrowserButton from '../button/button-component';
 
 import {
   Container,
-  Side,
   Main,
   Nav,
   Directory
 } from './file-list-styles';
 
 const FileBrowserList = ({ 
-  fileBrowser, isVisible, onDoubleClickDirectory, onDoubleClickFile, toggleFileBrowserDialog, navigateUpDir }) => (
-  <Container className='grid' isVisible={isVisible}>
-    <Side className='flex flex-center'>
-      <h2>File Browser</h2>
-    </Side>
-    <Main className='grid flex-center no-select'>
+  isPlayerEnabled, fileBrowser, isVisible, onDoubleClickDirectory, onDoubleClickFile, toggleFileBrowserDialog, navigateUpDir }) => (
+  <Container className='flex relative' isVisible={isVisible} isPlayerEnabled={isPlayerEnabled}>
+    <Main className='flex no-select absolute'>
       <Nav className='flex flex-align-center flex-space-between'>
         <Directory className='ellipsis'>
           <span>{fileBrowser.directory}</span>
@@ -29,7 +25,7 @@ const FileBrowserList = ({
       </Nav>
       <FileBrowserListEntry
         content={fileBrowser.content}
-        isFetching={fileBrowser.fetching}
+        isPending={fileBrowser.isPending}
         onDoubleClickDirectory={onDoubleClickDirectory} 
         onDoubleClickFile={onDoubleClickFile}
         navigateUpDir={navigateUpDir}

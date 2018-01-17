@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
 import { toggleLoading, togglePlayer, streamToGoogleCast } from 'stores/app';
-import { toggleFileBrowserDialog, requestContent } from 'stores/file-browser';
+import { toggleFileBrowserDialog, updateContent, togglePending } from 'stores/file-browser';
 import { setStreamSource, updateStreamInfo } from 'stores/stream';
 import { genTextTrackId } from 'stores/text-track';
 
@@ -21,9 +21,10 @@ class FileBrowser extends Component {
     };
     
     this.getContent = this.getContent.bind(this);
+    this.updatedir = this.updatedir.bind(this);
     this.onDoubleClickDirectory = this.onDoubleClickDirectory.bind(this);
     this.onDoubleClickFile = this.onDoubleClickFile.bind(this);
-    this.setPlayerManager = this.setPlayerManager.bind(this);
+    this.setPlayerType = this.setPlayerType.bind(this);
     this.wakeUpPlayer = this.wakeUpPlayer.bind(this);
     this.addTextTrack = this.addTextTrack.bind(this);
     this.navigateUpDir = this.navigateUpDir.bind(this);
@@ -31,14 +32,34 @@ class FileBrowser extends Component {
   }
   
   componentDidMount() {
+    const { io } = window;
+
+    /* Register event listeners first */
+    io.on('request content fulfilled', this.updatedir);
+
+    io.on('request content rejected', this.updatedir);
+
+    /* Start requesting directory content */
     this.getContent();
   }
 
   getContent(dir, nav) {
     const { io } = window;
-    const { requestContent } = this.props;
+    const { togglePending } = this.props;
+    this.start = Date.now();
+    togglePending();
     io.emit('request content', { dir, nav });
-    io.on('return content request', requestContent);
+  }
+
+  updatedir(data) {
+    const { togglePending, updateContent } = this.props;
+    togglePending();
+    /* 
+    request rejection will not return any data.
+    So if data is undefined, the request is rejected 
+    */
+    updateContent(data, data === undefined);
+    console.log(`Requested directory content, process took %c${Date.now() - this.start}ms`, 'color: #d80a52;');
   }
 
   onDoubleClickDirectory(e, file) {
@@ -50,7 +71,6 @@ class FileBrowser extends Component {
     e.preventDefault();
     const { setStreamSource } = this.props;
     if (file.type === 'subtitle') return this.addTextTrack(file.filePath, file.name, 'auto', 0);
-    // this.setState({ file });
     if (file.type === 'video') {
       this.selectedVideo = file.filePath;
       setStreamSource(this.selectedVideo);
@@ -58,29 +78,31 @@ class FileBrowser extends Component {
     }
   }
 
-  setPlayerManager(option) {
-    const { fileBrowser, toggleFileBrowserDialog, streamToGoogleCast } = this.props;
+  setPlayerType(option) {
+    const { app, toggleLoading, fileBrowser, toggleFileBrowserDialog, streamToGoogleCast } = this.props;
 
     if (fileBrowser.isVisible) toggleFileBrowserDialog();
+
     streamToGoogleCast(option);
 
-    /* Wait 1 second for smoother transition */
-    setTimeout(this.wakeUpPlayer, 250);
+    if (!app.isInitializing) toggleLoading();
+
+    /* Wait 1000ms for smoother transition */
+    setTimeout(this.wakeUpPlayer, 1000);
   }
 
   wakeUpPlayer() {
     const { io } = window;
-    const { app, updateStreamInfo, togglePlayer, toggleLoading } = this.props;
+    const { app, updateStreamInfo, togglePlayer } = this.props;
     const { isOptionsVisible } = this.state;
+
+    if (!app.isPlayerEnabled) togglePlayer();
+
     io.emit('new stream', { video: this.selectedVideo, seek: 0 });
   
-    io.once('stream created', data => {
-      updateStreamInfo(data);
-      if (!app.isPlayerEnabled) togglePlayer();
-    });
+    io.once('stream created', updateStreamInfo);
 
-    if (!app.isInitializing) toggleLoading();
-    // switch back to file browser mode
+    // switch back to file browser mode quietly in the background
     if (isOptionsVisible) setTimeout(this.toggleCastOptions, 1000);
   }
 
@@ -105,7 +127,7 @@ class FileBrowser extends Component {
   
   render() {
     const { isOptionsVisible } = this.state;
-    const { fileBrowser, toggleFileBrowserDialog } = this.props;
+    const { app, fileBrowser, toggleFileBrowserDialog } = this.props;
 
     if (fileBrowser.hasError) {
       return (
@@ -117,8 +139,14 @@ class FileBrowser extends Component {
     }
 
     return (
-      <Container id='file-browser' className='flex flex-center absolute full-size' isVisible={fileBrowser.isVisible}>
-        <FileBrowserList 
+      <Container 
+        id='file-browser'
+        className='flex flex-center absolute full-size'
+        isVisible={fileBrowser.isVisible}
+        hasOverlay={app.isPlayerEnabled}
+      >
+        <FileBrowserList
+          isPlayerEnabled={app.isPlayerEnabled}
           fileBrowser={fileBrowser}
           isVisible={!isOptionsVisible}
           onDoubleClickDirectory={this.onDoubleClickDirectory}
@@ -128,7 +156,7 @@ class FileBrowser extends Component {
         />
         <CastOptions
           isVisible={isOptionsVisible}
-          setPlayerManager={this.setPlayerManager}
+          setPlayerType={this.setPlayerType}
           toggleCastOptions={this.toggleCastOptions}
         />
       </Container>
@@ -143,7 +171,8 @@ const mapStateToProps = (state) => ({
 });
 
 const mapDispatchToProps = (dispatch) => ({ 
-  requestContent: bindActionCreators(requestContent, dispatch),
+  updateContent: bindActionCreators(updateContent, dispatch),
+  togglePending: bindActionCreators(togglePending, dispatch),
   toggleFileBrowserDialog: bindActionCreators(toggleFileBrowserDialog, dispatch),
   togglePlayer: bindActionCreators(togglePlayer, dispatch),
   toggleLoading: bindActionCreators(toggleLoading, dispatch),

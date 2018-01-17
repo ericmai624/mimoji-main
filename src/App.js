@@ -19,9 +19,7 @@ fontawesome.library.add(solid, regular);
 
 const Wrapper = styled.div`
   transition: filter 0.4s ease-in-out;
-  background-image: url('/assets/background/bg.jpg');
-  background-position: center;
-  background-repeat: no-repeat;
+  background: url('/assets/background/209285.jpg') no-repeat center center fixed;
   background-size: cover;
   overflow: hidden;
   left: 0;

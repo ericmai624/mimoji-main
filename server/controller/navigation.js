@@ -85,7 +85,7 @@ const readdirWin32 = (location, nav) => {
     });
   }
 
-  let directory = path.resolve(location, nav);
+  let directory = path.resolve(location, nav || '');
 
   return new Promise((resolve, reject) => {
     fs.readdir(directory, (err, files) => {
@@ -100,9 +100,12 @@ const readdir = async (dir, nav) => {
   try {
     if (process.platform === 'win32') {
       if (!dir) {
-        return getHomedirWin32((err, result) => {
-          if (!err) return result;
-          log('failed to get home directory: ', err);
+        return new Promise((resolve, reject) => {
+          getHomedirWin32((err, result) => {
+            if (!err) return resolve(result);
+            log('failed to get home directory: ', err);
+            return reject(err);
+          });
         });
       }
       return await readdirWin32(dir, nav);
@@ -116,7 +119,7 @@ const readdir = async (dir, nav) => {
     let content = arrangeContent(files, directory);
     return { directory, content };
   } catch (err) {
-    log(err);
+    log(`Request to get content for ${dir} failed with ${err}`);
   }
 };
 
