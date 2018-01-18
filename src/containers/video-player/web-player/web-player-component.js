@@ -240,7 +240,7 @@ class WebPlayer extends Component {
 
     if (stream.hasError) {
       return (
-        <VideoContainer className='flex flex-center absolute'>
+        <VideoContainer className='flex flex-center fixed'>
           <span style={{color: 'white'}}>Something went wrong...</span>
         </VideoContainer>
       );
@@ -249,7 +249,7 @@ class WebPlayer extends Component {
     return (
       <VideoContainer
         id='video-player'
-        className='flex flex-center absolute full-size'
+        className='flex flex-center fixed full-size'
         onMouseMove={this.onVideoMouseMove}
       >
         <Loader className='flex-center absolute' size={42} style={{display: isSeeking ? 'flex' : 'none'}} />

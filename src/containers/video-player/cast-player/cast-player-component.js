@@ -199,9 +199,7 @@ class CastPlayer extends Component {
       this.stopTimer();
       // this.setState({ isBuffering: true });
     } else {
-      const { stream } = this.props;
-      // The show is ended
-      if (stream.currentTime >= (stream.duration - 1)) this.cleanup(); 
+
     }
   }
 
@@ -316,12 +314,14 @@ class CastPlayer extends Component {
   }
 
   updateTime(elapsed) {
-    const { updateStreamTime } = this.props;
+    const { stream, updateStreamTime } = this.props;
     const { currTimeOffset } = this.state;
-    const { remoteElapsedTime } = this;
+    const { remoteElapsedTime, cleanup } = this;
 
-    const second = elapsed / 1000;
-    updateStreamTime(remoteElapsedTime + currTimeOffset + second);
+    // The show is ended
+    if (stream.currentTime >= stream.duration) return cleanup(); 
+
+    updateStreamTime(remoteElapsedTime + currTimeOffset + elapsed / 1000);
   }
 
   startTimer() {
@@ -402,14 +402,14 @@ class CastPlayer extends Component {
 
     if (stream.hasError) {
       return (
-        <Container className='flex flex-center absolute'>
+        <Container className='flex flex-center fixed'>
           <span style={{color: 'white'}}>Something went wrong...</span>
         </Container>
       );
     }
 
     return (
-      <Container className='flex flex-center absolute full-size no-background'>
+      <Container className='flex flex-center fixed full-size no-background'>
         <Loader className='flex-center absolute' size={42} style={{display: isSeeking ? 'flex' : 'none'}} />
         <VideoControls 
           seek={this.seek}

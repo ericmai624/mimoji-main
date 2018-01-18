@@ -55,14 +55,18 @@ class Stream {
   }
 
   async create(input, seek, storage) {
+    /* Create the onecast directory first */
     const directory = await this.make(path.join(os.tmpdir(), 'onecast'));
     const [output, metadata] = await Promise.all(
       [ fs.mkdtempAsync(directory + path.sep), util.ffmpeg.getMetadata(input) ]);
+
     this.input = input;
     this.output = output;
     this.metadata = metadata;
     this.command = util.ffmpeg.processMedia(input, seek, metadata, output, this.clean, this.finish);
+
     storage[this.id] = this;
+
     return output;
   }
 

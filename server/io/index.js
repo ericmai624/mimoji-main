@@ -34,19 +34,28 @@ module.exports = server => {
         
         const stream = new Stream();
     
-        const onPlayListReady = file => {
+        const onFileCreated = file => {
+          // log(stream.command.ffmpegProc);
+
           if (extname(file) === '.m3u8') {
             log(`Playlist is ready. Process took ${Date.now() - start}ms`);
             return socket.emit('playlist ready');
           }
           stream.fileCount++;
+          if (stream.fileCount > 10) {
+            // log('Trying to pause ffmpeg process');
+            // stream.command.ffmpegProc.stdin.write('@19');
+          }
         };
         const onFileRemoved = file => {
           stream.fileCount--;
+          if (stream.fileCount < 6) {
+            // log('Trying to resume ffmpeg process');
+          }
         };
         const output = await stream.create(video, seek, streams);
         log(`output is ${output}`);
-        stream.watch(output, onPlayListReady, onFileRemoved);
+        stream.watch(output, onFileCreated, onFileRemoved);
         socket.emit('stream created', { id: stream.getId(), duration: stream.getDuration() });
         log(`Created new stream with id: ${stream.id}, process took ${Date.now() - start}ms`);
       } catch (err) {
