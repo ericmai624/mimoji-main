@@ -24,6 +24,7 @@
     "chalk": "^2.3.0",
     "chokidar": "^2.0.0",
     "concurrently": "^3.5.1",
+    "d3-timer": "^1.0.7",
     "express": "^4.16.2",
     "fluent-ffmpeg": "^2.1.2",
     "hls.js": "^0.8.9",

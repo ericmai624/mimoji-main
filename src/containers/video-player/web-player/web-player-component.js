@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import Hls from 'hls.js';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -247,46 +247,44 @@ class WebPlayer extends Component {
     }
 
     return (
-      <Fragment>
-        <VideoContainer
-          id='video-player'
-          className='flex flex-center absolute full-size'
-          onMouseMove={this.onVideoMouseMove}
+      <VideoContainer
+        id='video-player'
+        className='flex flex-center absolute full-size'
+        onMouseMove={this.onVideoMouseMove}
+      >
+        <Loader className='flex-center absolute' size={42} style={{display: isSeeking ? 'flex' : 'none'}} />
+        <video
+          autoPlay={true}
+          playsInline={true}
+          width='100%'
+          height='100%'
+          crossOrigin='anonymous'
+          onPlaying={this.onVideoPlaying}
+          onPause={this.onVideoPaused}
+          onTimeUpdate={this.onVideoTimeUpdate}
+          onEnded={this.stop}
+          ref={(el) => this.video = el}
         >
-          {isSeeking ? <Loader className='flex flex-center absolute' size={42} /> : null}
-          <video
-            autoPlay={true}
-            playsInline={true}
-            width='100%'
-            height='100%'
-            crossOrigin='anonymous'
-            onPlaying={this.onVideoPlaying}
-            onPause={this.onVideoPaused}
-            onTimeUpdate={this.onVideoTimeUpdate}
-            onEnded={this.stop}
-            ref={(el) => this.video = el}
-          >
-            <TextTrack currTimeOffset={currTimeOffset} isLoading={isSeeking}/>
-          </video>
-          <VideoControls
-            seek={this.seek}
-            onControlsMouseMove={this.onControlsMouseMove}
-            toggleFileBrowserDialog={toggleFileBrowserDialog}
-            playOrPause={this.playOrPause}
-            muteOrUnmute={this.muteOrUnmute}
-            toggleFullscreen={this.toggleFullscreen}
-            setVolume={this.setVolume}
-            stop={this.stop}
-            isControlsVisible={isControlsVisible}
-            isPaused={isPaused}
-            isMuted={isMuted}
-            isFullscreenEnabled={app.isFullscreenEnabled}
-            volume={volume}
-            currentTime={stream.currentTime}
-            duration={stream.duration}
-          />
-        </VideoContainer>
-      </Fragment>
+          <TextTrack currTimeOffset={currTimeOffset} isLoading={isSeeking}/>
+        </video>
+        <VideoControls
+          seek={this.seek}
+          onControlsMouseMove={this.onControlsMouseMove}
+          toggleFileBrowserDialog={toggleFileBrowserDialog}
+          playOrPause={this.playOrPause}
+          muteOrUnmute={this.muteOrUnmute}
+          toggleFullscreen={this.toggleFullscreen}
+          setVolume={this.setVolume}
+          stop={this.stop}
+          isControlsVisible={isControlsVisible}
+          isPaused={isPaused}
+          isMuted={isMuted}
+          isFullscreenEnabled={app.isFullscreenEnabled}
+          volume={volume}
+          currentTime={stream.currentTime}
+          duration={stream.duration}
+        />
+      </VideoContainer>
     );
   }
 }

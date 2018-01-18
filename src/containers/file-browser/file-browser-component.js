@@ -46,8 +46,7 @@ class FileBrowser extends Component {
   getContent(dir, nav) {
     const { io } = window;
     const { togglePending } = this.props;
-    this.start = Date.now();
-    togglePending();
+    togglePending(); // Toggles the loading animation
     io.emit('request content', { dir, nav });
   }
 
@@ -59,7 +58,6 @@ class FileBrowser extends Component {
     So if data is undefined, the request is rejected 
     */
     updateContent(data, data === undefined);
-    console.log(`Requested directory content, process took %c${Date.now() - this.start}ms`, 'color: #d80a52;');
   }
 
   onDoubleClickDirectory(e, file) {
@@ -78,7 +76,7 @@ class FileBrowser extends Component {
     }
   }
 
-  setPlayerType(option) {
+  setPlayerType(option/* boolean */) {
     const { app, toggleLoading, fileBrowser, toggleFileBrowserDialog, streamToGoogleCast } = this.props;
 
     if (fileBrowser.isVisible) toggleFileBrowserDialog();
