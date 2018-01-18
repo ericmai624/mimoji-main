@@ -9,11 +9,10 @@ export const Container = styled.div`
 `;
 
 export const List = styled.ul`
-  visibility: ${({ isVisible }) => isVisible ? 'visible' : 'hidden'};
   opacity: ${({ isVisible }) => isVisible ? 1 : 0};
   width: 100%;
   height: 100%;
-  transition: opacity 0.15s ease-in-out;
+  transition: opacity 0.25s ease-in-out;
 `;
 
 export const Entry = styled.li`
@@ -21,7 +20,7 @@ export const Entry = styled.li`
   align-items: center;
   border-bottom: 1px solid rgba(155, 155, 155, 0.8);
   box-sizing: border-box;
-  transition: color 0.15s ease-in-out;
+  transition: all 0.15s ease-in-out;
 
   &:hover {
     background: ${lightgray};

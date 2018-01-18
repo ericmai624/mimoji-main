@@ -18,14 +18,11 @@ import Loading from 'components/loading-screen/loading-screen-component';
 fontawesome.library.add(solid, regular);
 
 const Wrapper = styled.div`
+  filter: ${({ isBlur }) => isBlur ? 'blur(15px) brightness(60%)' : 'none'};
   transition: filter 0.4s ease-in-out;
   background: url('/assets/background/209285.jpg') no-repeat center center fixed;
   background-size: cover;
   overflow: hidden;
-  left: 0;
-  top: 0;
-  right: 0;
-  bottom: 0;
 `;
 
 const Label = styled.label`
@@ -41,14 +38,17 @@ const Label = styled.label`
 `;
 
 class App extends Component {
-  componentWillMount() {
+
+  constructor(props) {
+    super(props);
+    // init Websockets before content is rendered
     window.io = io('http://localhost:6300', { transports: ['websocket'] });
   }
   
   componentDidMount() {
     const { getIpAddress, toggleFullscreen } = this.props;
     
-    getIpAddress();
+    getIpAddress(); // Get ip address for Chromecast stream
     
     // Event listener for fullscreen change
     document.addEventListener('fullscreenchange', (e) => toggleFullscreen('fullscreen'));
@@ -62,7 +62,7 @@ class App extends Component {
     
     return (
       <Fragment>
-        <Wrapper id='wrapper' className={`flex flex-center absolute${app.isInitializing ? ' blur' : ''}`}>
+        <Wrapper id='wrapper' className='flex flex-center absolute full-size' isBlur={app.isInitializing}>
           {app.isPlayerEnabled ?
             (<VideoPlayer isChromecast={app.isChromecast} />) : 
             (<Label className='pointer no-select' onClick={toggleFileBrowserDialog}>Choose a Video</Label>)}

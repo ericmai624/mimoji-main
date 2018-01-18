@@ -1,18 +1,16 @@
 import styled from 'styled-components';
 
 const fontColor = 'rgb(0, 0, 0)';
-const bg = 'rgba(255, 255, 255, 0.65)';
+const bg = 'rgba(255, 255, 255, 0.25)';
 const boxShadow = '0 0 15px 5px rgba(0, 0, 0, 0.12)';
 
 export const Container = styled.div`
-  visibility: ${({ isVisible }) => isVisible ? 'visible' : 'hidden'};
-  opacity: ${({ isVisible }) => isVisible ? 1 : 0};
+  display: ${({ isVisible }) => isVisible ? 'flex' : 'none'};
   width: 700px;
   height: 80%;
   max-height: 600px;
   flex-direction: row;
-  transition: opacity 0.2s ease-in-out;
-  background: ${({ isPlayerEnabled }) => isPlayerEnabled ? 'rgba(255,255,255,1)' : 'inherit'};
+  background: ${({ isPlayerEnabled }) => isPlayerEnabled ? 'rgba(255, 255, 255, 1)' : 'inherit'};
   overflow: hidden;
   border-radius: 5px;
   box-shadow: ${boxShadow};

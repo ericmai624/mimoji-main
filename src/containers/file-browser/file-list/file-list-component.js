@@ -12,7 +12,7 @@ import {
 
 const FileBrowserList = ({ 
   isPlayerEnabled, fileBrowser, isVisible, onDoubleClickDirectory, onDoubleClickFile, toggleFileBrowserDialog, navigateUpDir }) => (
-  <Container className='flex relative' isVisible={isVisible} isPlayerEnabled={isPlayerEnabled}>
+  <Container className='relative' isVisible={isVisible} isPlayerEnabled={isPlayerEnabled}>
     <Main className='flex no-select absolute'>
       <Nav className='flex flex-align-center flex-space-between'>
         <Directory className='ellipsis'>

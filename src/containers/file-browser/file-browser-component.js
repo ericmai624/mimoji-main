@@ -132,7 +132,10 @@ class FileBrowser extends Component {
     if (fileBrowser.hasError) {
       return (
         <Container 
-          id='file-browser' className='flex flex-center absolute full-size white-font' isVisible={fileBrowser.isVisible}>
+          id='file-browser'
+          className='flex flex-center absolute full-size white-font'
+          isVisible={fileBrowser.isVisible}
+        >
           Something went wrong
         </Container>
       );
@@ -141,7 +144,7 @@ class FileBrowser extends Component {
     return (
       <Container 
         id='file-browser'
-        className='flex flex-center absolute full-size'
+        className='flex-center absolute full-size'
         isVisible={fileBrowser.isVisible}
         hasOverlay={app.isPlayerEnabled}
       >

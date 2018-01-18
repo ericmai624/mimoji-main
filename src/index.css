@@ -79,10 +79,6 @@ body {
   transition: color 0.25s ease;
 }
 
-.blur {
-  filter: blur(15px) brightness(60%)!important;
-}
-
 .no-background {
   background: transparent;
 }

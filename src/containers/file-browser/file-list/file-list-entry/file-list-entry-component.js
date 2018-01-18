@@ -15,13 +15,10 @@ const FileBrowserListEntry = ({ content, isPending, onDoubleClickDirectory, onDo
   return (
     <Container className='flex relative'>
       <Loader
-        className='flex flex-center absolute'
+        className='flex-center absolute'
         size={36}
         color={'black'}
-        style={{
-          visibility: isPending ? 'visible' : 'hidden',
-          opacity: isPending ? 1 : 0
-        }}
+        style={{ display: isPending ? 'flex' : 'none' }}
       />
       <List className='no-list-style' isVisible={!isPending}>
         <Entry className='flex pointer no-select' onDoubleClick={navigateUpDir}>

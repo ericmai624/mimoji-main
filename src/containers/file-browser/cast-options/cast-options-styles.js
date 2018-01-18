@@ -9,7 +9,6 @@ const lightgray = 'rgba(219, 219, 219, 0.5)';
 export const Container = styled.div`
   visibility: ${({ isVisible }) => isVisible ? 'visible' : 'hidden'};
   opacity : ${({ isVisible }) => isVisible ? 1 : 0};
-  display : ${({ isVisible }) => isVisible ? 'block' : 'none'};
   width: 360px;
   height: ${height}px;
   left: calc(50% - 180px);
