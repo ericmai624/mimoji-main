@@ -20,8 +20,6 @@ fontawesome.library.add(solid, regular);
 const Wrapper = styled.div`
   filter: ${({ isBlur }) => isBlur ? 'blur(15px) brightness(60%)' : 'none'};
   transition: filter 0.4s ease-in-out;
-  background: url('/assets/background/209285.jpg') no-repeat center center fixed;
-  background-size: cover;
   overflow: hidden;
 `;
 
@@ -110,7 +108,7 @@ class App extends Component {
       <Fragment>
         <Wrapper
           id='wrapper'
-          className='flex flex-center absolute full-size'
+          className='flex flex-center absolute full-size bg'
           isBlur={app.isInitializing}
           innerRef={el => this.wrapper = el}
         >

@@ -1,3 +1,25 @@
+/* 
+This file need to be transpiled by gulp at build time
+urls will be replaced by base64 
+*/
+
+@font-face {
+  font-family: Roboto;
+  src: url('/assets/font/Roboto/Roboto-Regular.ttf');
+}
+
+@font-face {
+  font-family: Roboto;
+  src: url('/assets/font/Roboto/Roboto-Bold.ttf');
+  font-weight: bold;
+}
+
+@font-face {
+  font-family: Roboto;
+  src: url('/assets/font/Roboto/Roboto-Italic.ttf');
+  font-style: italic;
+}
+
 body {
   font-family: 'Roboto', sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -11,6 +33,18 @@ body {
 #app {
   width: 100%;
   height: 100vh;
+}
+
+.bg {
+  background-image: url(/assets/img/209285.jpg);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-attachment: fixed;
+  background-size: cover;
+}
+
+.overlay {
+  background:rgba(0, 0, 0, 0.25);
 }
 
 .full-size {
