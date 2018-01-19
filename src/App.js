@@ -32,14 +32,13 @@ const Label = styled.label`
   outline: none;
   border: none;
   border-radius: 5px;
-  ${'' /* box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24); */}
   box-shadow: 0 0 3px 1px rgba(0, 0, 0, 0.12);
   padding: 0.6em 0.8em;
   margin: 0;
   transition: all 0.25s ease-in-out;
 
   &:hover {
-    box-shadow: 0 0 10px 3px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 0 6px 3px rgba(0, 0, 0, 0.25);
     background-color: rgba(23, 69, 124, 0.85);
   }
 `;
@@ -48,7 +47,7 @@ class App extends Component {
 
   constructor(props) {
     super(props);
-    /* init Websockets before content is rendered */
+    /* Init Websockets before content is rendered */
     window.io = io('http://localhost:6300', { transports: ['websocket'] });
     /* Define init fn before the framework script is loaded */
     window['__onGCastApiAvailable'] = this.initializeCastApi;
