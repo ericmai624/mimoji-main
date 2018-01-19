@@ -13,6 +13,7 @@ import CastOptions from './cast-options/cast-options-component';
 import { Container } from './file-browser-styles';
 
 class FileBrowser extends Component {
+  
   constructor(props) {
     super(props);
 

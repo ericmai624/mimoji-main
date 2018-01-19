@@ -8,7 +8,6 @@
     "dev": "concurrently --prefix-colors white,blue \"nodemon server\" \"react-scripts start\"",
     "client": "react-scripts start",
     "build": "react-scripts build",
-    "cast": "nodemon receiver",
     "electron": "electron ."
   },
   "proxy": "http://localhost:6300",
@@ -51,6 +50,8 @@
   },
   "devDependencies": {
     "@types/hls.js": "^0.8.0",
-    "electron": "1.7.10"
+    "electron": "1.7.10",
+    "gulp": "^3.9.1",
+    "gulp-imagemin": "^4.1.0"
   }
 }

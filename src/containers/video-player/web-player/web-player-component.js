@@ -15,6 +15,7 @@ import { resetTextTrack } from 'stores/text-track';
 import { VideoContainer } from './web-player-styles';
 
 class WebPlayer extends Component {
+  
   constructor(props) {
     super(props);
 

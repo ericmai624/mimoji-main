@@ -20,6 +20,7 @@ import ControlButton from '../control-buttons/control-buttons-component';
 momentDurationSetup(moment);
 
 class VideoControls extends Component {
+  
   constructor(props) {
     super(props);
 

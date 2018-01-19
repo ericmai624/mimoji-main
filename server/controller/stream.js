@@ -21,13 +21,12 @@ class Stream {
     this.input = null;
     this.output = null;
     this.metadata = {};
-    this.fileCount = 0;
     this.isProcessing = true;
     this.command = null;
     this.watcher = null;
     this.finishedQueue = [];
     this.uniqueFilePath = new Set();
-
+    /* Methods binding */
     this.clean = this.clean.bind(this);
     this.finish = this.finish.bind(this);
   }
@@ -70,11 +69,14 @@ class Stream {
     return output;
   }
 
-  watch(folder, onAddCallback, onUnlinkCallback) {
+  watch(folder, socket) {
     this.watcher = chokidar.watch(folder, { ignored: /\.tmp$/ });
-    this.watcher.on('add', onAddCallback.bind(this));
-    this.watcher.on('unlink', onUnlinkCallback.bind(this));
-    this.watcher.on('error', log);
+    this.watcher.on('add', file => {
+      if (path.extname(file) === '.m3u8') socket.emit('playlist ready');
+    });
+    this.watcher.on('error', err => {
+      log(chalk.red(`Error in stream.watch: ${err}`));
+    });
   }
 
   enqueue(file) {
@@ -158,7 +160,6 @@ const serve = (req, res) => {
 const addSubtitle = (req, res) => {
   let { location } = req.body;
   if (!location || location === '') return res.end();
-  // let id = createHash('sha256').update(location).digest('hex');
   let id = randomBytes(8).toString('hex');
   subtitles[id] = location;
 

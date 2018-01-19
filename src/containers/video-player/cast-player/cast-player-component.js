@@ -14,6 +14,7 @@ import VideoControls from 'containers/video-player/video-controls/video-controls
 import { Container } from './cast-player-styles';
 
 class CastPlayer extends Component {
+  
   constructor(props) {
     super(props);
 

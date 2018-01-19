@@ -26,35 +26,6 @@
     <noscript>
       You need to enable JavaScript to run this app.
     </noscript>
-    <div id="root">
-      <div class="flex flex-center absolute"
-        style="z-index: 99; width: 40px; height: 40px; right: 20px; top: 20px; background: transparent;">
-        <button id="cast-button" class="no-background" is="google-cast-button"
-          style="border: none; outline: none; cursor: pointer;"></button>
-        <script type="text/javascript" 
-          src="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1"></script>
-        <script>
-          var initializeCastApi = function() {
-            cast.framework.setLoggerLevel(cast.framework.LoggerLevel.DEBUG);
-            // console.log( cast.framework.LoggerLevel);
-            var context = cast.framework.CastContext.getInstance();
-            context.setOptions({
-              // receiverApplicationId: chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID
-              // receiverApplicationId: '7DDC0933'
-              receiverApplicationId: 'CD03835D'
-            });
-            console.log(context);
-            context.requestSession()
-              .then(function() {
-
-              }, console.log);
-          }
-          window['__onGCastApiAvailable'] = function(isAvailable) {
-            if (isAvailable) initializeCastApi();
-          };
-        </script>
-      </div>
-      <div id="app" class="full-size fixed"></div>
-    </div>
+    <div id="app"></div>
   </body>
 </html>
