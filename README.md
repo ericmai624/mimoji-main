@@ -4,7 +4,7 @@ Super charges your browser and Chromecast to play almost any local computer medi
 
 ## Requirements
 
-- Node 9.2.x
+- Node 9.4.x
 - Gulp-Cli 2.x.x
 
 ## Development

@@ -24,6 +24,7 @@ const Wrapper = styled.div`
 `;
 
 const Label = styled.label`
+  display: ${({ isVisible }) => isVisible ? 'block' : 'none'};
   font-size: 24px;
   color: rgba(228, 228, 228, 1);
   background-color: rgba(23, 69, 124, 0.75);
@@ -98,6 +99,7 @@ class App extends Component {
     button.style.top = '20px';
     button.style.right = '20px';
     button.style.background = 'transparent';
+    button.style.zIndex = 10;
     this.wrapper.insertAdjacentElement('beforeend', button);
   }
   
@@ -113,8 +115,14 @@ class App extends Component {
           innerRef={el => this.wrapper = el}
         >
           {app.isPlayerEnabled ?
-            (<VideoPlayer isChromecast={app.isChromecast} />) : 
-            (<Label className='pointer no-select' onClick={toggleFileBrowserDialog}>Choose a Video</Label>)}
+            (<VideoPlayer isChromecast={app.isChromecast} />) : null}
+          <Label
+            className='pointer no-select'
+            onClick={toggleFileBrowserDialog}
+            isVisible={!app.isPlayerEnabled}
+          >
+            Choose a Video
+          </Label>
           <FileBrowser />
         </Wrapper>
         <Loading isInitializing={app.isInitializing}/>

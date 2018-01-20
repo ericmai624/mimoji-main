@@ -42,22 +42,19 @@ const arrangeContent = (input, dir) => {
   });
 
   return content.sort((a, b) => {
-    if (a.type === 'directory' && b.type === 'directory') {
-      return a.name.toUpperCase().charCodeAt(0) - b.name.toUpperCase().charCodeAt(0);
-    } else if (a.type === 'directory' && b.type !== 'directory') {
+    if (a.type === 'directory' && b.type !== 'directory') {
       return -1;
     } else if (a.type !== 'directory' && b.type === 'directory') {
       return 1;
+    } else if (a.type === 'directory' && b.type === 'directory') {
+      return a.name.localeCompare(b.name, { numeric: true });
     } else {
-      if (a.type === 'video' && b.type === 'video') {
-        return a.name.toUpperCase().charCodeAt(0) - b.name.toUpperCase().charCodeAt(0);
-      } else if (a.type !== 'video' && b.type === 'video') {
-        return 1;
-      } else if (a.type === 'video' && b.type !== 'video') {
-        return -1;
-      } else {
-        return a.name.toUpperCase().charCodeAt(0) - b.name.toUpperCase().charCodeAt(0);
+      let extA = path.extname(a.filePath);
+      let extB = path.extname(b.filePath);
+      if (extA === extB) {
+        return a.name.localeCompare(b.name, { numeric: true });
       }
+      return extA.localeCompare(extB);
     }
   });
 };

@@ -410,7 +410,7 @@ class CastPlayer extends Component {
     }
 
     return (
-      <Container className='flex flex-center fixed full-size no-background'>
+      <Container className='flex flex-center absolute full-size no-background'>
         <Loader className='flex-center absolute' size={42} style={{display: isSeeking ? 'flex' : 'none'}} />
         <VideoControls 
           seek={this.seek}

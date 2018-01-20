@@ -241,7 +241,7 @@ class WebPlayer extends Component {
 
     if (stream.hasError) {
       return (
-        <VideoContainer className='flex flex-center fixed'>
+        <VideoContainer className='flex flex-center absolute'>
           <span style={{color: 'white'}}>Something went wrong...</span>
         </VideoContainer>
       );

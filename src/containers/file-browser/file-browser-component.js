@@ -143,8 +143,9 @@ class FileBrowser extends Component {
     return (
       <Container 
         id='file-browser'
-        className={`flex-center absolute full-size ${app.isPlayerEnabled ? 'overlay' : 'bg'}`}
+        className='flex-center absolute full-size'
         isVisible={fileBrowser.isVisible}
+        isPlayerEnabled={app.isPlayerEnabled}
       >
         <FileBrowserList
           isPlayerEnabled={app.isPlayerEnabled}
