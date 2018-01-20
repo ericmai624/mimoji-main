@@ -193,7 +193,7 @@ class WebPlayer extends Component {
 
   toggleFullscreen(e) {
     const { app } = this.props;
-    const rootNode = document.querySelector('#root');
+    const rootNode = document.getElementById('app');
 
     const requestFullscreen = rootNode.requestFullscreen ||
                               rootNode.mozRequestFullScreen ||
