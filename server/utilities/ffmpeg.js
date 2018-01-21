@@ -13,15 +13,6 @@ const ffprobePath = require('@ffprobe-installer/ffprobe').path;
 const common = path.join(__dirname, '..', '..', 'node_modules', 'ffmpeg');
 ffmpeg.setFfmpegPath(ffmpegPath);
 ffmpeg.setFfprobePath(ffprobePath);
-/*
-if (platform === 'darwin') {
-  ffmpeg.setFfmpegPath(`${common}${sep}darwin${sep}ffmpeg`);
-  ffmpeg.setFfprobePath(`${common}${sep}darwin${sep}ffprobe`);  
-} else if (platform === 'win32') {
-  ffmpeg.setFfmpegPath(`${common}${sep}win32${sep}bin${sep}ffmpeg.exe`);
-  ffmpeg.setFfprobePath(`${common}${sep}win32${sep}bin${sep}ffprobe.exe`);  
-}
-*/
 
 const isNumber = num => typeof num === 'number';
 
@@ -40,7 +31,7 @@ const getFramerate = metadata => {
 
 const processMedia = (input, seek, metadata, output, onError, onFinished) => {
   let command = ffmpeg(input);
-  let bitrate = 12 * 1024 * 1024; // output bitrate
+  let bitrate = 14 * 1024 * 1024; // output bitrate
   let framerate = getFramerate(metadata);
   let inputOptions = ['-hide_banner', '-y', '-copyts', '-loglevel panic'];
   let outputOptions = [
@@ -53,12 +44,10 @@ const processMedia = (input, seek, metadata, output, onError, onFinished) => {
     `-minrate ${bitrate}`,
     `-bufsize ${bitrate * 2}`,
     `-g ${framerate * 2}`, // Keyframe interval
-    '-sc_threshold 0',
     `-keyint_min ${framerate * 2}`,
+    '-sc_threshold 0',
     '-vprofile high',
     '-vlevel 4.2',
-    // '-pix_fmt yuv420p',
-    // '-bsf:v h264_mp4toannexb', // convert bitstream
     '-map 0:1',
     '-c:a aac',
     '-ac 2',

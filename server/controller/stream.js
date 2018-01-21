@@ -93,7 +93,7 @@ class Stream {
   }
 
   remove(location) {
-    console.log(chalk.green(`Removing ${location}`));
+    // console.log(chalk.green(`Removing ${location}`));
     return rimraf(location, { maxBusyTries: 10 }, err => {
       if (err) log(chalk.red(`${err} occured when trying to remove ${location}`));
     });
