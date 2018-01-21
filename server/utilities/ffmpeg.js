@@ -51,7 +51,7 @@ const processMedia = (input, seek, metadata, output, onError, onFinished) => {
     `-b:v ${bitrate}`,
     `-maxrate ${bitrate}`,
     `-minrate ${bitrate}`,
-    `-bufsize ${bitrate * 1.5}`,
+    `-bufsize ${bitrate * 2}`,
     `-g ${framerate * 2}`, // Keyframe interval
     '-sc_threshold 0',
     `-keyint_min ${framerate * 2}`,
