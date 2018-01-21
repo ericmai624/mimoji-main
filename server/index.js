@@ -11,7 +11,7 @@ const build = path.join(__dirname, '..', 'build');
 
 app.use(middleware.bodyParser.json());
 app.use(middleware.bodyParser.urlencoded({ extended: true }));
-// app.use(middleware.morgan('dev'));
+app.use(middleware.morgan('short'));
 
 app.use(express.static(build));
 

@@ -1,5 +1,4 @@
 const path = require('path');
-const { sep } = path;
 const os = require('os');
 const fs = require('fs');
 const ffmpeg = require('fluent-ffmpeg');
@@ -31,9 +30,9 @@ const getFramerate = metadata => {
 
 const processMedia = (input, seek, metadata, output, onError, onFinished) => {
   let command = ffmpeg(input);
-  let bitrate = 14 * 1024 * 1024; // output bitrate
+  let bitrate = 12 * 1024 * 1024; // output bitrate
   let framerate = getFramerate(metadata);
-  let inputOptions = ['-hide_banner', '-y', '-copyts', '-loglevel panic'];
+  let inputOptions = ['-hide_banner', '-y', '-nostats', '-copyts', '-loglevel panic'];
   let outputOptions = [
     '-map 0:0',
     '-c:v libx264',
@@ -53,11 +52,11 @@ const processMedia = (input, seek, metadata, output, onError, onFinished) => {
     '-ac 2',
     '-ar 48000',
     '-b:a 384k',
-    '-hls_time 4',
+    '-hls_time 8',
     '-start_number 0',
-    '-hls_list_size 0',
+    '-hls_list_size 0', // Set to 0 to keep all segments on the list
     '-hls_segment_type mpegts',
-    `-hls_segment_filename ${path.join(output, 'file_%05d.ts')}`,
+    `-hls_segment_filename ${path.join(output, 'seg_%05d.ts')}`,
     '-hls_flags program_date_time+append_list'
   ];
 

@@ -32,7 +32,7 @@ module.exports = server => {
         each(streams, s => s.terminate()); // stop all processes and remove all files first
         
         const stream = new Stream();
-        const output = await stream.create(video, seek, streams);
+        const output = await stream.create(video, seek);
 
         stream.watch(output, socket);
         socket.emit('stream created', { id: stream.getId(), duration: stream.getDuration() });
@@ -46,8 +46,8 @@ module.exports = server => {
     /* close stream */
     socket.on('close stream', ({ id }) => {
       const stream = streams[id];
-      log(`Terminating stream ${id}`);
       if (!stream) return;
+      log(`Terminating stream ${id}`);
       stream.terminate();
     });
   });

@@ -53,9 +53,9 @@ class Stream {
     });
   }
 
-  async create(input, seek, storage) {
+  async create(input, seek) {
     /* Create the onecast directory first */
-    const directory = await this.make(path.join(os.tmpdir(), 'onecast'));
+    const directory = await this.make(path.join(os.tmpdir(), 'mimoji'));
     const [output, metadata] = await Promise.all(
       [ fs.mkdtempAsync(directory + path.sep), util.ffmpeg.getMetadata(input) ]);
 
@@ -64,15 +64,18 @@ class Stream {
     this.metadata = metadata;
     this.command = util.ffmpeg.processMedia(input, seek, metadata, output, this.clean, this.finish);
 
-    storage[this.id] = this;
+    streams[this.id] = this;
 
     return output;
   }
 
   watch(folder, socket) {
-    this.watcher = chokidar.watch(folder, { ignored: /\.tmp$/ });
+    this.watcher = chokidar.watch(folder, { ignored: /\.(tmp|ts)$/ });
     this.watcher.on('add', file => {
-      if (path.extname(file) === '.m3u8') socket.emit('playlist ready');
+      if (path.extname(file) === '.m3u8') {
+        socket.emit('playlist ready');
+        this.watcher.close();
+      }
     });
     this.watcher.on('error', err => {
       log(chalk.red(`Error in stream.watch: ${err}`));
@@ -109,7 +112,6 @@ class Stream {
   }
 
   terminate() {
-    this.watcher.close();
     this.command.kill();
     if (!this.isProcessing) this.remove(this.output);
     delete streams[this.id];
