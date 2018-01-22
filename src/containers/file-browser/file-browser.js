@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import styled from 'styled-components';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
@@ -7,10 +8,14 @@ import { toggleFileBrowserDialog, updateContent, togglePending } from 'stores/fi
 import { setStreamSource, updateStreamInfo } from 'stores/stream';
 import { genTextTrackId } from 'stores/text-track';
 
-import FileBrowserList from './file-list/file-list-component';
-import CastOptions from './cast-options/cast-options-component';
+import FileBrowserList from './file-list/file-list';
+import CastOptions from './cast-options/cast-options';
 
-import { Container } from './file-browser-styles';
+const Container = styled.div`
+  display: ${({ isVisible }) => isVisible ? 'flex' : 'none'};
+  background: ${({ isPlayerEnabled }) => isPlayerEnabled ? 'rgba(0,0,0,.25)' : 'inherit'};
+  z-index: ${({ isPlayerEnabled }) => isPlayerEnabled ? 2147483647 : 5};
+`;
 
 class FileBrowser extends Component {
   

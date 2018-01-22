@@ -11,9 +11,9 @@ import { toggleFileBrowserDialog } from 'stores/file-browser';
 import { toggleFullscreen } from 'stores/app';
 import { getIpAddress } from 'stores/ip'; 
 
-import Loading from 'components/loading-screen/loading-screen-component';
-import FileBrowser from 'containers/file-browser/file-browser-component';
-import VideoPlayer from 'containers/video-player/video-player-component';
+import LoadingScreen from 'components/loading-screen/loading-screen';
+import FileBrowser from 'containers/file-browser/file-browser';
+import VideoPlayer from 'containers/video-player/video-player';
 
 fontawesome.library.add(solid, regular);
 
@@ -125,7 +125,7 @@ class App extends Component {
           </Label>
           <FileBrowser />
         </Wrapper>
-        <Loading isInitializing={app.isInitializing}/>
+        <LoadingScreen isInitializing={app.isInitializing}/>
       </Fragment>
     );
   }

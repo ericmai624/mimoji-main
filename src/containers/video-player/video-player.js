@@ -1,7 +1,7 @@
 import React, { Fragment } from 'react';
 
-import WebPlayer from './web-player/web-player-component';
-import CastPlayer from './cast-player/cast-player-component';
+import WebPlayer from './web-player/web-player';
+import CastPlayer from './cast-player/cast-player';
 
 const VideoPlayer = ({ isChromecast }) => {
   return (

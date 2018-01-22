@@ -1,7 +1,18 @@
 import React from 'react';
+import styled from 'styled-components';
 import FontAwesomeIcon from '@fortawesome/react-fontawesome';
 
-import { Container } from './control-buttons-styles';
+const Container = styled.div`
+  width: ${({ width }) => width ? width : '42px'};
+  height: ${({ height }) => height ? height : '24px'};
+  font-size: ${({ size }) => size ? size : '24px'};
+  color: ${({ color }) => color ? color.normal : 'rgba(255,255,255,1)'};
+  z-index: 50;
+
+  &:hover {
+    color: ${({ color }) => color ? color.hover : 'rgba(228, 75, 54, 0.9)'};
+  }
+`;
 
 const ControlButton = ({ children, onClick, className, icon, color, width, height, size }) => {
   return (

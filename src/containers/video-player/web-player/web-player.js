@@ -1,18 +1,23 @@
 import React, { Component } from 'react';
+import styled from 'styled-components';
 import Hls from 'hls.js';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
 import Loader from 'components/loader/loader-component';
-import VideoControls from 'containers/video-player/video-controls/video-controls-component';
-import TextTrack from 'containers/video-player/text-track/text-track-component';
+import VideoControls from 'containers/video-player/video-controls/video-controls';
+import TextTrack from 'containers/video-player/text-track/text-track';
 
 import { toggleLoading, togglePlayer } from 'stores/app';
 import { updateStreamInfo, updateStreamTime, rejectStream, resetStream } from 'stores/stream';
 import { toggleFileBrowserDialog } from 'stores/file-browser';
 import { resetTextTrack } from 'stores/text-track';
 
-import { VideoContainer } from './web-player-styles';
+/* Styled Components */
+const VideoContainer = styled.div`
+  z-index: 100;
+  background: #000;
+`;
 
 class WebPlayer extends Component {
   

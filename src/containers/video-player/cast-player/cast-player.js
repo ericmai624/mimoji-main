@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import styled from 'styled-components';
 import { timer } from 'd3-timer';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -9,9 +10,11 @@ import { toggleFileBrowserDialog } from 'stores/file-browser';
 import { resetTextTrack } from 'stores/text-track';
 
 import Loader from 'components/loader/loader-component';
-import VideoControls from 'containers/video-player/video-controls/video-controls-component';
+import VideoControls from 'containers/video-player/video-controls/video-controls';
 
-import { Container } from './cast-player-styles';
+const Container = styled.div`
+  z-index: 98;
+`;
 
 class CastPlayer extends Component {
   
