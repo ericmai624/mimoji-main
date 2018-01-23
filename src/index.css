@@ -30,14 +30,6 @@ body {
   padding: 0;
 }
 
-#app {
-  position: fixed;
-  left: 0;
-  top: 0;
-  right: 0;
-  bottom: 0;
-}
-
 .bg {
   background-image: url(/assets/img/1F425134613.jpg);
   background-repeat: no-repeat;
