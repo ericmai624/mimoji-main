@@ -27,7 +27,7 @@ const Entry = styled.li`
   transition: all 0.25s ease-in-out;
 
   &:hover {
-    background: linear-gradient(135deg, rgba(246,120,97,0.8), 60%, rgba(247,247,247,0.8));
+    background: linear-gradient(135deg, rgba(246,120,97,0.8), 60%, rgba(247,247,247,0.4));
     color: rgb(255,255,255);
   }
 `;
@@ -47,12 +47,12 @@ const Span = styled.span`
 
 const FileBrowserListEntry = ({ content, isPending, onDoubleClickDirectory, onDoubleClickFile, navigateUpDir }) => {
   return (
-    <Container className='flex relative'>
+    <Container className='flex'>
       <Loader
         className='flex-center absolute'
         size={36}
         color={'rgba(255,255,255,0.94)'}
-        style={{ display: true ? 'flex' : 'none' }}
+        style={{ display: isPending ? 'flex' : 'none' }}
       />
       <List className='no-list-style' isVisible={!isPending}>
         <Entry className='flex pointer no-select' onDoubleClick={navigateUpDir}>

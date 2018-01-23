@@ -18,6 +18,27 @@ const subExtSet = new Set(['.srt', '.vtt']);
 
 const videoExtSet = new Set(videoExts);
 
+const sortByType = arr => {
+  arr.sort((a, b) => {
+    if (a.type === 'directory' && b.type !== 'directory') {
+      return -1;
+    } else if (a.type !== 'directory' && b.type === 'directory') {
+      return 1;
+    } else if (a.type === 'directory' && b.type === 'directory') {
+      return a.name.localeCompare(b.name, { numeric: true });
+    } else {
+      let extA = path.extname(a.filePath);
+      let extB = path.extname(b.filePath);
+      if (extA === extB) {
+        return a.name.localeCompare(b.name, { numeric: true });
+      }
+      return extA.localeCompare(extB);
+    }
+  });
+
+  return arr;
+};
+
 const arrangeContent = (input, dir) => {
   let content = [];
   if (!input || !input.length) return content;
@@ -41,22 +62,7 @@ const arrangeContent = (input, dir) => {
     }
   });
 
-  return content.sort((a, b) => {
-    if (a.type === 'directory' && b.type !== 'directory') {
-      return -1;
-    } else if (a.type !== 'directory' && b.type === 'directory') {
-      return 1;
-    } else if (a.type === 'directory' && b.type === 'directory') {
-      return a.name.localeCompare(b.name, { numeric: true });
-    } else {
-      let extA = path.extname(a.filePath);
-      let extB = path.extname(b.filePath);
-      if (extA === extB) {
-        return a.name.localeCompare(b.name, { numeric: true });
-      }
-      return extA.localeCompare(extB);
-    }
-  });
+  return sortByType(content);
 };
 
 const getHomedirWin32 = (cb) => {
