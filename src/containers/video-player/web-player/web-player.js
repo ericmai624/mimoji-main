@@ -4,7 +4,7 @@ import Hls from 'hls.js';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
-import Loader from 'components/loader/loader-component';
+import Loader from 'components/loader/loader';
 import VideoControls from 'containers/video-player/video-controls/video-controls';
 import TextTrack from 'containers/video-player/text-track/text-track';
 

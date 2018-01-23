@@ -2,10 +2,9 @@ import React from 'react';
 import styled from 'styled-components';
 import FontAwesomeIcon from '@fortawesome/react-fontawesome';
 
-import Loader from 'components/loader/loader-component';
+import Loader from 'components/loader/loader';
 
 const iconSize = '24px';
-const lightgray = 'rgba(219, 219, 219, 0.25)';
 
 const Container = styled.div`
   overflow: auto;
@@ -22,13 +21,14 @@ const List = styled.ul`
 const Entry = styled.li`
   padding: 16px;
   align-items: center;
-  border-bottom: 1px solid rgba(155, 155, 155, 0.8);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.25);
   box-sizing: border-box;
-  transition: all 0.15s ease-in-out;
+  background: transparent;
+  transition: all 0.25s ease-in-out;
 
   &:hover {
-    background: ${lightgray};
-    color: rgb(196, 70, 54);
+    background: linear-gradient(135deg, rgba(246,120,97,0.8), 60%, rgba(247,247,247,0.8));
+    color: rgb(255,255,255);
   }
 `;
 
@@ -51,8 +51,8 @@ const FileBrowserListEntry = ({ content, isPending, onDoubleClickDirectory, onDo
       <Loader
         className='flex-center absolute'
         size={36}
-        color={'black'}
-        style={{ display: isPending ? 'flex' : 'none' }}
+        color={'rgba(255,255,255,0.94)'}
+        style={{ display: true ? 'flex' : 'none' }}
       />
       <List className='no-list-style' isVisible={!isPending}>
         <Entry className='flex pointer no-select' onDoubleClick={navigateUpDir}>

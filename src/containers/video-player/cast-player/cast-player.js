@@ -9,7 +9,7 @@ import { updateStreamInfo, updateStreamTime, rejectStream, resetStream } from 's
 import { toggleFileBrowserDialog } from 'stores/file-browser';
 import { resetTextTrack } from 'stores/text-track';
 
-import Loader from 'components/loader/loader-component';
+import Loader from 'components/loader/loader';
 import VideoControls from 'containers/video-player/video-controls/video-controls';
 
 const Container = styled.div`

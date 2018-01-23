@@ -9,8 +9,7 @@ import ControlButton from '../control-buttons/control-buttons';
 
 momentDurationSetup(moment);
 
-const ctrlBg = 'rgba(65, 68, 86, 0.8)';
-const orange = 'rgba(228, 75, 54, 0.9)';
+const ctrlBg = 'rgba(65, 68, 86, .8)';
 const borderRadius = 6;
 const progressHeight = 12;
 
@@ -26,7 +25,7 @@ const Container = styled.div`
   bottom: 5%;
   box-sizing: border-box;
   transition: opacity 0.25s ease-in-out;
-  box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 0 4px 2px rgba(0, 0, 0, 0.2);
   z-index: 101;
 `;
 
@@ -70,11 +69,11 @@ const Progress = styled.progress`
   height: ${progressHeight}px;
   border: none;
   border-radius: ${borderRadius}px;
-  color: ${orange};
+  color: ${({ theme }) => theme.orange};
   -webkit-appearance: none;
 
   &::-webkit-progress-value {
-    background: ${orange};
+    background: ${({ theme }) => theme.orange};
     border: none;
     border-radius: ${borderRadius}px;
   }
@@ -84,7 +83,7 @@ const Progress = styled.progress`
     border-radius: ${borderRadius}px;
   }
   &::-moz-progress-bar {
-    background: ${orange};
+    background: ${({ theme }) => theme.orange};
     border: none;
     border-radius: ${borderRadius}px;
   }

@@ -10,7 +10,7 @@ const Container = styled.div`
   z-index: 50;
 
   &:hover {
-    color: ${({ color }) => color ? color.hover : 'rgba(228, 75, 54, 0.9)'};
+    color: ${({ color, theme }) => color ? color.hover : theme.orange};
   }
 `;
 

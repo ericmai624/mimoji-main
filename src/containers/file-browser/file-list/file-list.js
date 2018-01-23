@@ -4,45 +4,42 @@ import styled from 'styled-components';
 import FileBrowserListEntry from './file-list-entry/file-list-entry';
 import FileBrowserButton from '../button/button';
 
-const fontColor = 'rgb(0, 0, 0)';
-const bg = 'rgba(255, 255, 255, 0.25)';
+const fontColor = 'rgba(255,255,255,0.8)';
 const boxShadow = '0 0 15px 5px rgba(0, 0, 0, 0.12)';
 
 const Container = styled.div`
   display: ${({ isVisible }) => isVisible ? 'flex' : 'none'};
-  width: 700px;
-  height: 80%;
-  max-height: 600px;
+  width: 50%;
+  height: 66.67%;
   flex-direction: row;
   background: ${({ isPlayerEnabled }) => isPlayerEnabled ? 'rgba(255, 255, 255, 1)' : 'inherit'};
   overflow: hidden;
-  border-radius: 5px;
+  border-radius: 10px;
   box-shadow: ${boxShadow};
 
   &:before {
     content: '';
-    width: 750px;
-    height: calc(100% + 50px);
     background: inherit;
     position: absolute;
-    left: -25px;
-    right: 0;
-    top: -25px;
-    bottom: 0;
-    box-shadow: inset 0 0 0 700px rgba(255,255,255,0.3);
-    filter: blur(15px);
+    width: calc(100% + 180px);
+    height: calc(100% + 180px);
+    /* Double blur length to cover full background */
+    left: -90px;
+    top: -90px;
+    box-shadow: inset 0 0 200px 25px rgba(255,255,255,0.35);
+    filter: blur(45px);
   }
 `;
 
 const Main = styled.div`
-  width: 700px;
+  width: 100%;
   height: 100%;
   padding: 25px;
-  left: calc(50% - 350px);
+  left: 50%;
   top: 50%;
-  transform: translateY(-50%);
+  transform: translate(-50%, -50%);
   color: ${fontColor};
-  background-color: ${bg};
+  background-color: rgba(65,68,86,.25);
   box-sizing: border-box;
   box-shadow: ${boxShadow};
   flex-direction: column;
@@ -51,6 +48,8 @@ const Main = styled.div`
 const Nav = styled.div`
   flex-direction: row;
   flex-shrink: 0;
+  height: 40px;
+  padding: 2px 0;
 `;
 
 const Directory = styled.div`
@@ -66,8 +65,6 @@ const Directory = styled.div`
     white-space: unset;
   }
 `;
-
-
 
 const FileBrowserList = ({ 
   isPlayerEnabled, fileBrowser, isVisible, onDoubleClickDirectory, onDoubleClickFile, toggleFileBrowserDialog, navigateUpDir }) => (

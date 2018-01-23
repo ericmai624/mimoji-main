@@ -3,7 +3,7 @@ import io from 'socket.io-client';
 import fontawesome from '@fortawesome/fontawesome';
 import solid from '@fortawesome/fontawesome-free-solid';
 import regular from '@fortawesome/fontawesome-free-regular';
-import styled from 'styled-components';
+import styled, { ThemeProvider } from 'styled-components';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 
@@ -17,6 +17,10 @@ import VideoPlayer from 'containers/video-player/video-player';
 
 fontawesome.library.add(solid, regular);
 
+const theme = {
+  orange: 'rgba(228, 75, 54, 0.9)'
+};
+
 const Wrapper = styled.div`
   filter: ${({ isBlur }) => isBlur ? 'blur(15px) brightness(60%)' : 'none'};
   transition: filter 0.4s ease-in-out;
@@ -26,7 +30,7 @@ const Wrapper = styled.div`
 const Label = styled.label`
   display: ${({ isVisible }) => isVisible ? 'block' : 'none'};
   font-size: 24px;
-  color: rgba(228, 228, 228, 1);
+  color: rgba(228, 228, 228, 0.94);
   background-color: rgba(23, 69, 124, 0.75);
   outline: none;
   border: none;
@@ -37,6 +41,7 @@ const Label = styled.label`
   transition: all 0.25s ease-in-out;
 
   &:hover {
+    color: rgba(255,255,255,1);
     box-shadow: 0 0 6px 3px rgba(0, 0, 0, 0.25);
     background-color: rgba(23, 69, 124, 0.85);
   }
@@ -107,26 +112,27 @@ class App extends Component {
     const { app, toggleFileBrowserDialog } = this.props;
     
     return (
-      <Fragment>
-        <Wrapper
-          id='wrapper'
-          className='flex flex-center absolute full-size bg'
-          isBlur={app.isInitializing}
-          innerRef={el => this.wrapper = el}
-        >
-          {app.isPlayerEnabled ?
-            (<VideoPlayer isChromecast={app.isChromecast} />) : null}
-          <Label
-            className='pointer no-select'
-            onClick={toggleFileBrowserDialog}
-            isVisible={!app.isPlayerEnabled}
+      <ThemeProvider theme={theme}>
+        <Fragment>
+          <Wrapper
+            id='wrapper'
+            className='flex flex-center absolute full-size bg'
+            isBlur={app.isInitializing}
+            innerRef={el => this.wrapper = el}
           >
-            Choose a Video
-          </Label>
-          <FileBrowser />
-        </Wrapper>
-        <LoadingScreen isInitializing={app.isInitializing}/>
-      </Fragment>
+            {app.isPlayerEnabled ? (<VideoPlayer isChromecast={app.isChromecast} />) : null}
+            <Label
+              className='pointer no-select'
+              onClick={toggleFileBrowserDialog}
+              isVisible={!app.isPlayerEnabled}
+            >
+              Choose a Video
+            </Label>
+            <FileBrowser />
+          </Wrapper>
+          <LoadingScreen isInitializing={app.isInitializing}/>
+        </Fragment>
+      </ThemeProvider>
     );
   }
 }

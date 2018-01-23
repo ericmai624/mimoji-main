@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 
-import Loader from 'components/loader/loader-component';
+import Loader from 'components/loader/loader';
 
 const Container = styled.div`
   display: ${({ isVisible }) => isVisible ? 'flex' : 'none'};
