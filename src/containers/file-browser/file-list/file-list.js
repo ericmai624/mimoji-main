@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Component } from 'react';
 import styled from 'styled-components';
 
 import FileBrowserListEntry from './file-list-entry/file-list-entry';
@@ -47,42 +47,113 @@ const Nav = styled.div`
   flex-direction: row;
 `;
 
-const Directory = styled.div`
-  border: 1px solid ${fontColor};
-  padding: 8px 16px;
-  width: 60%;
-  height: auto;
-  min-height: 34.5px;
+const SearchWrapper = styled.div`
+  border: 1px solid ${({ isSearchFocused, theme }) => isSearchFocused ? theme.orange : fontColor};
+  border-radius: 5px;
+  padding: 8px 8px 8px 16px;
+  width: calc(100% - 88px);
+  height: 36px;
   box-sizing: border-box;
+  color: rgba(255, 255, 255, 0.5);
+  transition: all 0.25s ease-in-out;
 
   &:hover {
-    word-wrap: break-word;
-    white-space: unset;
+    cursor: text;
   }
 `;
 
-const FileBrowserList = ({ 
-  isPlayerEnabled, fileBrowser, isVisible, onDoubleClickDirectory, onDoubleClickFile, toggleFileBrowserDialog, navigateUpDir }) => (
-  <Container className='flex-center relative' isVisible={isVisible} isPlayerEnabled={isPlayerEnabled}>
-    <Main className='flex no-select absolute'>
-      <Nav className='flex flex-align-center flex-space-between'>
-        <Directory className='ellipsis'>
-          <span>{fileBrowser.directory}</span>
-        </Directory>
-        <FileBrowserButton onClick={navigateUpDir} icon={['fas', 'chevron-up']} />
-        <FileBrowserButton icon={['fas', 'sort-amount-down']} />
-        <FileBrowserButton icon={['fas', 'filter']} />
-        <FileBrowserButton onClick={toggleFileBrowserDialog} icon={['fas', 'times']} />
-      </Nav>
-      <FileBrowserListEntry
-        content={fileBrowser.content}
-        isPending={fileBrowser.isPending}
-        onDoubleClickDirectory={onDoubleClickDirectory} 
-        onDoubleClickFile={onDoubleClickFile}
-        navigateUpDir={navigateUpDir}
-      />
-    </Main>
-  </Container>
-);
+const Search = styled.input.attrs({
+  name: 'search',
+  autocomplete: 'off',
+  value: ({ userInput }) => userInput
+})`
+  border: none;
+  outline: none;
+  width: calc(100% - 36px);
+  font-size: 16px;
+
+  &::placeholder {
+    color: ${fontColor};
+  }
+`;
+
+class FileBrowserList extends Component {
+
+  constructor(props) {
+    super(props);
+    
+    this.state = {
+      isSearchFocused: false
+    };
+
+    this.onSearchFocus = this.onSearchFocus.bind(this);
+    this.onSearchBlur = this.onSearchBlur.bind(this);
+  }
+
+  onSearchFocus(e) {
+    e.preventDefault();
+    this.setState({ isSearchFocused: true }, this.search.focus.bind(this.search));
+  }
+
+  onSearchBlur(e) {
+    e.preventDefault();
+    this.setState({ isSearchFocused: false }, this.search.blur.bind(this.search));
+  }
+  
+  render() {
+    const { 
+      isPlayerEnabled,
+      fileBrowser,
+      isVisible,
+      userInput,
+      onSearchChange,
+      onDoubleClickDirectory,
+      onDoubleClickFile,
+      toggleFileBrowserDialog,
+      navigateUpDir
+    } = this.props;
+    const { isSearchFocused } = this.state;
+
+    return (
+      <Container className='flex-center relative' isVisible={isVisible} isPlayerEnabled={isPlayerEnabled}>
+        <Main className='flex no-select absolute'>
+          <Nav className='flex flex-align-center flex-space-between'>
+            <SearchWrapper className='flex flex-center' 
+              onMouseOver={this.onSearchFocus}
+              onMouseLeave={this.onSearchBlur}
+              isSearchFocused={isSearchFocused}
+            >
+              <Search
+                className='ellipsis no-background white-font'
+                focus={isSearchFocused}
+                placeholder={isSearchFocused ? '' : fileBrowser.directory}
+                onChange={onSearchChange}
+                userInput={userInput}
+                innerRef={el => this.search = el}
+              >
+              </Search>
+              <FileBrowserButton
+                icon={['fas', 'search']} 
+                background={{ normal: 'transparent', hover: 'transparent' }}
+                color={{ normal: isSearchFocused ? 'rgba(255,255,255,0.94)' : 'inherit' }}
+                size={'22px'}
+                style={{ cursor: 'text' }}
+              />
+            </SearchWrapper>
+            <FileBrowserButton onClick={navigateUpDir} icon={['fas', 'chevron-up']} />
+            <FileBrowserButton onClick={toggleFileBrowserDialog} icon={['fas', 'times']} />
+          </Nav>
+          <FileBrowserListEntry
+            content={fileBrowser.displayedContent}
+            isPending={fileBrowser.isPending}
+            onDoubleClickDirectory={onDoubleClickDirectory} 
+            onDoubleClickFile={onDoubleClickFile}
+            navigateUpDir={navigateUpDir}
+          />
+        </Main>
+      </Container>
+    );
+  }
+}
 
 export default FileBrowserList;
