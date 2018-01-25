@@ -36,7 +36,7 @@ const Main = styled.div`
   height: 100%;
   padding: 25px;
   color: ${fontColor};
-  background-color: rgba(65,68,86,.25);
+  background-color: ${({ theme }) => theme.bgColor.replace(/\d*\.*\d+\)$/, '0.25)')};
   box-sizing: border-box;
   box-shadow: ${boxShadow};
   flex-direction: column;

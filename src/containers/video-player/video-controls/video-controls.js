@@ -9,7 +9,6 @@ import ControlButton from '../control-buttons/control-buttons';
 
 momentDurationSetup(moment);
 
-const ctrlBg = 'rgba(65, 68, 86, .8)';
 const borderRadius = 6;
 const progressHeight = 12;
 
@@ -19,7 +18,7 @@ const Container = styled.div`
   padding: 0 45px;
   border: none;
   border-radius: 10px;
-  background: ${ctrlBg};
+  background: ${({ theme }) => theme.bgColor};
   opacity: ${({ isControlsVisible }) => isControlsVisible ? 1 : 0};
   left: calc(50% - 400px);
   bottom: 5%;
@@ -110,7 +109,7 @@ const VolumeRangeWrapper = styled.div`
   visibility: ${({ showVolumeRange }) => showVolumeRange ? 'visible' : 'hidden'};
   transform: rotate(-90deg) translate(115px, -32px);
   transform-origin: 50% 50%;
-  background: ${ctrlBg};
+  background: ${({ theme }) => theme.bgColor};
   width: 105px;
   height: 40px;
   border-radius: 5px;

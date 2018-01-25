@@ -18,7 +18,8 @@ import VideoPlayer from 'containers/video-player/video-player';
 fontawesome.library.add(solid, regular);
 
 const theme = {
-  orange: 'rgba(228, 75, 54, 0.9)'
+  orange: 'rgba(228, 75, 54, 0.9)',
+  bgColor: 'rgba(65, 68, 86, 0.8)'
 };
 
 const Wrapper = styled.div`

@@ -4,7 +4,6 @@ import FontAwesomeIcon from '@fortawesome/react-fontawesome';
 
 const containerWidth = 300;
 const containerHeight = 300;
-const ctrlBg = 'rgba(65, 68, 86, 0.8)';
 const boxShadow = '0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24)';
 const padding = 20;
 const orange = 'rgba(228, 75, 54, 1)';
@@ -17,7 +16,7 @@ const ContainerR = styled.div`
   width: ${containerWidth * 2 + 70}px;
   height: ${containerHeight - 50}px;
   padding: ${padding}px ${padding * 2}px;
-  background: ${ctrlBg};
+  background: ${({ theme }) => theme.bgColor};
   box-shadow: ${boxShadow};
   z-index: 101;
   box-sizing: border-box;
