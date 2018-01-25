@@ -64,7 +64,7 @@ const SearchWrapper = styled.div`
 
 const Search = styled.input.attrs({
   name: 'search',
-  autocomplete: 'off',
+  autoComplete: 'off',
   value: ({ userInput }) => userInput
 })`
   border: none;
