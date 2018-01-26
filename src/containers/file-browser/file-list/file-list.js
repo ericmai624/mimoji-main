@@ -7,17 +7,20 @@ import FileBrowserButton from '../button/button';
 const fontColor = 'rgba(255,255,255,0.8)';
 const boxShadow = '0 0 15px 5px rgba(0, 0, 0, 0.12)';
 
-const Container = styled.div`
-  display: ${({ isVisible }) => isVisible ? 'flex' : 'none'};
+const Container = styled.div.attrs({
+  hidden: ({ isVisible }) => !isVisible
+})`
+  ${'' /* display: ${({ isVisible }) => isVisible ? 'flex' : 'none'}; */}
+  display: flex;
   width: 50%;
   height: 66.67%;
   flex-direction: row;
-  background: ${({ isPlayerEnabled }) => isPlayerEnabled ? 'rgba(255, 255, 255, 1)' : 'inherit'};
+  background: inherit;
   overflow: hidden;
   border-radius: 10px;
   box-shadow: ${boxShadow};
 
-  &:before {
+  &::before {
     content: '';
     background: inherit;
     position: absolute;
@@ -36,7 +39,8 @@ const Main = styled.div`
   height: 100%;
   padding: 25px;
   color: ${fontColor};
-  background-color: ${({ theme }) => theme.bgColor.replace(/\d*\.*\d+\)$/, '0.25)')};
+  background-color: ${({ theme, isPlayerEnabled }) =>
+    theme.bgColor.replace(/\d*\.*\d+\)$/, isPlayerEnabled ? '1)' : '0.25)')};
   box-sizing: border-box;
   box-shadow: ${boxShadow};
   flex-direction: column;
@@ -115,8 +119,8 @@ class FileBrowserList extends Component {
     const { isSearchFocused } = this.state;
 
     return (
-      <Container className='flex-center relative' isVisible={isVisible} isPlayerEnabled={isPlayerEnabled}>
-        <Main className='flex no-select absolute'>
+      <Container className='flex-center relative' isVisible={isVisible} >
+        <Main className='flex no-select absolute' isPlayerEnabled={isPlayerEnabled}>
           <Nav className='flex flex-align-center flex-space-between'>
             <SearchWrapper className='flex flex-center' 
               onMouseOver={this.onSearchFocus}

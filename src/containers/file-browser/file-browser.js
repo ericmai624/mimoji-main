@@ -13,7 +13,8 @@ import CastOptions from './cast-options/cast-options';
 
 const Container = styled.div`
   display: ${({ isVisible }) => isVisible ? 'flex' : 'none'};
-  background: ${({ isPlayerEnabled }) => isPlayerEnabled ? 'rgba(0,0,0,.25)' : 'inherit'};
+  background: ${({ isPlayerEnabled }) => 
+    isPlayerEnabled ? 'rgba(0,0,0,0.25)' : 'inherit'};
   z-index: ${({ isPlayerEnabled }) => isPlayerEnabled ? 2147483647 : 5};
 `;
 
@@ -51,6 +52,7 @@ class FileBrowser extends Component {
 
     /* Start requesting directory content */
     this.getContent();
+    console.log('mounted file browser');
   }
 
   getContent(dir, nav) {

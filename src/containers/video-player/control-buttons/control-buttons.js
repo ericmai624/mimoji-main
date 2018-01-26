@@ -3,9 +3,9 @@ import styled from 'styled-components';
 import FontAwesomeIcon from '@fortawesome/react-fontawesome';
 
 const Container = styled.div`
-  width: ${({ width }) => width ? width : '42px'};
-  height: ${({ height }) => height ? height : '24px'};
-  font-size: ${({ size }) => size ? size : '24px'};
+  width: ${({ width }) => width || '42px'};
+  height: ${({ height }) => height || '24px'};
+  font-size: ${({ size }) => size || '24px'};
   color: ${({ color }) => color ? color.normal : 'rgba(255,255,255,1)'};
   z-index: 50;
 

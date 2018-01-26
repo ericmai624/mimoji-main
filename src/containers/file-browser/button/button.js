@@ -5,9 +5,9 @@ import FontAwesomeIcon from '@fortawesome/react-fontawesome';
 const lightgray = 'rgba(219, 219, 219, 0.5)';
 
 const Container = styled.div`
-  width: ${({ w }) => w ? w : '36px'};
-  height: ${({ h }) => h ? h : '36px'};
-  font-size: ${({ s }) => s ? s : '24px'};
+  width: ${({ w }) => w || '36px'};
+  height: ${({ h }) => h || '36px'};
+  font-size: ${({ s }) => s || '24px'};
   color: ${({ c }) => c ? c.normal : 'white'};
   background: ${({ bg }) => bg ? bg.normal : 'transparent'};
 

@@ -24,7 +24,7 @@ const Entry = styled.li`
   border-bottom: 1px solid rgba(255, 255, 255, 0.25);
   box-sizing: border-box;
   background: transparent;
-  transition: all 0.25s ease-in-out;
+  transition: color 0.25s ease-in-out;
 
   &:hover {
     background: linear-gradient(135deg, rgba(246,120,97,0.8), 60%, rgba(247,247,247,0.4));

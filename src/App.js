@@ -121,7 +121,7 @@ class App extends Component {
             isBlur={app.isInitializing}
             innerRef={el => this.wrapper = el}
           >
-            {app.isPlayerEnabled ? (<VideoPlayer isChromecast={app.isChromecast} />) : null}
+            <FileBrowser />
             <Label
               className='pointer no-select'
               onClick={toggleFileBrowserDialog}
@@ -129,7 +129,7 @@ class App extends Component {
             >
               Choose a Video
             </Label>
-            <FileBrowser />
+            {app.isPlayerEnabled ? (<VideoPlayer isChromecast={app.isChromecast} />) : null}
           </Wrapper>
           <LoadingScreen isInitializing={app.isInitializing}/>
         </Fragment>

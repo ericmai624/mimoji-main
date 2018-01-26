@@ -2,11 +2,12 @@ import React, { Component, Fragment } from 'react';
 import styled from 'styled-components';
 import FontAwesomeIcon from '@fortawesome/react-fontawesome';
 
+import SubtitleOffset from './subtitle-offset/subtitle-offset';
+
 const containerWidth = 300;
 const containerHeight = 300;
 const boxShadow = '0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24)';
 const padding = 20;
-const orange = 'rgba(228, 75, 54, 1)';
 
 const ContainerR = styled.div`
   left: 50%;
@@ -46,6 +47,7 @@ const Preference = styled.ul`
 const Option = styled.li`
   width: 100%;
   margin: 40px 0;
+  flex-direction: row;
 `;
 
 const StyledDiv = styled.div`
@@ -63,7 +65,7 @@ const StyledSpan = styled.span`
 
   &:hover {
     text-decoration: underline;
-    color: ${orange};
+    color: ${({ theme }) => theme.orange};
     cursor: pointer;
   }
 `;
@@ -84,7 +86,7 @@ const Wrapper = styled.div`
   margin-left: 10px;
 
   &:hover {
-    color: ${orange};
+    color: ${({ theme }) => theme.orange};
     background: rgba(219, 219, 219, 0.2);
   }
 `;
@@ -105,11 +107,11 @@ class SubSettings extends Component {
         </ContainerS>
         <ContainerR className='absolute white-font'>
           <Preference>
-            <Option className='ellipsis'>
+            <Option className='flex ellipsis'>
               <span>Encoding: Auto</span>
             </Option>
-            <Option className='ellipsis'>
-              <span>Offset: 0</span>
+            <Option className='flex ellipsis'>
+              <SubtitleOffset />
             </Option>
           </Preference>
           <Btns className='flex' onClick={toggleSubSettings}>

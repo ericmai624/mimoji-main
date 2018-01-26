@@ -191,7 +191,7 @@ class VideoControls extends Component {
 
     this.state = { 
       showVolumeRange: false,
-      showSubSettings: false,
+      showSubSettings: true,
       seekTime: 0,
       seekTimePos: 0,
       isSeekTimeVisible: false
@@ -210,7 +210,7 @@ class VideoControls extends Component {
     const { duration } = this.props;
     const { progress } = this;
 
-    const seekTimePos = e.pageX - progress.offsetParent.offsetLeft - progress.offsetLeft + 1;
+    const seekTimePos = e.pageX - progress.getBoundingClientRect().left;
     const seekTime = seekTimePos / progress.clientWidth * duration;
     this.setState({ seekTime, seekTimePos, isSeekTimeVisible: true });
   }
