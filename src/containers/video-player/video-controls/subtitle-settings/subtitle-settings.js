@@ -1,6 +1,11 @@
 import React, { Component, Fragment } from 'react';
+import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import FontAwesomeIcon from '@fortawesome/react-fontawesome';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+
+import { toggleFileBrowserDialog } from 'stores/file-browser';
 
 import { Flex } from 'shared/components';
 
@@ -98,20 +103,26 @@ const ButtonWrapper = Flex.extend`
 `;
 
 class SubSettings extends Component {
+
+  static propTypes = {
+    isVisible: PropTypes.bool.isRequired,
+    
+  }
+
   render() {
-    const { toggleFileBrowserDialog, toggleSubSettings } = this.props;
+    const { toggleFileBrowserDialog, toggleSubSettings, isVisible } = this.props;
     const addSub = (<FontAwesomeIcon icon={['fas', 'ellipsis-h']} size='2x'/>);
 
     return (
       <Fragment>
-        <ContainerSquare align='center' justify='center'>
+        <ContainerSquare align='center' justify='center' style={{ display: isVisible ? 'flex' : 'none' }}>
           <StyledDiv>
             <h2>Language</h2>
             <br/>
             <StyledSpan onClick={toggleFileBrowserDialog}>{addSub}</StyledSpan>
           </StyledDiv>
         </ContainerSquare>
-        <ContainerRectangle>
+        <ContainerRectangle style={{ display: isVisible ? 'block' : 'none' }}>
           <Preference>
             <Option>
               <span>Encoding: Auto</span>
@@ -134,4 +145,8 @@ class SubSettings extends Component {
   }
 }
 
-export default SubSettings;
+const mapDispatchToProps = dispatch => ({
+  toggleFileBrowserDialog: bindActionCreators(toggleFileBrowserDialog, dispatch)
+});
+
+export default connect(null, mapDispatchToProps)(SubSettings);

@@ -6,3 +6,16 @@ export const Flex = styled.div`
   align-items: ${({ align }) => align};
   justify-content: ${({ justify }) => justify};
 `;
+
+export const Button = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: ${({ size }) => size};
+  height: ${({ size }) => size};
+  font-size: ${({ size }) => size};
+  background: transparent;
+  border: none;
+  outline: none;
+  cursor: pointer;
+`;

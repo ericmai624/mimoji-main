@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -39,6 +40,11 @@ const Steps = styled.div`
 `;
 
 class SubtitleOffset extends Component {
+
+  static propTypes = {
+    offset: PropTypes.number.isRequired,
+    changeTextTrackOffset: PropTypes.func.isRequired
+  }
 
   constructor(props) {
     super(props);

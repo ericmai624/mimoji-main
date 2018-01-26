@@ -1,16 +1,12 @@
 import React from 'react';
 import FontAwesomeIcon from '@fortawesome/react-fontawesome';
 
-import { Flex } from 'shared/components';
+import { Button } from 'shared/components';
 
-const Container = Flex.extend`
-  width: ${({ width }) => width || '42px'};
-  height: ${({ height }) => height || '24px'};
-  font-size: ${({ size }) => size || '24px'};
+const Container = Button.extend`
+  width: 42px;
   color: ${({ color }) => color ? color.normal : 'rgba(255,255,255,1)'};
   z-index: 50;
-  background: transparent;
-  cursor: pointer;
   transition: color 0.25s ease-in-out;
 
   &:hover {
@@ -18,16 +14,12 @@ const Container = Flex.extend`
   }
 `;
 
-const ControlButton = ({ children, onClick, className, icon, color, width, height, size, style }) => {
+const ControlButton = ({ children, onClick, className, icon, color, style }) => {
   return (
     <Container
       onClick={onClick}
-      align='center'
-      justify='center'
+      size='24px'
       color={color}
-      width={width}
-      height={height}
-      size={size}
       style={style}
       className={className}
     >

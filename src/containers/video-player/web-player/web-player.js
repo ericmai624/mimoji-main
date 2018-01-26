@@ -10,18 +10,17 @@ import TextTrack from 'containers/video-player/text-track/text-track';
 
 import { toggleLoading, togglePlayer } from 'stores/app';
 import { updateStreamInfo, updateStreamTime, rejectStream, resetStream } from 'stores/stream';
-import { toggleFileBrowserDialog } from 'stores/file-browser';
 import { resetTextTrack } from 'stores/text-track';
 
 import { Flex } from 'shared/components';
 
 /* Styled Components */
 const VideoContainer = Flex.extend`
-  position: absolute;
   width: 100%;
   height: 100%;
-  z-index: 100;
+  position: absolute;
   background: #000;
+  z-index: 100;
 `;
 
 class WebPlayer extends Component {
@@ -32,7 +31,6 @@ class WebPlayer extends Component {
     updateStreamInfo: PropTypes.func.isRequired,
     toggleLoading: PropTypes.func.isRequired,
     togglePlayer: PropTypes.func.isRequired,
-    toggleFileBrowserDialog: PropTypes.func.isRequired,
     updateStreamTime: PropTypes.func.isRequired,
     rejectStream: PropTypes.func.isRequired,
     resetStream: PropTypes.func.isRequired,
@@ -259,7 +257,7 @@ class WebPlayer extends Component {
   }
   
   render() {
-    const { app, stream, toggleFileBrowserDialog } = this.props;
+    const { app, stream } = this.props;
     const { isSeeking, isPaused, isMuted, isControlsVisible, volume, currTimeOffset } = this.state;
 
     if (stream.hasError) {
@@ -299,7 +297,6 @@ class WebPlayer extends Component {
         <VideoControls
           seek={this.seek}
           onControlsMouseMove={this.onControlsMouseMove}
-          toggleFileBrowserDialog={toggleFileBrowserDialog}
           playOrPause={this.playOrPause}
           muteOrUnmute={this.muteOrUnmute}
           toggleFullscreen={this.toggleFullscreen}
@@ -327,7 +324,6 @@ const mapDispatchToProps = (dispatch) => ({
   updateStreamInfo: bindActionCreators(updateStreamInfo, dispatch),
   toggleLoading: bindActionCreators(toggleLoading, dispatch),
   togglePlayer: bindActionCreators(togglePlayer, dispatch),
-  toggleFileBrowserDialog: bindActionCreators(toggleFileBrowserDialog, dispatch),
   updateStreamTime: bindActionCreators(updateStreamTime, dispatch),
   rejectStream: bindActionCreators(rejectStream, dispatch),
   resetStream: bindActionCreators(resetStream, dispatch),

@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import { timer } from 'd3-timer';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
 import { toggleLoading, togglePlayer } from 'stores/app';
 import { updateStreamInfo, updateStreamTime, rejectStream, resetStream } from 'stores/stream';
-import { toggleFileBrowserDialog } from 'stores/file-browser';
 import { resetTextTrack } from 'stores/text-track';
 
 import Loader from 'components/loader/loader';
@@ -22,6 +22,20 @@ const Container = Flex.extend`
 `;
 
 class CastPlayer extends Component {
+
+  static propTypes = {
+    updateStreamInfo: PropTypes.func.isRequired, 
+    toggleLoading: PropTypes.func.isRequired, 
+    togglePlayer: PropTypes.func.isRequired,  
+    updateStreamTime: PropTypes.func.isRequired,
+    rejectStream: PropTypes.func.isRequired,  
+    resetStream: PropTypes.func.isRequired, 
+    resetTextTrack: PropTypes.func.isRequired,
+    ip: PropTypes.object.isRequired,
+    app: PropTypes.object.isRequired,
+    stream: PropTypes.object.isRequired,
+    textTrack: PropTypes.object.isRequired
+  }
   
   constructor(props) {
     super(props);
@@ -443,13 +457,17 @@ class CastPlayer extends Component {
   }
 }
 
-const mapStateToProps = state => ({ ip: state.ip, app: state.app, stream: state.stream, textTrack: state.textTrack });
+const mapStateToProps = state => ({
+  ip: state.ip,
+  app: state.app,
+  stream: state.stream,
+  textTrack: state.textTrack
+});
 
 const mapDispatchToProps = (dispatch) => ({ 
   updateStreamInfo: bindActionCreators(updateStreamInfo, dispatch),
   toggleLoading: bindActionCreators(toggleLoading, dispatch),
   togglePlayer: bindActionCreators(togglePlayer, dispatch),
-  toggleFileBrowserDialog: bindActionCreators(toggleFileBrowserDialog, dispatch),
   updateStreamTime: bindActionCreators(updateStreamTime, dispatch),
   rejectStream: bindActionCreators(rejectStream, dispatch),
   resetStream: bindActionCreators(resetStream, dispatch),

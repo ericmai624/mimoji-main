@@ -20,6 +20,7 @@ const Container = Flex.extend`
   position: relative;
 
   &::before {
+    display: block;
     content: '';
     background: inherit;
     position: absolute;
