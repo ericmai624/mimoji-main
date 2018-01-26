@@ -2,16 +2,19 @@ import React from 'react';
 import styled from 'styled-components';
 import FontAwesomeIcon from '@fortawesome/react-fontawesome';
 
+import { Flex } from 'shared/components';
+
 import Loader from 'components/loader/loader';
 
 const iconSize = '24px';
 
-const Container = styled.div`
+const Container = Flex.extend`
   overflow: auto;
   flex-grow: 1;
 `;
 
 const List = styled.ul`
+  list-style: none;
   opacity: ${({ isVisible }) => isVisible ? 1 : 0};
   width: 100%;
   height: 100%;
@@ -19,6 +22,9 @@ const List = styled.ul`
 `;
 
 const Entry = styled.li`
+  display: flex;
+  cursor: pointer;
+  user-select: none;
   padding: 16px;
   align-items: center;
   border-bottom: 1px solid rgba(255, 255, 255, 0.25);
@@ -32,7 +38,7 @@ const Entry = styled.li`
   }
 `;
 
-const Icon = styled.div`
+const IconWrapper = styled.div`
   width: ${iconSize};
   height: ${iconSize};
   font-size: ${iconSize};
@@ -47,18 +53,18 @@ const Span = styled.span`
 
 const FileBrowserListEntry = ({ content, isPending, onDoubleClickDirectory, onDoubleClickFile, navigateUpDir }) => {
   return (
-    <Container className='flex'>
+    <Container>
       <Loader
-        className='flex-center absolute'
+        isVisible={isPending}
         size={36}
         color={'rgba(255,255,255,0.94)'}
-        style={{ display: isPending ? 'flex' : 'none' }}
+        style={{ position: 'absolute', left: 'calc(50% - 18px)', top: 'calc(50% - 18px)' }}
       />
-      <List className='no-list-style' isVisible={!isPending}>
-        <Entry className='flex pointer no-select' onDoubleClick={navigateUpDir}>
-          <Icon>
+      <List isVisible={!isPending}>
+        <Entry onDoubleClick={navigateUpDir}>
+          <IconWrapper>
             <FontAwesomeIcon icon={['fas', 'folder']}/>
-          </Icon>
+          </IconWrapper>
           <Span>..</Span>
         </Entry>
         {content.map((entry, i) => {
@@ -70,13 +76,14 @@ const FileBrowserListEntry = ({ content, isPending, onDoubleClickDirectory, onDo
           else icon = ['fas', 'file'];
 
           return (
-            <Entry className='flex pointer no-select'
+            <Entry
               key={i} 
-              onDoubleClick={type === 'directory' ? (e) => onDoubleClickDirectory(e, entry) : (e) => onDoubleClickFile(e, entry)}
+              onDoubleClick={type === 'directory' ? 
+                (e) => onDoubleClickDirectory(e, entry) : (e) => onDoubleClickFile(e, entry)}
             >
-              <Icon>
+              <IconWrapper>
                 <FontAwesomeIcon icon={icon}/>
-              </Icon>
+              </IconWrapper>
               <Span>{name}/</Span>
             </Entry>
           );

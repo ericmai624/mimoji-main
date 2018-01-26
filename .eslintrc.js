@@ -2,14 +2,7 @@ module.exports = {
   env: {
     'es6': true
   },
-  parserOptions: {
-    ecmaVersion: 2017,
-    sourceType: "module",
-    ecmaFeatures: {
-      'jsx': true,
-      'experimentalObjectRestSpread': true
-    }
-  },
+  parser: 'babel-eslint',
   rules: {
     /* Indentation */
     'no-mixed-spaces-and-tabs': 2,

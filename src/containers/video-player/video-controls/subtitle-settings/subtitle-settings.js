@@ -2,6 +2,8 @@ import React, { Component, Fragment } from 'react';
 import styled from 'styled-components';
 import FontAwesomeIcon from '@fortawesome/react-fontawesome';
 
+import { Flex } from 'shared/components';
+
 import SubtitleOffset from './subtitle-offset/subtitle-offset';
 
 const containerWidth = 300;
@@ -9,7 +11,7 @@ const containerHeight = 300;
 const boxShadow = '0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24)';
 const padding = 20;
 
-const ContainerR = styled.div`
+const ContainerRectangle = styled.div`
   left: 50%;
   top: 50%;
   margin-left: -${containerWidth + 35}px;
@@ -21,9 +23,11 @@ const ContainerR = styled.div`
   box-shadow: ${boxShadow};
   z-index: 101;
   box-sizing: border-box;
+  color: rgb(255,255,255);
+  position: absolute;
 `;
 
-const ContainerS = styled.div`
+const ContainerSquare = Flex.extend`
   right: 50%;
   top: 50%;
   margin-right: -10px;
@@ -36,6 +40,7 @@ const ContainerS = styled.div`
   background: rgb(255, 255, 255);
   box-shadow: ${boxShadow};
   z-index: 102;
+  position: absolute;
 `;
 
 const Preference = styled.ul`
@@ -45,9 +50,9 @@ const Preference = styled.ul`
 `;
 
 const Option = styled.li`
+  display: flex;
   width: 100%;
   margin: 40px 0;
-  flex-direction: row;
 `;
 
 const StyledDiv = styled.div`
@@ -70,7 +75,7 @@ const StyledSpan = styled.span`
   }
 `;
 
-const Btns = styled.div`
+const Buttons = Flex.extend`
   height: 42px;
   float: right;
   position: absolute;
@@ -78,12 +83,13 @@ const Btns = styled.div`
   bottom: 20px;
 `;
 
-const Wrapper = styled.div`
+const ButtonWrapper = Flex.extend`
   font-size: 24px;
   width: 40px;
   height: 40px;
   cursor: pointer;
   margin-left: 10px;
+  transition: color 0.25s ease-in-out;
 
   &:hover {
     color: ${({ theme }) => theme.orange};
@@ -98,31 +104,31 @@ class SubSettings extends Component {
 
     return (
       <Fragment>
-        <ContainerS className='flex flex-center absolute'>
+        <ContainerSquare align='center' justify='center'>
           <StyledDiv>
             <h2>Language</h2>
             <br/>
             <StyledSpan onClick={toggleFileBrowserDialog}>{addSub}</StyledSpan>
           </StyledDiv>
-        </ContainerS>
-        <ContainerR className='absolute white-font'>
+        </ContainerSquare>
+        <ContainerRectangle>
           <Preference>
-            <Option className='flex ellipsis'>
+            <Option>
               <span>Encoding: Auto</span>
             </Option>
-            <Option className='flex ellipsis'>
+            <Option>
               <SubtitleOffset />
             </Option>
           </Preference>
-          <Btns className='flex' onClick={toggleSubSettings}>
-            <Wrapper className='flex flex-center transition-color'>
+          <Buttons onClick={toggleSubSettings}>
+            <ButtonWrapper align='center' justify='center'>
               <FontAwesomeIcon icon={['fas', 'times']}/>
-            </Wrapper>
-            <Wrapper className='flex flex-center transition-color'>
+            </ButtonWrapper>
+            <ButtonWrapper align='center' justify='center'>
               <FontAwesomeIcon icon={['fas', 'check']}/>
-            </Wrapper>
-          </Btns>
-        </ContainerR>
+            </ButtonWrapper>
+          </Buttons>
+        </ContainerRectangle>
       </Fragment>
     );
   }

@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import styled from 'styled-components';
 import { timer } from 'd3-timer';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -12,7 +11,13 @@ import { resetTextTrack } from 'stores/text-track';
 import Loader from 'components/loader/loader';
 import VideoControls from 'containers/video-player/video-controls/video-controls';
 
-const Container = styled.div`
+import { Flex } from 'shared/components';
+
+const Container = Flex.extend`
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  background: transparent;
   z-index: 98;
 `;
 
@@ -406,16 +411,20 @@ class CastPlayer extends Component {
 
     if (stream.hasError) {
       return (
-        <Container className='flex flex-center fixed'>
+        <Container align='center' justify='center'>
           <span style={{color: 'white'}}>Something went wrong...</span>
         </Container>
       );
     }
 
     return (
-      <Container className='flex flex-center absolute full-size no-background'>
-        <Loader className='flex-center absolute' size={42} style={{display: isSeeking ? 'flex' : 'none'}} />
-        <VideoControls 
+      <Container align='center' justify='center'>
+        <Loader
+          isVisible={isSeeking}
+          size={42}
+          style={{ position: 'absolute', left: 'calc(50% - 21px)', top: 'calc(50% - 21px)' }}
+        /> 
+        <VideoControls
           seek={this.seek}
           toggleFileBrowserDialog={toggleFileBrowserDialog}
           playOrPause={this.playOrPause}

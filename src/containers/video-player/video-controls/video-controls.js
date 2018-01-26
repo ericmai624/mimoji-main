@@ -1,4 +1,5 @@
 import React, { Component, Fragment } from 'react';
+import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import FontAwesomeIcon from '@fortawesome/react-fontawesome';
 import moment from 'moment';
@@ -7,12 +8,14 @@ import momentDurationSetup from 'moment-duration-format';
 import SubSettings from './subtitle-settings/subtitle-settings';
 import ControlButton from '../control-buttons/control-buttons';
 
+import { Flex } from 'shared/components';
+
 momentDurationSetup(moment);
 
 const borderRadius = 6;
 const progressHeight = 12;
 
-const Container = styled.div`
+const Container = Flex.extend`
   width: 800px;
   height: 48px;
   padding: 0 45px;
@@ -26,20 +29,25 @@ const Container = styled.div`
   transition: opacity 0.25s ease-in-out;
   box-shadow: 0 0 4px 2px rgba(0, 0, 0, 0.2);
   z-index: 101;
+  position: absolute;
 `;
 
-const ProgressContainer = styled.div`
+const ProgressContainer = Flex.extend`
   width: 320px;
   height: ${progressHeight * 2}px;
   border: none;
   border-radius: ${borderRadius}px;
   line-height: 0;
+  position: relative;
+  background: transparent;
+  cursor: pointer;
 `;
 
-const SeekTime = styled.div`
+const SeekTime = Flex.extend`
   visibility: ${({ isVisible }) => isVisible ? 'visible' : 'hidden'};
   opacity: ${({ isVisible }) => isVisible ? 1 : 0};
   font-size: 12px;
+  color: rgb(255,255,255);
   background: rgba(0, 0, 0, 0.85);
   padding: 5px;
   width: 50px;
@@ -50,6 +58,7 @@ const SeekTime = styled.div`
   z-index: 108;
   box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.26);
   transition: opacity 0.25s ease;
+  position: absolute;
 
   &:before {
     content: '';
@@ -94,17 +103,21 @@ const Bridge = styled.div`
   height: 35px;
   z-index: 1;
   transform: translateY(-50px);
+  position: relative;
+  background: transparent;
 `;
 
 const VolumeContainer = styled.div`
   width: 42px;
   height: 24px;
   font-size: 24px;
+  color: rgb(255,255,255);
   box-sizing: border-box;
   z-index: 50;
+  position: relative;
 `;
 
-const VolumeRangeWrapper = styled.div`
+const VolumeRangeWrapper = Flex.extend`
   opacity: ${({ showVolumeRange }) => showVolumeRange ? 1 : 0};
   visibility: ${({ showVolumeRange }) => showVolumeRange ? 'visible' : 'hidden'};
   transform: rotate(-90deg) translate(115px, -32px);
@@ -116,6 +129,7 @@ const VolumeRangeWrapper = styled.div`
   padding: 0px 5px;
   box-sizing: border-box;
   transition: opacity 0.25s ease-in-out;
+  position: absolute;
 `;
 
 const VolumeRange = styled.input.attrs({
@@ -128,6 +142,7 @@ const VolumeRange = styled.input.attrs({
   height: 6px;
   border-radius: 2px;
   outline: none;
+  cursor: pointer;
   -webkit-appearance: none;
 
   &::-webkit-slider-thumb {
@@ -185,6 +200,23 @@ const VolumeRange = styled.input.attrs({
 `;
 
 class VideoControls extends Component {
+
+  static propTypes = {
+    onControlsMouseMove: PropTypes.func.isRequired,
+    toggleFileBrowserDialog: PropTypes.func.isRequired,
+    playOrPause: PropTypes.func.isRequired,
+    muteOrUnmute: PropTypes.func.isRequired,
+    toggleFullscreen: PropTypes.func.isRequired,
+    setVolume: PropTypes.func.isRequired,
+    stop: PropTypes.func.isRequired,
+    isControlsVisible: PropTypes.bool.isRequired,
+    isPaused: PropTypes.bool.isRequired,
+    isMuted: PropTypes.bool.isRequired,
+    isFullscreenEnabled: PropTypes.bool.isRequired,
+    volume: PropTypes.number.isRequired,
+    currentTime: PropTypes.number.isRequired,
+    duration: PropTypes.number.isRequired
+  }
   
   constructor(props) {
     super(props);
@@ -279,21 +311,24 @@ class VideoControls extends Component {
       <Fragment>
         <Container
           id='video-controls'
-          className='flex flex-align-center flex-space-around absolute'
+          align='center'
+          justify='space-around'
           isControlsVisible={isControlsVisible}
           onMouseMove={onControlsMouseMove}
         >
           <ControlButton onClick={playOrPause} icon={['fas', isPaused ? 'play' : 'pause']}/>
           <ControlButton onClick={stop} icon={['fas', 'stop']}/>
           <ProgressContainer
-            className='flex flex-center relative pointer no-background'
+            align='center'
+            justify='center'
             onClick={this.handleSeek}
             onMouseMove={this.getSeekTime}
             onMouseLeave={this.hideSeekTime}
             innerRef={(el) => this.progress = el}
           >
             <SeekTime 
-              className='flex flex-center absolute white-font'
+              align='center'
+              justify='center'
               style={{left: `${seekTimePos - 30}px`}}
               isVisible={isSeekTimeVisible}
             >
@@ -301,11 +336,10 @@ class VideoControls extends Component {
             </SeekTime>
             <Progress value={currentTime} max={duration} />
           </ProgressContainer>
-          <div className='white-font no-select'>
+          <div style={{ color: '#fff', userSelect: 'none' }}>
             {displayedTime} / {endTime}
           </div>
           <VolumeContainer
-            className='relative white-font'
             onMouseOver={this.onVolumeMouseEnter}
             onMouseLeave={this.onVolumeMouseLeave}
           >
@@ -313,14 +347,14 @@ class VideoControls extends Component {
               {volumeIcon}
             </ControlButton>
             <VolumeRangeWrapper
-              className='flex flex-center absolute'
+              align='center'
+              justify='center'
               onClick={(e) => e.stopPropagation()}
               showVolumeRange={showVolumeRange}
             >
               <VolumeRange
                 value={volume}
                 onChange={setVolume}
-                className='pointer'
                 style={{
                   background: 'linear-gradient(to right, rgba(228, 75, 54, 0.9) 0%,' 
                               + `rgba(228, 75, 54, 0.9) ${volume * 100}%,` 
@@ -330,7 +364,7 @@ class VideoControls extends Component {
               >
               </VolumeRange>
             </VolumeRangeWrapper>
-            <Bridge className='relative no-background' showVolumeRange={showVolumeRange}></Bridge>
+            <Bridge showVolumeRange={showVolumeRange}></Bridge>
           </VolumeContainer>
           <ControlButton onClick={this.toggleSubSettings}>
             <FontAwesomeIcon icon={['fas', 'language']} size='lg'/>

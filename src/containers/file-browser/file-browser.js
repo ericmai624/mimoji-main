@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import styled from 'styled-components';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
@@ -8,10 +7,15 @@ import { toggleFileBrowserDialog, updateContent, togglePending, modifyDisplayedC
 import { setStreamSource, updateStreamInfo } from 'stores/stream';
 import { genTextTrackId } from 'stores/text-track';
 
+import { Flex } from 'shared/components';
+
 import FileBrowserList from './file-list/file-list';
 import CastOptions from './cast-options/cast-options';
 
-const Container = styled.div`
+const Container = Flex.extend`
+  position: absolute;
+  width: 100%;
+  height: 100%;
   display: ${({ isVisible }) => isVisible ? 'flex' : 'none'};
   background: ${({ isPlayerEnabled }) => 
     isPlayerEnabled ? 'rgba(0,0,0,0.25)' : 'inherit'};
@@ -161,7 +165,8 @@ class FileBrowser extends Component {
       return (
         <Container 
           id='file-browser'
-          className='flex flex-center absolute full-size white-font'
+          align='center'
+          justify='center'
           isVisible={fileBrowser.isVisible}
         >
           Something went wrong
@@ -172,7 +177,8 @@ class FileBrowser extends Component {
     return (
       <Container 
         id='file-browser'
-        className='flex-center absolute full-size'
+        align='center'
+        justify='center'
         isVisible={fileBrowser.isVisible}
         isPlayerEnabled={app.isPlayerEnabled}
       >

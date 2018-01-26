@@ -1,19 +1,24 @@
 import React from 'react';
-import styled from 'styled-components';
+
+import { Flex } from 'shared/components';
 
 import Loader from 'components/loader/loader';
 
-const Container = styled.div`
+const Container = Flex.extend`
   display: ${({ isVisible }) => isVisible ? 'flex' : 'none'};
   background: rgba(0, 0, 0, 0.25);
   z-index: 200;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  user-select: none;
 `;
 
 const LoadingScreen = ({ isInitializing }) => {
   return (
     <Container 
-      id='loading-screen' className='flex-center absolute full-size no-select' isVisible={isInitializing}>
-      <Loader size={42} />
+      id='loading-screen' align='center' justify='center' isVisible={isInitializing}>
+      <Loader size={42} isVisible={true} />
     </Container>
   );
 };

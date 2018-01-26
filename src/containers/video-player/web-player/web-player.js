@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import styled from 'styled-components';
+import PropTypes from 'prop-types';
 import Hls from 'hls.js';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -13,13 +13,31 @@ import { updateStreamInfo, updateStreamTime, rejectStream, resetStream } from 's
 import { toggleFileBrowserDialog } from 'stores/file-browser';
 import { resetTextTrack } from 'stores/text-track';
 
+import { Flex } from 'shared/components';
+
 /* Styled Components */
-const VideoContainer = styled.div`
+const VideoContainer = Flex.extend`
+  position: absolute;
+  width: 100%;
+  height: 100%;
   z-index: 100;
   background: #000;
 `;
 
 class WebPlayer extends Component {
+
+  static propTypes = {
+    app: PropTypes.object.isRequired,
+    stream: PropTypes.object.isRequired,
+    updateStreamInfo: PropTypes.func.isRequired,
+    toggleLoading: PropTypes.func.isRequired,
+    togglePlayer: PropTypes.func.isRequired,
+    toggleFileBrowserDialog: PropTypes.func.isRequired,
+    updateStreamTime: PropTypes.func.isRequired,
+    rejectStream: PropTypes.func.isRequired,
+    resetStream: PropTypes.func.isRequired,
+    resetTextTrack: PropTypes.func.isRequired
+  }
   
   constructor(props) {
     super(props);
@@ -246,8 +264,8 @@ class WebPlayer extends Component {
 
     if (stream.hasError) {
       return (
-        <VideoContainer className='flex flex-center absolute'>
-          <span style={{color: 'white'}}>Something went wrong...</span>
+        <VideoContainer align='center' justify='center'>
+          <span style={{color: 'rgb(255,255,255)'}}>Something went wrong...</span>
         </VideoContainer>
       );
     }
@@ -255,10 +273,15 @@ class WebPlayer extends Component {
     return (
       <VideoContainer
         id='video-player'
-        className='flex flex-center fixed full-size'
+        align='center'
+        justify='center'
         onMouseMove={this.onVideoMouseMove}
       >
-        <Loader className='flex-center absolute' size={42} style={{display: isSeeking ? 'flex' : 'none'}} />
+        <Loader
+          isVisible={isSeeking}
+          size={42}
+          style={{ position: 'absolute', left: 'calc(50% - 21px)', top: 'calc(50% - 21px)' }}
+        />
         <video
           autoPlay={true}
           playsInline={true}
@@ -310,5 +333,9 @@ const mapDispatchToProps = (dispatch) => ({
   resetStream: bindActionCreators(resetStream, dispatch),
   resetTextTrack: bindActionCreators(resetTextTrack, dispatch)
 });
+
+WebPlayer.propTypes = {
+
+};
 
 export default connect(mapStateToProps, mapDispatchToProps)(WebPlayer);

@@ -1,6 +1,8 @@
 import React from 'react';
 import styled from 'styled-components';
 
+import { Flex } from 'shared/components';
+
 import FileBrowserButton from '../button/button';
 
 const white = 'rgb(255, 255, 255)';
@@ -9,6 +11,7 @@ const boxShadow = '0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24)'
 const lightgray = 'rgba(219, 219, 219, 0.5)';
 
 const Container = styled.div`
+  position: absolute;
   visibility: ${({ isVisible }) => isVisible ? 'visible' : 'hidden'};
   opacity : ${({ isVisible }) => isVisible ? 1 : 0};
   width: 360px;
@@ -20,23 +23,28 @@ const Container = styled.div`
   transition: opacity 0.2s ease-in-out;
 `;
 
-const Title = styled.div`
+const Title = Flex.extend`
   width: 100%;
   height: 50px;
   padding: 0 10px;
   font-size: 18px;
   box-sizing: border-box;
   color: ${white};
+  user-select: none;
   background: ${({ theme }) => theme.orange};
 `;
 
 const Options = styled.ul`
+  list-style: none;
   width: 100%;
   height: ${height - 50}px;
   box-sizing: border-box;
 `;
 
 const Option = styled.li`
+  display: flex;
+  align-items: center;
+  cursor: pointer;
   width: 100%;
   height: ${(height - 50) / 2}px;
   padding: 0 10px;
@@ -49,20 +57,20 @@ const Option = styled.li`
 `;
 const CastOptions = ({ isVisible, cast, setPlayerType, toggleCastOptions }) => {
   return (
-    <Container className='absolute' isVisible={isVisible}>
-      <Title className='flex flex-align-center flex-space-between no-select'>
+    <Container isVisible={isVisible}>
+      <Title align='center' justify='space-between'>
         <span>Stream Options</span>
         <FileBrowserButton
           onClick={toggleCastOptions}
           icon={['fas', 'times']}
-          color={{ normal: 'rgb(255, 255, 255)', hover: 'rgb(233, 63, 60)'}}
+          color={{ normal: 'rgb(255,255,255)', hover: 'rgb(233,63,60)'}}
         />
       </Title>
-      <Options className='no-list-style'>
-        <Option onClick={e => setPlayerType(true)} className='flex flex-align-center pointer'>
+      <Options>
+        <Option onClick={e => setPlayerType(true)}>
           Play on Chromecast
         </Option>
-        <Option onClick={e => setPlayerType(false)} className='flex flex-align-center pointer'>
+        <Option onClick={e => setPlayerType(false)}>
           Play in the browser
         </Option>
       </Options>

@@ -1,4 +1,5 @@
 import React, { Component, Fragment } from 'react';
+import PropTypes from 'prop-types';
 import io from 'socket.io-client';
 import fontawesome from '@fortawesome/fontawesome';
 import solid from '@fortawesome/fontawesome-free-solid';
@@ -15,6 +16,8 @@ import LoadingScreen from 'components/loading-screen/loading-screen';
 import FileBrowser from 'containers/file-browser/file-browser';
 import VideoPlayer from 'containers/video-player/video-player';
 
+import { Flex } from 'shared/components';
+
 fontawesome.library.add(solid, regular);
 
 const theme = {
@@ -22,10 +25,18 @@ const theme = {
   bgColor: 'rgba(65, 68, 86, 0.8)'
 };
 
-const Wrapper = styled.div`
+const Wrapper = Flex.extend`
+  width: 100%;
+  height: 100%;
   filter: ${({ isBlur }) => isBlur ? 'blur(15px) brightness(60%)' : 'none'};
   transition: filter 0.4s ease-in-out;
   overflow: hidden;
+  position: absolute;
+  background-image: url(/assets/img/1F425134613.jpg);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-attachment: fixed;
+  background-size: cover;
 `;
 
 const Label = styled.label`
@@ -39,6 +50,8 @@ const Label = styled.label`
   box-shadow: 0 0 3px 1px rgba(0, 0, 0, 0.12);
   padding: 0.6em 0.8em;
   margin: 0;
+  cursor: pointer;
+  user-select: none;
   transition: all 0.25s ease-in-out;
 
   &:hover {
@@ -49,6 +62,13 @@ const Label = styled.label`
 `;
 
 class App extends Component {
+
+  static propTypes = {
+    app: PropTypes.object.isRequired,
+    getIpAddress: PropTypes.func.isRequired,
+    toggleFileBrowserDialog: PropTypes.func.isRequired,
+    toggleFullscreen: PropTypes.func.isRequired
+  }
 
   constructor(props) {
     super(props);
@@ -70,10 +90,10 @@ class App extends Component {
     this.createCastButton(); // Create the Google Cast button after script is loaded
     
     // Event listener for fullscreen change
-    document.addEventListener('fullscreenchange', (e) => toggleFullscreen('fullscreen'));
-    document.addEventListener('webkitfullscreenchange', (e) => toggleFullscreen('fullscreen'));
-    document.addEventListener('mozfullscreenchange', (e) => toggleFullscreen('fullscreen'));
-    document.addEventListener('msfullscreenchange', (e) => toggleFullscreen('fullscreen'));
+    document.addEventListener('fullscreenchange', (e) => toggleFullscreen());
+    document.addEventListener('webkitfullscreenchange', (e) => toggleFullscreen());
+    document.addEventListener('mozfullscreenchange', (e) => toggleFullscreen());
+    document.addEventListener('msfullscreenchange', (e) => toggleFullscreen());
   }
 
   initializeCastApi(isAvailable) {
@@ -117,13 +137,13 @@ class App extends Component {
         <Fragment>
           <Wrapper
             id='wrapper'
-            className='flex flex-center absolute full-size bg'
+            align='center'
+            justify='center'
             isBlur={app.isInitializing}
             innerRef={el => this.wrapper = el}
           >
             <FileBrowser />
             <Label
-              className='pointer no-select'
               onClick={toggleFileBrowserDialog}
               isVisible={!app.isPlayerEnabled}
             >

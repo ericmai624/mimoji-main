@@ -4,21 +4,20 @@ import styled from 'styled-components';
 import FileBrowserListEntry from './file-list-entry/file-list-entry';
 import FileBrowserButton from '../button/button';
 
+import { Flex } from 'shared/components';
+
 const fontColor = 'rgba(255,255,255,0.8)';
 const boxShadow = '0 0 15px 5px rgba(0, 0, 0, 0.12)';
 
-const Container = styled.div.attrs({
-  hidden: ({ isVisible }) => !isVisible
-})`
-  ${'' /* display: ${({ isVisible }) => isVisible ? 'flex' : 'none'}; */}
-  display: flex;
+const Container = Flex.extend`
+  display: ${({ isVisible }) => isVisible ? 'flex' : 'none'};
   width: 50%;
   height: 66.67%;
-  flex-direction: row;
   background: inherit;
   overflow: hidden;
   border-radius: 10px;
   box-shadow: ${boxShadow};
+  position: relative;
 
   &::before {
     content: '';
@@ -34,7 +33,7 @@ const Container = styled.div.attrs({
   }
 `;
 
-const Main = styled.div`
+const Main = Flex.extend`
   width: 100%;
   height: 100%;
   padding: 25px;
@@ -43,15 +42,14 @@ const Main = styled.div`
     theme.bgColor.replace(/\d*\.*\d+\)$/, isPlayerEnabled ? '1)' : '0.25)')};
   box-sizing: border-box;
   box-shadow: ${boxShadow};
-  flex-direction: column;
+  position: absolute;
 `;
 
-const Nav = styled.div`
+const Nav = Flex.extend`
   flex-shrink: 0;
-  flex-direction: row;
 `;
 
-const SearchWrapper = styled.div`
+const SearchWrapper = Flex.extend`
   border: 1px solid ${({ isSearchFocused, theme }) => isSearchFocused ? theme.orange : fontColor};
   border-radius: 5px;
   padding: 8px 8px 8px 16px;
@@ -75,6 +73,10 @@ const Search = styled.input.attrs({
   outline: none;
   width: calc(100% - 36px);
   font-size: 16px;
+  color: #fff;
+  background: transparent;
+  overflow: hidden;
+  text-overflow: ellipsis;
 
   &::placeholder {
     color: ${fontColor};
@@ -119,16 +121,17 @@ class FileBrowserList extends Component {
     const { isSearchFocused } = this.state;
 
     return (
-      <Container className='flex-center relative' isVisible={isVisible} >
-        <Main className='flex no-select absolute' isPlayerEnabled={isPlayerEnabled}>
-          <Nav className='flex flex-align-center flex-space-between'>
-            <SearchWrapper className='flex flex-center' 
+      <Container align='center' justify='center' isVisible={isVisible} >
+        <Main column justify='center' isPlayerEnabled={isPlayerEnabled}>
+          <Nav align='center' justify='space-between'>
+            <SearchWrapper 
+              align='center'
+              justify='center'
               onMouseOver={this.onSearchFocus}
               onMouseLeave={this.onSearchBlur}
               isSearchFocused={isSearchFocused}
             >
               <Search
-                className='ellipsis no-background white-font'
                 focus={isSearchFocused}
                 placeholder={isSearchFocused ? '' : fileBrowser.directory}
                 onChange={onSearchChange}
