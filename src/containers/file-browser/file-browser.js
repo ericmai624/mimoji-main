@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
 import { toggleLoading, togglePlayer, streamToGoogleCast } from 'stores/app';
-import { toggleFileBrowserDialog, updateContent, togglePending, modifyDisplayedContent } from 'stores/file-browser';
+import { toggleFileBrowserDialog, updateContent, togglePending } from 'stores/file-browser';
 import { setStreamSource, updateStreamInfo } from 'stores/stream';
 import { genTextTrackId } from 'stores/text-track';
 
@@ -16,10 +16,6 @@ const Container = Flex.extend`
   position: absolute;
   width: 100%;
   height: 100%;
-  display: ${({ isVisible }) => isVisible ? 'flex' : 'none'};
-  background: ${({ isPlayerEnabled }) => 
-    isPlayerEnabled ? 'rgba(0,0,0,0.25)' : 'inherit'};
-  z-index: ${({ isPlayerEnabled }) => isPlayerEnabled ? 2147483647 : 5};
 `;
 
 class FileBrowser extends Component {
@@ -29,7 +25,6 @@ class FileBrowser extends Component {
 
     this.state = {
       isOptionsVisible: false,
-      userInput: ''
     };
     
     this.getContent = this.getContent.bind(this);
@@ -41,9 +36,6 @@ class FileBrowser extends Component {
     this.addTextTrack = this.addTextTrack.bind(this);
     this.navigateUpDir = this.navigateUpDir.bind(this);
     this.toggleCastOptions = this.toggleCastOptions.bind(this);
-    this.onSearchChange = this.onSearchChange.bind(this);
-    this.search = this.search.bind(this);
-    this.resetSearchInput = this.resetSearchInput.bind(this);
   }
   
   componentDidMount() {
@@ -56,7 +48,6 @@ class FileBrowser extends Component {
 
     /* Start requesting directory content */
     this.getContent();
-    console.log('mounted file browser');
   }
 
   getContent(dir, nav) {
@@ -74,7 +65,6 @@ class FileBrowser extends Component {
     So if data is undefined, the request is rejected 
     */
     updateContent(data, data === undefined);
-    this.resetSearchInput();
   }
 
   onDoubleClickDirectory(e, file) {
@@ -139,27 +129,15 @@ class FileBrowser extends Component {
     const { isOptionsVisible } = this.state;
     this.setState({ isOptionsVisible: !isOptionsVisible });
   }
-
-  onSearchChange(e) {
-    this.setState({ userInput: e.target.value }, this.search);
-  }
-
-  search() {
-    const { modifyDisplayedContent, fileBrowser } = this.props;
-    const { userInput } = this.state;
-    const regex = new RegExp(userInput, 'i');
-    const newContent = fileBrowser.content.filter(item => item.name.match(regex));
-    
-    modifyDisplayedContent(newContent);
-  }
-
-  resetSearchInput() {
-    this.setState({ userInput: '' });
-  }
   
   render() {
     const { isOptionsVisible, userInput } = this.state;
     const { app, fileBrowser, toggleFileBrowserDialog } = this.props;
+    const containerStyle = {
+      display: fileBrowser.isVisible ? 'flex' : 'none',
+      background: app.isPlayerEnabled ? 'rgba(0,0,0,0.25)' : 'inherit',
+      zIndex: app.isPlayerEnabled ? 2147483647 : 5
+    };
 
     if (fileBrowser.hasError) {
       return (
@@ -167,7 +145,7 @@ class FileBrowser extends Component {
           id='file-browser'
           align='center'
           justify='center'
-          isVisible={fileBrowser.isVisible}
+          style={containerStyle}
         >
           Something went wrong
         </Container>
@@ -179,8 +157,7 @@ class FileBrowser extends Component {
         id='file-browser'
         align='center'
         justify='center'
-        isVisible={fileBrowser.isVisible}
-        isPlayerEnabled={app.isPlayerEnabled}
+        style={containerStyle}
       >
         <FileBrowserList
           isPlayerEnabled={app.isPlayerEnabled}
@@ -205,15 +182,13 @@ class FileBrowser extends Component {
 
 const mapStateToProps = (state) => ({
   app: state.app,
-  fileBrowser: state.fileBrowser,
-  textTrack: state.textTrack
+  fileBrowser: state.fileBrowser
 });
 
 const mapDispatchToProps = (dispatch) => ({ 
   updateContent: bindActionCreators(updateContent, dispatch),
   togglePending: bindActionCreators(togglePending, dispatch),
   toggleFileBrowserDialog: bindActionCreators(toggleFileBrowserDialog, dispatch),
-  modifyDisplayedContent: bindActionCreators(modifyDisplayedContent, dispatch),
   togglePlayer: bindActionCreators(togglePlayer, dispatch),
   toggleLoading: bindActionCreators(toggleLoading, dispatch),
   streamToGoogleCast: bindActionCreators(streamToGoogleCast, dispatch),
