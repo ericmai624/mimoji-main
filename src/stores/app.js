@@ -10,7 +10,7 @@ export const streamToGoogleCast = (option) => ({ type: 'OUTPUT_OPTION_UPDATED', 
 
 const initState = {
   isInitializing: false,
-  isPlayerEnabled: true,
+  isPlayerEnabled: false,
   isChromecast: false,
   isFullscreenEnabled: false
 };
