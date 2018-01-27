@@ -178,7 +178,7 @@ const loadSubtitle = async (req, res) => {
 
   try {
     let buffer = await fs.readFileAsync(location);
-    if (encoding === 'auto') encoding = jschardet.detect(buffer).encoding;
+    if ((/auto-detect/i).test(encoding)) encoding = jschardet.detect(buffer).encoding;
     let str = iconv.decode(buffer, encoding);
     log(chalk.white('loading subtitle: ', location, encoding));
     res.set({ 'Content-Type': 'text/vtt' }); // set response header

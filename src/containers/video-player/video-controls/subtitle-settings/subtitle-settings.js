@@ -10,6 +10,7 @@ import { toggleFileBrowserDialog } from 'stores/file-browser';
 import { Flex } from 'shared/components';
 
 import SubtitleOffset from './subtitle-offset/subtitle-offset';
+import SubtitleEncoding from './subtitle-encoding/subtitle-encoding';
 
 const containerWidth = 300;
 const containerHeight = 300;
@@ -54,7 +55,7 @@ const Preference = styled.ul`
   float: right;
 `;
 
-const Option = styled.li`
+const Setting = styled.li`
   display: flex;
   width: 100%;
   margin: 40px 0;
@@ -131,13 +132,14 @@ class SubSettings extends Component {
         </ContainerSquare>
         <ContainerRectangle style={{ display: isVisible ? 'block' : 'none' }} onMouseMove={onControlsMouseMove}>
           <Preference>
-            <Option>
-              <span>Encoding: Auto</span>
-            </Option>
-            <Option>
+            <Setting>
+              <span>Encoding:&nbsp;</span>
+              <SubtitleEncoding />
+            </Setting>
+            <Setting>
               <span>Offset&nbsp;<span>(seconds)</span>:&nbsp;</span>
               <SubtitleOffset />
-            </Option>
+            </Setting>
           </Preference>
           <ButtonsContainer onClick={toggleSubSettings}>
             <ButtonWrapper align='center' justify='center'>

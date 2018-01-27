@@ -10,9 +10,11 @@ import { changeTextTrackOffset } from 'stores/text-track';
 import { Flex, Button } from 'shared/components';
  
 const OffsetInputWrapper = Flex.extend`
-  width: 74px;
+  width: 100%;
   height: 20px;
   position: relative;
+  box-sizing: border-box;
+  border-bottom: 1px solid rgba(255,255,255,0.8);
 `;
 
 const Steps = Flex.extend`
@@ -38,8 +40,6 @@ const OffsetInput = styled.input.attrs({
   width: 60px;
   outline: none;
   border: none;
-  border-bottom: 1px solid rgba(255,255,255,0.8);
-  padding: 0 6px;
   color: rgba(255,255,255,0.94);
   background: transparent;
   box-sizing: border-box;
@@ -57,7 +57,7 @@ const Warning = Flex.extend`
   color: #D8000C;
   background: #FFD2D2;
   position: absolute;
-  left: 30px;
+  left: 0;
   transform: translateX(-50%);
   bottom: -40px;
   padding: 10px 10px;
@@ -139,7 +139,7 @@ class SubtitleOffset extends Component {
     const isWarningVisible = input !== '' && isInputNaN;
 
     return (
-      <OffsetInputWrapper align='center'>
+      <OffsetInputWrapper align='center' justify='space-between'>
         <OffsetInput
           placeholder={offset.toFixed(3)}
           value={input}
