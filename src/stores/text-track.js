@@ -34,7 +34,7 @@ const initState = {
   location: '',
   offset: 0,
   label: '',
-  encoding: 'auto',
+  encoding: 'auto-detect',
   isEnabled: false
 };
 

@@ -87,7 +87,7 @@ class CastPlayer extends Component {
   componentDidUpdate(prevProps, prevState) {
     const { textTrack: prev } = prevProps;
     const { textTrack: curr } = this.props;
-    const isSame = prev.id === curr.id;
+    const isSame = prev.id === curr.id && prev.offset === curr.offset && prev.encoding === curr.encoding;
     if (curr.isEnabled && !isSame && this.castSession) {
       console.log(`Text track id is updated from ${prev.id} to ${curr.id}`);
       this.updateTextTrack(this.castSession);

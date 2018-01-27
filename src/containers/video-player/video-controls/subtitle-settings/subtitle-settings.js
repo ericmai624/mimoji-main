@@ -15,16 +15,16 @@ import SubtitleEncoding from './subtitle-encoding/subtitle-encoding';
 const containerWidth = 300;
 const containerHeight = 300;
 const boxShadow = '0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24)';
-const padding = 20;
+const padding = 25;
 
-const ContainerRectangle = styled.div`
+const ContainerRectangle = Flex.extend`
   left: 50%;
   top: 50%;
   margin-left: -${containerWidth + 35}px;
   margin-top: -${(containerHeight - 50) / 2}px;
   width: ${containerWidth * 2 + 70}px;
   height: ${containerHeight - 50}px;
-  padding: ${padding}px ${padding * 2}px;
+  padding: ${padding}px ${padding}px;
   background: ${({ theme }) => theme.bgColor};
   box-shadow: ${boxShadow};
   z-index: 101;
@@ -50,7 +50,7 @@ const ContainerSquare = Flex.extend`
 `;
 
 const Preference = styled.ul`
-  width: ${containerWidth - padding * 2}px;
+  width: ${containerWidth - padding}px;
   list-style: none;
   float: right;
 `;
@@ -58,14 +58,15 @@ const Preference = styled.ul`
 const Setting = styled.li`
   display: flex;
   width: 100%;
+  height: 15px;
   margin: 40px 0;
+  font-size: 12px;
 `;
 
-const StyledDiv = styled.div`
-  width: 290px;
+const Wrapper = Flex.extend`
+  width: 100%;
   overflow: hidden;
   word-wrap: break-word;
-  text-align: center;
 `;
 
 const StyledSpan = styled.span`
@@ -82,11 +83,11 @@ const StyledSpan = styled.span`
 `;
 
 const ButtonsContainer = Flex.extend`
+  width: 100px;
   height: 42px;
-  float: right;
-  position: absolute;
   right: 20px;
   bottom: 20px;
+  position: absolute;
 `;
 
 const ButtonWrapper = Flex.extend`
@@ -94,7 +95,6 @@ const ButtonWrapper = Flex.extend`
   width: 40px;
   height: 40px;
   cursor: pointer;
-  margin-left: 10px;
   transition: color 0.25s ease-in-out;
 
   &:hover {
@@ -106,6 +106,7 @@ const ButtonWrapper = Flex.extend`
 class SubSettings extends Component {
 
   static propTypes = {
+    subtitle: PropTypes.string.isRequired,
     isVisible: PropTypes.bool.isRequired,
     toggleFileBrowserDialog: PropTypes.func.isRequired,
     toggleSubSettings: PropTypes.func.isRequired,
@@ -113,8 +114,8 @@ class SubSettings extends Component {
   }
 
   render() {
-    const { toggleFileBrowserDialog, toggleSubSettings, onControlsMouseMove, isVisible } = this.props;
-    const addSub = (<FontAwesomeIcon icon={['fas', 'ellipsis-h']} size='2x'/>);
+    const { toggleFileBrowserDialog, toggleSubSettings, onControlsMouseMove, isVisible, subtitle } = this.props;
+    const displayTitle = subtitle === '' ? 'None' : subtitle;
 
     return (
       <Fragment>
@@ -124,13 +125,20 @@ class SubSettings extends Component {
           style={{ display: isVisible ? 'flex' : 'none' }}
           onMouseMove={onControlsMouseMove} /* Prevent controls from hiding */
         >
-          <StyledDiv>
+          <Wrapper column justify='center'>
             <h2>Language</h2>
-            <br/>
-            <StyledSpan onClick={toggleFileBrowserDialog}>{addSub}</StyledSpan>
-          </StyledDiv>
+            <StyledSpan onClick={toggleFileBrowserDialog}>
+              <FontAwesomeIcon icon={['fas', 'ellipsis-h']} size='2x'/>
+            </StyledSpan>
+            <div>{displayTitle}</div>
+          </Wrapper>
         </ContainerSquare>
-        <ContainerRectangle style={{ display: isVisible ? 'block' : 'none' }} onMouseMove={onControlsMouseMove}>
+        <ContainerRectangle
+          align='center'
+          justify='flex-end'
+          style={{ display: isVisible ? 'flex' : 'none' }}
+          onMouseMove={onControlsMouseMove}
+        >
           <Preference>
             <Setting>
               <span>Encoding:&nbsp;</span>
@@ -141,7 +149,7 @@ class SubSettings extends Component {
               <SubtitleOffset />
             </Setting>
           </Preference>
-          <ButtonsContainer onClick={toggleSubSettings}>
+          <ButtonsContainer onClick={toggleSubSettings} align='center' justify='space-around'>
             <ButtonWrapper align='center' justify='center'>
               <FontAwesomeIcon icon={['fas', 'times']}/>
             </ButtonWrapper>
@@ -155,8 +163,10 @@ class SubSettings extends Component {
   }
 }
 
+const mapStateToProps = state => ({ subtitle: state.textTrack.label });
+
 const mapDispatchToProps = dispatch => ({
   toggleFileBrowserDialog: bindActionCreators(toggleFileBrowserDialog, dispatch)
 });
 
-export default connect(null, mapDispatchToProps)(SubSettings);
+export default connect(mapStateToProps, mapDispatchToProps)(SubSettings);

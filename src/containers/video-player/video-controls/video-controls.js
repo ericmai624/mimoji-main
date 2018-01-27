@@ -53,7 +53,7 @@ class VideoControls extends Component {
     super(props);
 
     this.state = { 
-      isSubSettingEnabled: true
+      isSubSettingEnabled: false
     };
 
     this.toggleSubSettings = this.toggleSubSettings.bind(this);

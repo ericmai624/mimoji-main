@@ -74,8 +74,8 @@ class FileBrowser extends Component {
 
   onDoubleClickFile(e, file) {
     e.preventDefault();
-    const { setStreamSource } = this.props;
-    if (file.type === 'subtitle') return this.addTextTrack(file.filePath, file.name, 'auto', 0);
+    const { setStreamSource, textTrack } = this.props;
+    if (file.type === 'subtitle') return this.addTextTrack(file.filePath, file.name, textTrack.encoding, textTrack.offset);
     if (file.type === 'video') {
       this.selectedVideo = file.filePath;
       setStreamSource(this.selectedVideo);
@@ -182,7 +182,8 @@ class FileBrowser extends Component {
 
 const mapStateToProps = (state) => ({
   app: state.app,
-  fileBrowser: state.fileBrowser
+  fileBrowser: state.fileBrowser,
+  textTrack: state.textTrack
 });
 
 const mapDispatchToProps = (dispatch) => ({ 

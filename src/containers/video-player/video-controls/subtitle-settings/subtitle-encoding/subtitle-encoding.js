@@ -11,10 +11,18 @@ import { Flex } from 'shared/components';
 
 const Container = Flex.extend`
   width: 100%;
-  height: 20px;
+  height: 100%;
   box-sizing: border-box;
   position: relative;
   border-bottom: 1px solid rgb(255,255,255);
+`;
+
+const Text = styled.span`
+  display: inline-block;
+  width: calc(100% - 15px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 `;
 
 const Select = styled.select`
@@ -31,9 +39,9 @@ const Select = styled.select`
 `;
 
 const CaretWrapper = Flex.extend`
-  width: 16px;
-  height: 16px;
-  font-size: 16px;
+  width: 15px;
+  height: 15px;
+  font-size: 15px;
   box-sizing: border-box;
 `;
 
@@ -80,8 +88,17 @@ class SubtitleEncoding extends Component {
   updateTextTrackEncoding() {
     const { currentEncoding } = this.state;
     const { changeTextTrackEncoding } = this.props;
+    const encoding = this.encodingParser(currentEncoding);
 
-    changeTextTrackEncoding(currentEncoding);
+    changeTextTrackEncoding(encoding);
+  }
+
+  encodingParser(encoding) {
+    if ((/auto-detect/i).test(encoding)) return encoding;
+    const start = encoding.indexOf('(') + 1; // + 1 to exclude '('
+    const end = encoding.length - 1;
+
+    return encoding.substring(start, end);
   }
 
   render() {
@@ -89,11 +106,7 @@ class SubtitleEncoding extends Component {
 
     return (
       <Container align='center' justify='space-between'>
-        <span style={{
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          whiteSpace: 'nowrap'
-        }}>{currentEncoding}</span>
+        <Text>{currentEncoding}</Text>
         <Select onChange={this.onSelectionChange}>
           <optgroup label='Default'>
             <option value='Auto-Detect'>Auto-Detect</option>
@@ -101,7 +114,7 @@ class SubtitleEncoding extends Component {
           {encodingOptions.map((option, i) => (
             <optgroup label={option.language} key={i}>
               {option.encodings.map((encoding, i) => (
-                <option value={encoding} key={i}>
+                <option value={`${option.language} (${encoding})`} key={i}>
                   {`${option.language} (${encoding})`}
                 </option>
               ))}

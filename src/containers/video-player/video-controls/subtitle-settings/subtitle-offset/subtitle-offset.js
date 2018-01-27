@@ -11,14 +11,14 @@ import { Flex, Button } from 'shared/components';
  
 const OffsetInputWrapper = Flex.extend`
   width: 100%;
-  height: 20px;
+  height: 100%;
   position: relative;
   box-sizing: border-box;
   border-bottom: 1px solid rgba(255,255,255,0.8);
 `;
 
 const Steps = Flex.extend`
-  width: 14px;
+  width: 15px;
 `;
 
 const StepWrapper = Button.extend`
@@ -37,7 +37,8 @@ const OffsetInput = styled.input.attrs({
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 60px;
+  width: calc(100% - 15px);
+  font-size: 12px;
   outline: none;
   border: none;
   color: rgba(255,255,255,0.94);
@@ -57,7 +58,6 @@ const Warning = Flex.extend`
   color: #D8000C;
   background: #FFD2D2;
   position: absolute;
-  left: 0;
   transform: translateX(-50%);
   bottom: -40px;
   padding: 10px 10px;
@@ -90,7 +90,8 @@ class SubtitleOffset extends Component {
 
     this.state = {
       input: '',
-      isInputNaN: false
+      isInputNaN: false,
+      caretPos: '3px'
     };
 
     this.onInputChange = this.onInputChange.bind(this);
@@ -105,8 +106,9 @@ class SubtitleOffset extends Component {
     const input = e.target.value;
     const offset = parseFloat(input);
     const isInputNaN = isNaN(offset);
+    const caretPos = e.target.selectionStart * 3 + 'px';
 
-    this.setState({ input, isInputNaN }, this.updateTextTrackOffset.bind(this, offset));
+    this.setState({ input, isInputNaN, caretPos }, this.updateTextTrackOffset.bind(this, offset));
   }
 
   onInputMouseOver(e) {
@@ -135,7 +137,7 @@ class SubtitleOffset extends Component {
   
   render() {
     const { offset } = this.props;
-    const { input, isInputNaN } = this.state;
+    const { input, isInputNaN, caretPos } = this.state;
     const isWarningVisible = input !== '' && isInputNaN;
 
     return (
@@ -148,18 +150,18 @@ class SubtitleOffset extends Component {
           onMouseOver={this.onInputMouseOver}
           onMouseLeave={this.onInputMouseLeave}
         />
-        <Steps column align='center' justify='space-around'>
-          <StepWrapper size='14px' onClick={this.increaseOffset}>
-            <FontAwesomeIcon icon={['fas', 'caret-up']} transform='down-2'/>
+        <Steps column align='center'>
+          <StepWrapper size='12px' onClick={this.increaseOffset} style={{ marginTop: '-2px'}}>
+            <FontAwesomeIcon icon={['fas', 'caret-up']}/>
           </StepWrapper>
-          <StepWrapper size='14px' onClick={this.decreaseOffset}>
-            <FontAwesomeIcon icon={['fas', 'caret-down']} transform='up-2'/>
+          <StepWrapper size='12px' onClick={this.decreaseOffset} style={{ marginTop: '-6px'}}>
+            <FontAwesomeIcon icon={['fas', 'caret-down']}/>
           </StepWrapper>
         </Steps>
         <Warning
           align='center'
           justify='center'
-          style={{ opacity: isWarningVisible ? 1 : 0 }}
+          style={{ opacity: isWarningVisible ? 1 : 0, left: caretPos }}
         >
           <span>Offset must be a number</span>
         </Warning>
