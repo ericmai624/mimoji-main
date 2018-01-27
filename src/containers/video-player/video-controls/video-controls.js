@@ -53,7 +53,7 @@ class VideoControls extends Component {
     super(props);
 
     this.state = { 
-      isSubSettingEnabled: false
+      isSubSettingEnabled: true
     };
 
     this.toggleSubSettings = this.toggleSubSettings.bind(this);
@@ -118,6 +118,7 @@ class VideoControls extends Component {
         <SubSettings
           isVisible={isSubSettingEnabled}
           toggleSubSettings={this.toggleSubSettings}
+          onControlsMouseMove={onControlsMouseMove}
         />
       </Fragment>
     );

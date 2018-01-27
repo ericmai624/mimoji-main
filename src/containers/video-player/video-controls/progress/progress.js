@@ -39,7 +39,7 @@ const SeekTime = Flex.extend`
   transition: opacity 0.25s ease;
   position: absolute;
 
-  &:before {
+  &::before {
     content: '';
     position: absolute;
     left: calc(50% - 5px);

@@ -79,7 +79,7 @@ const getHomedirWin32 = (cb) => {
 };
 
 const readdirWin32 = (location, nav) => {
-  if (location.match(/^\w\:\\$/) && nav === '..') {
+  if (/^\w\:\\$/.test(location) && nav === '..') {
     return new Promise((resolve, reject) => {
       getHomedirWin32((err, result) => {
         if (err) reject(err);

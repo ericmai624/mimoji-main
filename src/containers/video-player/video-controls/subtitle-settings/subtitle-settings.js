@@ -80,7 +80,7 @@ const StyledSpan = styled.span`
   }
 `;
 
-const Buttons = Flex.extend`
+const ButtonsContainer = Flex.extend`
   height: 42px;
   float: right;
   position: absolute;
@@ -106,39 +106,47 @@ class SubSettings extends Component {
 
   static propTypes = {
     isVisible: PropTypes.bool.isRequired,
-    
+    toggleFileBrowserDialog: PropTypes.func.isRequired,
+    toggleSubSettings: PropTypes.func.isRequired,
+    onControlsMouseMove: PropTypes.func.isRequired
   }
 
   render() {
-    const { toggleFileBrowserDialog, toggleSubSettings, isVisible } = this.props;
+    const { toggleFileBrowserDialog, toggleSubSettings, onControlsMouseMove, isVisible } = this.props;
     const addSub = (<FontAwesomeIcon icon={['fas', 'ellipsis-h']} size='2x'/>);
 
     return (
       <Fragment>
-        <ContainerSquare align='center' justify='center' style={{ display: isVisible ? 'flex' : 'none' }}>
+        <ContainerSquare
+          align='center'
+          justify='center'
+          style={{ display: isVisible ? 'flex' : 'none' }}
+          onMouseMove={onControlsMouseMove} /* Prevent controls from hiding */
+        >
           <StyledDiv>
             <h2>Language</h2>
             <br/>
             <StyledSpan onClick={toggleFileBrowserDialog}>{addSub}</StyledSpan>
           </StyledDiv>
         </ContainerSquare>
-        <ContainerRectangle style={{ display: isVisible ? 'block' : 'none' }}>
+        <ContainerRectangle style={{ display: isVisible ? 'block' : 'none' }} onMouseMove={onControlsMouseMove}>
           <Preference>
             <Option>
               <span>Encoding: Auto</span>
             </Option>
             <Option>
+              <span>Offset&nbsp;<span>(seconds)</span>:&nbsp;</span>
               <SubtitleOffset />
             </Option>
           </Preference>
-          <Buttons onClick={toggleSubSettings}>
+          <ButtonsContainer onClick={toggleSubSettings}>
             <ButtonWrapper align='center' justify='center'>
               <FontAwesomeIcon icon={['fas', 'times']}/>
             </ButtonWrapper>
             <ButtonWrapper align='center' justify='center'>
               <FontAwesomeIcon icon={['fas', 'check']}/>
             </ButtonWrapper>
-          </Buttons>
+          </ButtonsContainer>
         </ContainerRectangle>
       </Fragment>
     );
