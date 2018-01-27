@@ -31,7 +31,6 @@ const Select = styled.select`
   left: 0;
   font-size: 10px;
   opacity: 0;
-  color: rgb(255,255,255);
   outline: none;
   background: transparent;
   border: none;

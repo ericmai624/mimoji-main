@@ -149,8 +149,8 @@ class SubSettings extends Component {
               <SubtitleOffset />
             </Setting>
           </Preference>
-          <ButtonsContainer onClick={toggleSubSettings} align='center' justify='space-around'>
-            <ButtonWrapper align='center' justify='center'>
+          <ButtonsContainer align='center' justify='space-around'>
+            <ButtonWrapper align='center' justify='center' onClick={toggleSubSettings}>
               <FontAwesomeIcon icon={['fas', 'times']}/>
             </ButtonWrapper>
             <ButtonWrapper align='center' justify='center'>
