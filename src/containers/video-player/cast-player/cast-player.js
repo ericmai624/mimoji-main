@@ -311,7 +311,8 @@ class CastPlayer extends Component {
     const sub = new chrome.cast.media.Track(id/* track id */, chrome.cast.media.TrackType.TEXT);
     const host = `http://${ip.address}:6300`;
     const pathname = `/api/stream/subtitle/${textTrack.id}`;
-    const query = `offset=${textTrack.offset - currTimeOffset}&encoding=${textTrack.encoding}`;
+    const query = `start=${currTimeOffset}`;
+    
     sub.trackContentId = `${host}${pathname}?${query}`;
     sub.trackContentType = 'text/vtt';
     sub.subType = chrome.cast.media.TextTrackType.SUBTITLES;
@@ -329,7 +330,7 @@ class CastPlayer extends Component {
     const { currTimeOffset } = this.state;
     const host = `http://${ip.address}:6300`;
     const pathname = `/api/stream/subtitle/${textTrack.id}`;
-    const query = `offset=${textTrack.offset - currTimeOffset}&encoding=${textTrack.encoding}`;
+    const query = `start=${currTimeOffset}`;
 
     session.sendMessage('urn:x-cast:texttrack.add', { url: `${host}${pathname}?${query}` })
       .then(() => console.log(`New text track info has been sent %c+${performance.now() - start}ms`, 'color:#d80a52;'))

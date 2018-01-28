@@ -2,7 +2,8 @@ const chalk = require('chalk');
 const log = console.log.bind(console);
 const { extname } = require('path');
 const { each } = require('lodash');
-const { Stream, streams } = require('../controller').stream;
+const { VideoStream, streams } = require('../controller').stream;
+const { Subtitle, subtitles } = require('../controller').subtitle;
 const { readdir } = require('../controller').navigation;
 
 module.exports = server => {
@@ -31,7 +32,7 @@ module.exports = server => {
       try {
         each(streams, s => s.terminate()); // stop all processes and remove all files first
         
-        const stream = new Stream();
+        const stream = new VideoStream();
         const output = await stream.create(video, seek);
 
         stream.watch(output, socket);
@@ -49,6 +50,15 @@ module.exports = server => {
       if (!stream) return;
       log(`Terminating stream ${id}`);
       stream.terminate();
+    });
+
+    /* Create new subtitle */
+    socket.on('new subtitle', ({ location, offset, encoding }) => {
+      const subtitle = new Subtitle(location, offset, encoding);
+      const id = subtitle.getId();
+      subtitles[id] = subtitle;
+      log(`new subtitle with id ${id} created`);
+      socket.emit('subtitle created', id);
     });
   });
 };

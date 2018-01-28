@@ -5,7 +5,7 @@ import { bindActionCreators } from 'redux';
 import { toggleLoading, togglePlayer, streamToGoogleCast } from 'stores/app';
 import { toggleFileBrowserDialog, updateContent, togglePending } from 'stores/file-browser';
 import { setStreamSource, updateStreamInfo } from 'stores/stream';
-import { genTextTrackId } from 'stores/text-track';
+import { updateTextTrackId } from 'stores/text-track';
 
 import { Flex } from 'shared/components';
 
@@ -112,9 +112,12 @@ class FileBrowser extends Component {
   }
 
   addTextTrack(location, label, encoding, offset) {
-    const { fileBrowser, toggleFileBrowserDialog, genTextTrackId } = this.props;
+    const { io } = window;
+    const { fileBrowser, toggleFileBrowserDialog, updateTextTrackId } = this.props;
 
-    genTextTrackId({ location, label, encoding, offset });
+    io.emit('new subtitle', { location, offset, encoding });
+    io.once('subtitle created', id => updateTextTrackId(id, label));
+
     if (fileBrowser.isVisible) return toggleFileBrowserDialog();
   }
 
@@ -195,7 +198,7 @@ const mapDispatchToProps = (dispatch) => ({
   streamToGoogleCast: bindActionCreators(streamToGoogleCast, dispatch),
   setStreamSource: bindActionCreators(setStreamSource, dispatch),
   updateStreamInfo: bindActionCreators(updateStreamInfo, dispatch),
-  genTextTrackId: bindActionCreators(genTextTrackId, dispatch)
+  updateTextTrackId: bindActionCreators(updateTextTrackId, dispatch)
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(FileBrowser);

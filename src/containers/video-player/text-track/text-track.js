@@ -6,7 +6,7 @@ const TextTrack = ({ textTrack, currTimeOffset, isLoading }) => (
     {textTrack.isEnabled && !isLoading ? 
       <track
         kind='subtitles'
-        src={`/api/stream/subtitle/${textTrack.id}?offset=${textTrack.offset - currTimeOffset}&encoding=${textTrack.encoding}`}
+        src={`/api/subtitle/${textTrack.id}?start=${currTimeOffset}`}
         label={textTrack.label}
         srcLang='zh'
         default={true}

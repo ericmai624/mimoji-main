@@ -6,6 +6,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
 import { toggleFileBrowserDialog } from 'stores/file-browser';
+import { updateTextTrackId } from 'stores/text-track';
 
 import { Flex } from 'shared/components';
 
@@ -106,16 +107,39 @@ const ButtonWrapper = Flex.extend`
 class SubSettings extends Component {
 
   static propTypes = {
-    subtitle: PropTypes.string.isRequired,
+    textTrack: PropTypes.object.isRequired,
     isVisible: PropTypes.bool.isRequired,
     toggleFileBrowserDialog: PropTypes.func.isRequired,
     toggleSubSettings: PropTypes.func.isRequired,
     onControlsMouseMove: PropTypes.func.isRequired
   }
 
+  constructor(props) {
+    super(props);
+    
+    this.confirm = this.confirm.bind(this);
+  }
+
+  confirm(e) {
+    const { io } = window;
+    const { textTrack, updateTextTrackId, toggleSubSettings } = this.props;
+    const data = {
+      location: textTrack.location,
+      offset: textTrack.offset,
+      encoding: textTrack.encoding
+    };
+
+    if (textTrack.isEnabled) {
+      io.emit('new subtitle', data);
+      io.once('subtitle created', id => updateTextTrackId(id, textTrack.label));
+    }
+    
+    toggleSubSettings();
+  }
+
   render() {
-    const { toggleFileBrowserDialog, toggleSubSettings, onControlsMouseMove, isVisible, subtitle } = this.props;
-    const displayTitle = subtitle === '' ? 'None' : subtitle;
+    const { toggleFileBrowserDialog, toggleSubSettings, onControlsMouseMove, isVisible, textTrack } = this.props;
+    const displayTitle = textTrack.label === '' ? 'None' : textTrack.label;
 
     return (
       <Fragment>
@@ -153,7 +177,7 @@ class SubSettings extends Component {
             <ButtonWrapper align='center' justify='center' onClick={toggleSubSettings}>
               <FontAwesomeIcon icon={['fas', 'times']}/>
             </ButtonWrapper>
-            <ButtonWrapper align='center' justify='center'>
+            <ButtonWrapper align='center' justify='center' onClick={this.confirm}>
               <FontAwesomeIcon icon={['fas', 'check']}/>
             </ButtonWrapper>
           </ButtonsContainer>
@@ -163,10 +187,11 @@ class SubSettings extends Component {
   }
 }
 
-const mapStateToProps = state => ({ subtitle: state.textTrack.label });
+const mapStateToProps = state => ({ textTrack: state.textTrack });
 
 const mapDispatchToProps = dispatch => ({
-  toggleFileBrowserDialog: bindActionCreators(toggleFileBrowserDialog, dispatch)
+  toggleFileBrowserDialog: bindActionCreators(toggleFileBrowserDialog, dispatch),
+  updateTextTrackId: bindActionCreators(updateTextTrackId, dispatch)
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(SubSettings);

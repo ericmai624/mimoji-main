@@ -6,8 +6,6 @@ const rimraf = require('rimraf');
 const path = require('path');
 const util = require('../utilities');
 const chokidar = require('chokidar');
-const jschardet = require('jschardet');
-const iconv = require('iconv-lite');
 const log = console.log.bind(console);
 const { randomBytes } = require('crypto');
 const { sep } = path;
@@ -15,7 +13,7 @@ const { sep } = path;
 const streams = {};
 const subtitles = {};
 
-class Stream {
+class VideoStream {
   constructor() {
     this.id = randomBytes(8).toString('hex');
     this.input = null;
@@ -159,37 +157,5 @@ const serve = (req, res) => {
   }
 };
 
-const addSubtitle = (req, res) => {
-  let { location } = req.body;
-  if (!location || location === '') return res.end();
-  let id = randomBytes(8).toString('hex');
-  subtitles[id] = location;
 
-  return res.json(id);
-};
-
-const loadSubtitle = async (req, res) => {
-  let { id } = req.params;
-  if (!id || !subtitles[id]) return res.end();
-  let location = subtitles[id];
-  let { offset, encoding } = req.query;
-  offset = parseFloat(offset);
-  let ext = path.extname(location);
-
-  try {
-    let buffer = await fs.readFileAsync(location);
-    if ((/auto-detect/i).test(encoding)) encoding = jschardet.detect(buffer).encoding;
-    let str = iconv.decode(buffer, encoding);
-    log(chalk.white('loading subtitle: ', location, encoding));
-    res.set({ 'Content-Type': 'text/vtt' }); // set response header
-    
-    if (!offset && ext === '.vtt') return res.send(str);
-    let sub = util.subtitleParser(str, offset, ext);
-    return res.send(sub);
-  } catch (err) {
-    log(chalk.red(err));
-    res.sendStatus(500);
-  }
-};
-
-module.exports = { streams, Stream, serve, addSubtitle, loadSubtitle };
+module.exports = { streams, VideoStream, serve };

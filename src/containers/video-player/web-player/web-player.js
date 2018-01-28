@@ -292,7 +292,7 @@ class WebPlayer extends Component {
           onEnded={this.stop}
           ref={(el) => this.video = el}
         >
-          <TextTrack currTimeOffset={currTimeOffset} isLoading={isSeeking}/>
+          <TextTrack currTimeOffset={currTimeOffset} isLoading={isSeeking || app.isInitializing}/>
         </video>
         <VideoControls
           seek={this.seek}

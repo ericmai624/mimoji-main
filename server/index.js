@@ -20,5 +20,9 @@ app.use('/api/stream', (req, res, next) => {
   res.set({ 'Access-Control-Allow-Origin': '*'});
   next();
 }, routes.stream);
+app.use('/api/subtitle', (req, res, next) => {
+  res.set({ 'Access-Control-Allow-Origin': '*'});
+  next();
+}, routes.subtitle);
 
 server.listen(6300, () => console.log('Ready to accept connections on port 6300'));
