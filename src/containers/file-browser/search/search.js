@@ -11,14 +11,14 @@ import { modifyDisplayedContent } from 'stores/file-browser';
 import { Flex } from 'shared/components';
 
 const SearchWrapper = Flex.extend`
-  border-width: 1px;
-  border-style: solid;
-  border-radius: 5px;
+  ${'' /* border-bottom: 1px solid #FFF; */}
   padding: 8px 8px 8px 16px;
-  width: calc(100% - 88px);
-  height: 36px;
+  width: 100%;
+  height: 100%;
+  vertical-align: middle;
   box-sizing: border-box;
-  color: rgba(255, 255, 255, 0.5);
+  ${'' /* left: 0;
+  position: absolute; */}
   transition: all 0.25s ease-in-out;
 
   &:hover {
@@ -34,13 +34,13 @@ const SearchInput = styled.input.attrs({
   outline: none;
   width: calc(100% - 36px);
   font-size: 16px;
-  color: #fff;
+  color: #FFF;
   background: transparent;
   overflow: hidden;
   text-overflow: ellipsis;
 
   &::placeholder {
-    color: rgba(255,255,255,0.8);
+    color: #FFF;
   }
 `;
 
@@ -100,8 +100,7 @@ class Search extends Component {
   }
   
   render() {
-    const { theme, directory } = this.props;
-    const { userInput, isSearchFocused } = this.state;
+    const { userInput } = this.state;
 
     return (
       <SearchWrapper 
@@ -109,10 +108,8 @@ class Search extends Component {
         justify='center'
         onMouseOver={this.onSearchFocus}
         onMouseLeave={this.onSearchBlur}
-        style={{ borderColor: isSearchFocused ? theme.orange : 'rgba(255,255,255,0.8)' }}
       >
         <SearchInput
-          placeholder={isSearchFocused ? '' : directory}
           onChange={this.onSearchChange}
           value={userInput}
           innerRef={el => this.search = el}
@@ -121,7 +118,7 @@ class Search extends Component {
         <FileBrowserButton
           icon={['fas', 'search']} 
           background={{ normal: 'transparent', hover: 'transparent' }}
-          color={{ normal: isSearchFocused ? 'rgba(255,255,255,0.94)' : 'inherit' }}
+          color={{ normal: '#34495E' }}
           size={'22px'}
           style={{ cursor: 'text' }}
         />

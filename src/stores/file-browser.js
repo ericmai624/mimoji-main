@@ -9,7 +9,7 @@ export const togglePending = () => ({ type: 'CONTENT_REQUEST_PENDING' });
 export const toggleFileBrowserDialog = () => ({ type: 'FILEBROWSER_DIALOG_TOGGLED' });
 
 const initState = {
-  isVisible: false,
+  isVisible: true,
   directory: '',
   content: [],
   displayedContent: [],

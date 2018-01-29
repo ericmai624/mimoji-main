@@ -32,7 +32,8 @@ const Wrapper = Flex.extend`
   transition: filter 0.4s ease-in-out;
   overflow: hidden;
   position: absolute;
-  background-image: url(/assets/img/1F425134613.jpg);
+  background-image: url('assets/img/1440627692.jpg');
+  ${'' /* background-image: url(/assets/img/1F425134613.jpg); */}
   background-repeat: no-repeat;
   background-position: center;
   background-attachment: fixed;
@@ -125,7 +126,7 @@ class App extends Component {
     button.style.top = '20px';
     button.style.right = '20px';
     button.style.background = 'transparent';
-    button.style.zIndex = 10;
+    // button.style.zIndex = 10;
     this.wrapper.insertAdjacentElement('beforeend', button);
   }
   

@@ -1,4 +1,6 @@
 import React, { Component } from 'react';
+import styled from 'styled-components';
+import FontAwesomeIcon from '@fortawesome/react-fontawesome';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
@@ -11,11 +13,49 @@ import { Flex } from 'shared/components';
 
 import FileBrowserList from './file-list/file-list';
 import CastOptions from './cast-options/cast-options';
+import Nav from './nav/nav';
+import Search from './search/search';
 
-const Container = Flex.extend`
+const Container = styled.div`
   position: absolute;
+  left: 0;
+  top: 0;
   width: 100%;
   height: 100%;
+  background: inherit;
+  ${'' /* background-image: url('assets/img/1440627692.jpg'); */}
+`;
+
+const Top = styled.div`
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 70px;
+  box-sizing: border-box;
+  background: #2c3e50;
+  transition: all 0.58s ease-in-out;
+`;
+
+const ListContainer = Flex.extend`
+  position: absolute;
+  top: 70px;
+  width: 100%;
+  height: calc(100% - 150px);
+  box-sizing: border-box;
+`;
+
+const CloseWrapper = Flex.extend`
+  border-radius: 50%;
+  width: 34px;
+  height: 34px;
+  background: #fff;
+  position: absolute;
+  right: 58px;
+  bottom: 0;
+  transform: translateY(13px);
+  z-index: 10;
+  font-size: 22px;
+  color: #2c3e50;
 `;
 
 class FileBrowser extends Component {
@@ -134,11 +174,11 @@ class FileBrowser extends Component {
   }
   
   render() {
-    const { isOptionsVisible, userInput } = this.state;
+    const { isOptionsVisible } = this.state;
     const { app, fileBrowser, toggleFileBrowserDialog } = this.props;
+    const { isVisible } = fileBrowser;
     const containerStyle = {
-      display: fileBrowser.isVisible ? 'flex' : 'none',
-      background: app.isPlayerEnabled ? 'rgba(0,0,0,0.25)' : 'inherit',
+      visibility: isVisible ? 'visible' : 'hidden',
       zIndex: app.isPlayerEnabled ? 2147483647 : 5
     };
 
@@ -158,26 +198,30 @@ class FileBrowser extends Component {
     return (
       <Container 
         id='file-browser'
-        align='center'
-        justify='center'
         style={containerStyle}
       >
-        <FileBrowserList
-          isPlayerEnabled={app.isPlayerEnabled}
-          fileBrowser={fileBrowser}
-          isVisible={!isOptionsVisible}
-          userInput={userInput}
-          onSearchChange={this.onSearchChange}
-          onDoubleClickDirectory={this.onDoubleClickDirectory}
-          onDoubleClickFile={this.onDoubleClickFile}
-          toggleFileBrowserDialog={toggleFileBrowserDialog}
-          navigateUpDir={this.navigateUpDir}
-        />
-        <CastOptions
-          isVisible={isOptionsVisible}
-          setPlayerType={this.setPlayerType}
-          toggleCastOptions={this.toggleCastOptions}
-        />
+        <Top style={{ top: isVisible ? 0 : '-70px' }}>
+          <Search />
+          <CloseWrapper align='center' justify='center' onClick={toggleFileBrowserDialog}>
+            <FontAwesomeIcon icon={['fas', 'times']}/>
+          </CloseWrapper>
+        </Top>
+        <ListContainer align='center' justify='flex-end'>
+          <FileBrowserList
+            fileBrowser={fileBrowser}
+            isVisible={!isOptionsVisible}
+            onDoubleClickDirectory={this.onDoubleClickDirectory}
+            onDoubleClickFile={this.onDoubleClickFile}
+            toggleFileBrowserDialog={toggleFileBrowserDialog}
+            navigateUpDir={this.navigateUpDir}
+          />
+          <CastOptions
+            isVisible={isOptionsVisible}
+            setPlayerType={this.setPlayerType}
+            toggleCastOptions={this.toggleCastOptions}
+          />
+        </ListContainer>
+        <Nav location={fileBrowser.directory} isVisible={isVisible}/>
       </Container>
     );
   }
