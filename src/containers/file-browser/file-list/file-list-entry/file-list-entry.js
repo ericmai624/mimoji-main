@@ -22,20 +22,20 @@ const List = styled.ul`
 const Entry = styled.li`
   display: flex;
   width: calc(100% - 22px);
-  margin-top: 5px;
+  margin-top: 10px;
   cursor: pointer;
   user-select: none;
   padding: 16px;
-  font-weight: 700;
-  color: #2c3e50;
-  border: 1px solid #2c3e50;
+  font-weight: bold;
+  color: #34495e;
+  border-bottom: 2px solid #34495e;
   align-items: center;
   box-sizing: border-box;
   transition: color 0.25s ease-in-out;
 
   &:hover {
     color: #fff;
-    background: #2c3e50;
+    background: #34495e;
   }
 `;
 
@@ -55,6 +55,12 @@ const FileBrowserListEntry = ({ content, isPending, onDoubleClickDirectory, onDo
   return (
     <Container justify='flex-start'>
       <List isVisible={!isPending}>
+        <Entry onDoubleClick={navigateUpDir}>
+          <IconWrapper align='center' justify='center'>
+            <FontAwesomeIcon icon={['fas', 'folder']}/>
+          </IconWrapper>
+          <FileName align='center' justify='flex-start'>..</FileName>
+        </Entry>
         {content.map((entry, i) => {
           let { name, type } = entry;
           let icon;
@@ -72,7 +78,7 @@ const FileBrowserListEntry = ({ content, isPending, onDoubleClickDirectory, onDo
               <IconWrapper align='center' justify='center'>
                 <FontAwesomeIcon icon={icon}/>
               </IconWrapper>
-              <FileName align='center' justify='flex-start'>{name}/</FileName>
+              <FileName align='center' justify='flex-start'>{name}</FileName>
             </Entry>
           );
         })}

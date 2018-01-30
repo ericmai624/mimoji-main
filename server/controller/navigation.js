@@ -65,6 +65,11 @@ const arrangeContent = (input, dir) => {
   return sortByType(content);
 };
 
+const splitDirectory = directory => {
+  let folders = directory.split(path.sep);
+  return { folders, sep: path.sep };
+};
+
 const getHomedirWin32 = (cb) => {
   exec('wmic logicaldisk get name', (err, stdout, stderr) => {
     if (err) return cb(err, null);
@@ -78,8 +83,8 @@ const getHomedirWin32 = (cb) => {
   });
 };
 
-const readdirWin32 = (location, nav) => {
-  if (/^\w\:\\$/.test(location) && nav === '..') {
+const readdirWin32 = (location) => {
+  if (location === '') {
     return new Promise((resolve, reject) => {
       getHomedirWin32((err, result) => {
         if (err) reject(err);
@@ -88,21 +93,19 @@ const readdirWin32 = (location, nav) => {
     });
   }
 
-  let directory = path.resolve(location, nav || '');
-
   return new Promise((resolve, reject) => {
-    fs.readdir(directory, (err, files) => {
+    fs.readdir(location, (err, files) => {
       if (err) reject(err);
-      let content = arrangeContent(files, directory);
-      resolve({ directory, content });
+      let content = arrangeContent(files, location);
+      resolve({ directory: splitDirectory(location), content });
     });
   });
 };
 
-const readdir = async (dir, nav) => {
+const readdir = async (location) => {
   try {
     if (process.platform === 'win32') {
-      if (!dir) {
+      if (!location) {
         return new Promise((resolve, reject) => {
           getHomedirWin32((err, result) => {
             if (!err) return resolve(result);
@@ -111,16 +114,14 @@ const readdir = async (dir, nav) => {
           });
         });
       }
-      return await readdirWin32(dir, nav);
+      return await readdirWin32(location);
     }
 
-    let directory = dir || homedir();
-    if (nav === '..') directory = path.join(directory, nav);
-  
     // MacOSX or Linux
+    let directory = location !== '' ? location : homedir();  
     let files = await fs.readdirAsync(directory);
     let content = arrangeContent(files, directory);
-    return { directory, content };
+    return { directory: splitDirectory(directory), content };
   } catch (err) {
     log(`Request to get content for ${dir} failed with ${err}`);
   }

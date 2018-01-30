@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
-import FontAwesomeIcon from '@fortawesome/react-fontawesome';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
@@ -22,40 +21,25 @@ const Container = styled.div`
   top: 0;
   width: 100%;
   height: 100%;
-  background: inherit;
-  ${'' /* background-image: url('assets/img/1440627692.jpg'); */}
 `;
 
-const Top = styled.div`
+const Top = Flex.extend`
   position: absolute;
-  left: 0;
+  top: 0;
+  right: 0;
   width: 100%;
-  height: 70px;
+  height: 40px;
   box-sizing: border-box;
-  background: #2c3e50;
-  transition: all 0.58s ease-in-out;
+  background: #34495e;
+  transition: transform 0.50s ease-in-out;
 `;
 
 const ListContainer = Flex.extend`
   position: absolute;
-  top: 70px;
   width: 100%;
-  height: calc(100% - 150px);
+  height: calc(100% - 120px); /* minus Top and Nav height */
+  top: 40px;
   box-sizing: border-box;
-`;
-
-const CloseWrapper = Flex.extend`
-  border-radius: 50%;
-  width: 34px;
-  height: 34px;
-  background: #fff;
-  position: absolute;
-  right: 58px;
-  bottom: 0;
-  transform: translateY(13px);
-  z-index: 10;
-  font-size: 22px;
-  color: #2c3e50;
 `;
 
 class FileBrowser extends Component {
@@ -86,20 +70,23 @@ class FileBrowser extends Component {
 
     io.on('request content rejected', this.updatedir);
 
-    /* Start requesting directory content */
-    this.getContent();
+    /* 
+    Start requesting directory content 
+    '' means root directory
+    */
+    this.getContent('');
   }
 
-  getContent(dir, nav) {
+  getContent(dir) {
     const { io } = window;
     const { togglePending } = this.props;
-    togglePending(); // Toggles the loading animation
-    io.emit('request content', { dir, nav });
+    // togglePending(); // Toggles the loading animation
+    io.emit('request content', dir);
   }
 
   updatedir(data) {
     const { togglePending, updateContent } = this.props;
-    togglePending();
+    // togglePending();
     /* 
     request rejection will not return any data.
     So if data is undefined, the request is rejected 
@@ -163,8 +150,10 @@ class FileBrowser extends Component {
 
   navigateUpDir(e) {
     e.preventDefault();
-    const { fileBrowser } = this.props;
-    this.getContent(fileBrowser.directory, '..');
+    const { folders, sep } = this.props.fileBrowser.directory;
+    if (!folders || !folders.length) return;
+    const location = folders.slice(0, -1).join(sep);
+    this.getContent(location);
   }
 
   toggleCastOptions(e) {
@@ -177,20 +166,11 @@ class FileBrowser extends Component {
     const { isOptionsVisible } = this.state;
     const { app, fileBrowser, toggleFileBrowserDialog } = this.props;
     const { isVisible } = fileBrowser;
-    const containerStyle = {
-      visibility: isVisible ? 'visible' : 'hidden',
-      zIndex: app.isPlayerEnabled ? 2147483647 : 5
-    };
 
     if (fileBrowser.hasError) {
       return (
-        <Container 
-          id='file-browser'
-          align='center'
-          justify='center'
-          style={containerStyle}
-        >
-          Something went wrong
+        <Container id='file-browser'>
+          <span>Something went wrong</span>
         </Container>
       );
     }
@@ -198,21 +178,18 @@ class FileBrowser extends Component {
     return (
       <Container 
         id='file-browser'
-        style={containerStyle}
+        style={{ 
+          zIndex: app.isPlayerEnabled ? 2147483647 : 5 
+        }}
       >
-        <Top style={{ top: isVisible ? 0 : '-70px' }}>
+        <Top align='center' justify='center' style={{ transform: isVisible ? 'none' : 'translateY(-63px)' }}>
           <Search />
-          <CloseWrapper align='center' justify='center' onClick={toggleFileBrowserDialog}>
-            <FontAwesomeIcon icon={['fas', 'times']}/>
-          </CloseWrapper>
         </Top>
         <ListContainer align='center' justify='flex-end'>
           <FileBrowserList
             fileBrowser={fileBrowser}
-            isVisible={!isOptionsVisible}
             onDoubleClickDirectory={this.onDoubleClickDirectory}
             onDoubleClickFile={this.onDoubleClickFile}
-            toggleFileBrowserDialog={toggleFileBrowserDialog}
             navigateUpDir={this.navigateUpDir}
           />
           <CastOptions
@@ -221,7 +198,11 @@ class FileBrowser extends Component {
             toggleCastOptions={this.toggleCastOptions}
           />
         </ListContainer>
-        <Nav location={fileBrowser.directory} isVisible={isVisible}/>
+        <Nav
+          directory={fileBrowser.directory}
+          isVisible={isVisible}
+          toggleFileBrowserDialog={toggleFileBrowserDialog}
+        />
       </Container>
     );
   }

@@ -28,10 +28,11 @@ const Title = Flex.extend`
   height: 50px;
   padding: 0 10px;
   font-size: 18px;
+  font-weight: bold;
   box-sizing: border-box;
   color: ${white};
   user-select: none;
-  background: ${({ theme }) => theme.orange};
+  background: #34495e;
 `;
 
 const Options = styled.ul`

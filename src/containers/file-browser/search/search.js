@@ -11,18 +11,24 @@ import { modifyDisplayedContent } from 'stores/file-browser';
 import { Flex } from 'shared/components';
 
 const SearchWrapper = Flex.extend`
-  ${'' /* border-bottom: 1px solid #FFF; */}
-  padding: 8px 8px 8px 16px;
-  width: 100%;
-  height: 100%;
+  position: absolute;
+  right: 50px;
+  bottom: 0;
+  padding: 0 15px;
+  height: 40px;
+  border: none;
+  border-radius: 20px;
+  transform: translateY(50%);
   vertical-align: middle;
   box-sizing: border-box;
-  ${'' /* left: 0;
-  position: absolute; */}
+  background: #fff;
+  caret-color: #34495e;
+  box-shadow: 1px 1px 1px 1px rgba(0,0,0,0.25), -1px 1px 1px 1px rgba(0,0,0,0.25);
+  z-index: 50;
   transition: all 0.25s ease-in-out;
 
   &:hover {
-    cursor: text;
+    cursor: text; /* change cursor to text as long as the curor is over SearchWrapper */
   }
 `;
 
@@ -30,24 +36,37 @@ const SearchInput = styled.input.attrs({
   name: 'search',
   autoComplete: 'off',
 })`
+  width: 100%;
+  height: 100%;
   border: none;
   outline: none;
-  width: calc(100% - 36px);
   font-size: 16px;
-  color: #FFF;
+  font-weight: bold;
+  color: #34495e;
   background: transparent;
+  box-sizing: content-box;
   overflow: hidden;
   text-overflow: ellipsis;
 
   &::placeholder {
-    color: #FFF;
+    color: #bdc3c7;
   }
+`;
+
+const Shadow = styled.span`
+  position: absolute;
+  top: 0;
+  left: 0;
+  font-size: 16px;
+  font-weight: bold;
+  white-space: pre;
+  visibility: hidden;
+  height: 0;
 `;
 
 class Search extends Component {
 
   static propTypes = {
-    directory: PropTypes.string.isRequired,
     content: PropTypes.array.isRequired,
     modifyDisplayedContent: PropTypes.func.isRequired
   }
@@ -57,42 +76,49 @@ class Search extends Component {
     
     this.state = {
       userInput: '',
-      isSearchFocused: false
+      inputWidth: 150
     };
 
-    this.onSearchFocus = this.onSearchFocus.bind(this);
-    this.onSearchBlur = this.onSearchBlur.bind(this);
+    this.focusInput = this.focusInput.bind(this);
     this.onSearchChange = this.onSearchChange.bind(this);
     this.filterContent = this.filterContent.bind(this);
+    this.resizeInputIfNeeded = this.resizeInputIfNeeded.bind(this);
     this.resetSearchInput = this.resetSearchInput.bind(this);
   }
 
   componentDidUpdate(prevProps, prevState) {
     if (prevProps.directory !== this.props.directory) this.resetSearchInput();
   }
-  
 
-  onSearchFocus(e) {
+  focusInput(e) {
     e.preventDefault();
-    this.setState({ isSearchFocused: true }, this.search.focus.bind(this.search));
-  }
+    if (!this.search) return; // input is not mounted
 
-  onSearchBlur(e) {
-    e.preventDefault();
-    this.setState({ isSearchFocused: false }, this.search.blur.bind(this.search));
+    this.search.focus();
   }
 
   onSearchChange(e) {
-    this.setState({ userInput: e.target.value }, this.filterContent);
+    this.setState({ userInput: e.target.value }, () => {
+      this.filterContent();
+      this.resizeInputIfNeeded();
+    });
   }
 
   filterContent() {
     const { modifyDisplayedContent, content } = this.props;
     const { userInput } = this.state;
-    const regex = new RegExp(userInput, 'i');
-    const newContent = content.filter(item => item.name.match(regex));
+    const regex = new RegExp(escape(userInput), 'i');
+    const newContent = content.filter(item => regex.test(item.name));
     
     modifyDisplayedContent(newContent);
+  }
+
+  resizeInputIfNeeded() {
+    if (!this.search || !this.shadow) return;
+
+    let shadowWidth = this.shadow.clientWidth + 32; // one character extra width
+    let searchWidth = this.search.clientWidth;
+    if (shadowWidth >= searchWidth) this.setState({ inputWidth: shadowWidth + 66 }); // extra 66px because of padding and search icon
   }
 
   resetSearchInput() {
@@ -100,16 +126,17 @@ class Search extends Component {
   }
   
   render() {
-    const { userInput } = this.state;
+    const { userInput, inputWidth } = this.state;
 
     return (
       <SearchWrapper 
         align='center'
         justify='center'
-        onMouseOver={this.onSearchFocus}
-        onMouseLeave={this.onSearchBlur}
+        onClick={this.focusInput}
+        style={{ width: `${inputWidth}px` }}
       >
         <SearchInput
+          placeholder='Search'
           onChange={this.onSearchChange}
           value={userInput}
           innerRef={el => this.search = el}
@@ -118,10 +145,11 @@ class Search extends Component {
         <FileBrowserButton
           icon={['fas', 'search']} 
           background={{ normal: 'transparent', hover: 'transparent' }}
-          color={{ normal: '#34495E' }}
-          size={'22px'}
+          color={{ normal: '#4c6275' }}
+          size={'12px'}
           style={{ cursor: 'text' }}
         />
+        <Shadow innerRef={el => this.shadow = el}>{userInput}</Shadow>
       </SearchWrapper>
     );
   }

@@ -13,9 +13,9 @@ module.exports = server => {
     log(chalk.white(`Socket ${socket.id} is connected`));
 
     /* Read files */
-    socket.on('request content', async ({ dir, nav }) => {
+    socket.on('request content', async location => {
       try {
-        const content = await readdir(dir, nav);
+        const content = await readdir(location);
         socket.emit('request content fulfilled', content);
       } catch (err) {
         log(`Failed to get content in ${dir} with ${err}`);

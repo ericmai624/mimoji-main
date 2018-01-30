@@ -7,44 +7,42 @@ import FileBrowserListEntry from './file-list-entry/file-list-entry';
 import { Flex } from 'shared/components';
 
 const Main = Flex.extend`
-  width: 50%;
+  width: 66.667%;
   height: 100%;
   padding: 10px 0 25px 25px;
-  color: #2c3e50;
   background: inherit;
   box-sizing: border-box;
   overflow: hidden;
   position: absolute;
   top: 50%;
+  right: 75px;
   transform: translateY(-50%);
-  transition: right 0.5s ease-in-out;
+  transition: transform 0.5s ease-in-out;
 `;
 
 class FileBrowserList extends Component {
 
   static propTypes = {
     fileBrowser: PropTypes.object.isRequired,
-    isVisible: PropTypes.bool.isRequired,
     onDoubleClickDirectory: PropTypes.func.isRequired,
     onDoubleClickFile: PropTypes.func.isRequired,
-    toggleFileBrowserDialog: PropTypes.func.isRequired,
     navigateUpDir: PropTypes.func.isRequired
   }
 
   render() {
     const { 
       fileBrowser,
-      isVisible,
       onDoubleClickDirectory,
       onDoubleClickFile,
       navigateUpDir
     } = this.props;
+    const { displayedContent, isVisible, isPending } = fileBrowser;
 
     return (
-      <Main column justify='center' style={{ right: fileBrowser.isVisible ? '50px' : '-50%' }}>
+      <Main column justify='center' style={{ transform: isVisible ? 'translate(0, -50%)' : 'translate(calc(100% + 75px), -50%)' }}>
         <FileBrowserListEntry
-          content={fileBrowser.displayedContent}
-          isPending={fileBrowser.isPending}
+          content={displayedContent}
+          isPending={isPending}
           onDoubleClickDirectory={onDoubleClickDirectory} 
           onDoubleClickFile={onDoubleClickFile}
           navigateUpDir={navigateUpDir}
