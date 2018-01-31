@@ -1,7 +1,6 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
-import FontAwesomeIcon from '@fortawesome/react-fontawesome';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
@@ -10,98 +9,79 @@ import { updateTextTrackId } from 'stores/text-track';
 
 import { Flex } from 'shared/components';
 
-import SubtitleOffset from './subtitle-offset/subtitle-offset';
+import SubtitleSource from './subtitle-source/subtitle-source';
 import SubtitleEncoding from './subtitle-encoding/subtitle-encoding';
+import SubtitleOffset from './subtitle-offset/subtitle-offset';
 
-const containerWidth = 300;
-const containerHeight = 300;
-const boxShadow = '0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24)';
-const padding = 25;
-
-const ContainerRectangle = Flex.extend`
+const Container = styled.ul`
+  position: absolute;
+  list-style: none;
   left: 50%;
   top: 50%;
-  margin-left: -${containerWidth + 35}px;
-  margin-top: -${(containerHeight - 50) / 2}px;
-  width: ${containerWidth * 2 + 70}px;
-  height: ${containerHeight - 50}px;
-  padding: ${padding}px ${padding}px;
-  background: ${({ theme }) => theme['wet_asphalt']};
-  box-shadow: ${boxShadow};
-  z-index: 101;
-  box-sizing: border-box;
-  color: rgb(255,255,255);
-  position: absolute;
-`;
-
-const ContainerSquare = Flex.extend`
-  right: 50%;
-  top: 50%;
-  margin-right: -10px;
-  margin-top: -${containerHeight / 2}px;
-  width: ${containerWidth}px;
-  height: ${containerHeight}px;
-  padding: ${padding}px;
-  align-items: center;
-  box-sizing: border-box;
-  background: rgb(255, 255, 255);
-  box-shadow: ${boxShadow};
-  z-index: 102;
-  position: absolute;
-`;
-
-const Preference = styled.ul`
-  width: ${containerWidth - padding}px;
-  list-style: none;
-  float: right;
+  width: 600px;
+  height: auto;
+  transform: translate(-50%, -50%);
+  ${'' /* background: ${({ theme }) => theme['wet_asphalt']}; */}
 `;
 
 const Setting = styled.li`
+  position: relative;
   display: flex;
   width: 100%;
-  height: 15px;
-  margin: 40px 0;
-  font-size: 12px;
+  height: 48px;
+  margin-bottom: 24px;
 `;
 
-const Wrapper = Flex.extend`
-  width: 100%;
-  overflow: hidden;
-  word-wrap: break-word;
-`;
-
-const StyledSpan = styled.span`
-  font-size: 15px;
-  line-height: 20px;
-  color: rgb(110, 110, 110);
-  transition: color 0.25s ease;
-
-  &:hover {
-    text-decoration: underline;
-    color: ${({ theme }) => theme['turquoise']};
-    cursor: pointer;
-  }
-`;
-
-const ButtonsContainer = Flex.extend`
-  width: 100px;
-  height: 42px;
-  right: 20px;
-  bottom: 20px;
+const Source = Flex.extend`
   position: absolute;
+  left: 0;
+  top: 0;
+  width: 100px;
+  height: 100%;
+  color: #fff;
+  font-weight: bold;
+  font-size: 14px;
+  box-sizing: border-box;
+  background: ${({ theme }) => theme['turquoise']};
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: calc(-10px * 0.866);
+    transform: translateY(-50%);
+    border-width: 10px 0 10px 10px;
+    border-style: solid;
+    border-color: transparent transparent transparent ${({ theme }) => theme['turquoise']};
+    z-index: 10;
+  }
 `;
 
-const ButtonWrapper = Flex.extend`
-  font-size: 24px;
-  width: 40px;
-  height: 40px;
-  cursor: pointer;
-  transition: color 0.25s ease-in-out;
+const Encoding = Source.extend`
+  background: ${({ theme }) => theme['peter_river']};
 
-  &:hover {
-    color: ${({ theme }) => theme['turquoise']};
-    background: ${({ theme }) => theme['clouds']};
+  &::before {
+    border-color: transparent transparent transparent ${({ theme }) => theme['peter_river']};
   }
+`;
+
+const Offset = Source.extend`
+  background: ${({ theme }) => theme['sun_flower']};
+
+  &::before {
+    border-color: transparent transparent transparent ${({ theme }) => theme['sun_flower']};
+  }
+`;
+
+const Content = Flex.extend`
+  position: absolute;
+  left: 100px;
+  top: 0;
+  width: calc(100% - 100px);
+  height: 100%;
+  padding-left: 25px;
+  box-sizing: border-box;
+  background: ${({ theme }) => theme['clouds']};
 `;
 
 class SubSettings extends Component {
@@ -138,51 +118,30 @@ class SubSettings extends Component {
   }
 
   render() {
-    const { toggleFileBrowserDialog, toggleSubSettings, onControlsMouseMove, isVisible, textTrack } = this.props;
+    const { toggleFileBrowserDialog, onControlsMouseMove, isVisible, textTrack } = this.props;
     const displayTitle = textTrack.label === '' ? 'None' : textTrack.label;
 
     return (
-      <Fragment>
-        <ContainerSquare
-          align='center'
-          justify='center'
-          style={{ display: isVisible ? 'flex' : 'none' }}
-          onMouseMove={onControlsMouseMove} /* Prevent controls from hiding */
-        >
-          <Wrapper column justify='center'>
-            <h2>Language</h2>
-            <StyledSpan onClick={toggleFileBrowserDialog}>
-              <FontAwesomeIcon icon={['fas', 'ellipsis-h']} size='2x'/>
-            </StyledSpan>
-            <div>{displayTitle}</div>
-          </Wrapper>
-        </ContainerSquare>
-        <ContainerRectangle
-          align='center'
-          justify='flex-end'
-          style={{ display: isVisible ? 'flex' : 'none' }}
-          onMouseMove={onControlsMouseMove}
-        >
-          <Preference>
-            <Setting>
-              <span>Encoding:&nbsp;</span>
-              <SubtitleEncoding />
-            </Setting>
-            <Setting>
-              <span>Offset&nbsp;<span>(seconds)</span>:&nbsp;</span>
-              <SubtitleOffset />
-            </Setting>
-          </Preference>
-          <ButtonsContainer align='center' justify='space-around'>
-            <ButtonWrapper align='center' justify='center' onClick={toggleSubSettings}>
-              <FontAwesomeIcon icon={['fas', 'times']}/>
-            </ButtonWrapper>
-            <ButtonWrapper align='center' justify='center' onClick={this.confirm}>
-              <FontAwesomeIcon icon={['fas', 'check']}/>
-            </ButtonWrapper>
-          </ButtonsContainer>
-        </ContainerRectangle>
-      </Fragment>
+      <Container style={{ display: isVisible ? 'block' : 'none' }} onMouseMove={onControlsMouseMove}>
+        <Setting>
+          <Source align='center' justify='center'><span>Source</span></Source>
+          <Content align='center' justify='center'>
+            <SubtitleSource title={displayTitle} toggleFileBrowserDialog={toggleFileBrowserDialog} />
+          </Content>
+        </Setting>
+        <Setting>
+          <Encoding align='center' justify='center'><span>Encoding</span></Encoding>
+          <Content align='center' justify='center'>
+            <SubtitleEncoding />
+          </Content>
+        </Setting>
+        <Setting>
+          <Offset align='center' justify='center'><span>Offset</span></Offset>
+          <Content align='center' justify='center'>
+            <SubtitleOffset />
+          </Content>
+        </Setting>
+      </Container>
     );
   }
 }

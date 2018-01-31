@@ -9,24 +9,31 @@ import { changeTextTrackOffset } from 'stores/text-track';
 
 import { Flex, Button } from 'shared/components';
  
-const OffsetInputWrapper = Flex.extend`
+const Container = Flex.extend`
   width: 100%;
   height: 100%;
   position: relative;
   box-sizing: border-box;
-  border-bottom: 1px solid rgba(255,255,255,0.8);
 `;
 
-const Steps = Flex.extend`
-  width: 15px;
+const StepsContainer = Flex.extend`
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 96px;
+  height: 100%;
+  box-sizing: border-box;
 `;
 
 const StepWrapper = Button.extend`
+  font-size: 28px;
   color: #fff;
+  background: ${({ theme }) => theme['wet_asphalt']};
   transition: color 0.25s ease-in-out;
 
   &:hover {
     color: ${({ theme }) => theme['turquoise']};
+    background: ${({ theme }) => theme['midnight_blue']};
   }
 `;
 
@@ -38,44 +45,43 @@ const OffsetInput = styled.input.attrs({
   align-items: center;
   justify-content: center;
   width: calc(100% - 15px);
-  font-size: 12px;
+  font-size: 18px;
   outline: none;
   border: none;
-  color: #fff;
+  color: #000;
   background: transparent;
   box-sizing: border-box;
 
   &::placeholder {
-    color: #fff;
+    color: #000;
   }
 `;
 
 const Warning = Flex.extend`
   text-align: center;
   vertical-align: middle;
-  font-size: 13px;
-  line-height: 13px;
-  color: #D8000C;
-  background: #FFD2D2;
+  font-size: 14px;
+  line-height: 20px;
+  color: #fff;
+  background: ${({ theme }) => theme['alizarin']};
   position: absolute;
   transform: translateX(-50%);
-  bottom: -40px;
+  bottom: -50px;
   padding: 10px 10px;
-  border-radius: 5px;
   box-sizing: content-box;
   box-shadow: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
   white-space: nowrap;
   transition: opacity 0.25s ease-in-out;
 
-  &::before {
+  ${'' /* &::before {
     content: '';
     position: absolute;
-    left: calc(50% - 5px);
-    top: calc(-5px * 0.866);
-    border-width: 0 5px 5px 5px;
+    left: calc(50% - 10px);
+    top: calc(-10px * 0.866);
+    border-width: 0 10px 10px 10px;
     border-style: solid;
-    border-color: transparent transparent #FFD2D2 transparent;
-  }
+    border-color: transparent transparent ${({ theme }) => theme['alizarin']} transparent;
+  } */}
 `;
 
 class SubtitleOffset extends Component {
@@ -141,7 +147,7 @@ class SubtitleOffset extends Component {
     const isWarningVisible = input !== '' && isInputNaN;
 
     return (
-      <OffsetInputWrapper align='center' justify='space-between'>
+      <Container align='center' justify='space-between'>
         <OffsetInput
           placeholder={offset.toFixed(3)}
           value={input}
@@ -150,14 +156,14 @@ class SubtitleOffset extends Component {
           onMouseOver={this.onInputMouseOver}
           onMouseLeave={this.onInputMouseLeave}
         />
-        <Steps column align='center'>
-          <StepWrapper size='12px' onClick={this.increaseOffset} style={{ marginTop: '-2px'}}>
-            <FontAwesomeIcon icon={['fas', 'caret-up']}/>
+        <StepsContainer align='center' justify='center'>
+          <StepWrapper size='48px' onClick={this.decreaseOffset}>
+            <FontAwesomeIcon icon={['fas', 'minus']}/>
           </StepWrapper>
-          <StepWrapper size='12px' onClick={this.decreaseOffset} style={{ marginTop: '-6px'}}>
-            <FontAwesomeIcon icon={['fas', 'caret-down']}/>
+          <StepWrapper size='48px' onClick={this.increaseOffset}>
+            <FontAwesomeIcon icon={['fas', 'plus']}/>
           </StepWrapper>
-        </Steps>
+        </StepsContainer>
         <Warning
           align='center'
           justify='center'
@@ -165,7 +171,7 @@ class SubtitleOffset extends Component {
         >
           <span>Offset must be a number</span>
         </Warning>
-      </OffsetInputWrapper>
+      </Container>
     );
   }
 }

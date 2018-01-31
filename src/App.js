@@ -30,7 +30,13 @@ const theme = {
   'turquoise': '#1abc9c',
   'green_sea': '#16a085',
   'clouds': '#ecf0f1',
-  'silver': '#bdc3c7'
+  'silver': '#bdc3c7',
+  'peter_river': '#3498db',
+  'belize_hole': '#2980b9',
+  'sun_flower': '#f1c40f',
+  'orange': '#f39c12',
+  'alizarin': '#e74c3c',
+  'pomegranate': '#c0392b'
 };
 
 const Logo = Flex.extend`

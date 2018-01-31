@@ -114,8 +114,10 @@ class FileBrowser extends Component {
 
   setPlayerType(option/* boolean */) {
     const { app, toggleLoading, fileBrowser, toggleFileBrowserDialog, streamToGoogleCast } = this.props;
+    const { isOptionsVisible } = this.state;
 
     if (fileBrowser.isVisible) toggleFileBrowserDialog();
+    if (isOptionsVisible) this.toggleCastOptions();
 
     streamToGoogleCast(option);
 
@@ -128,16 +130,12 @@ class FileBrowser extends Component {
   wakeUpPlayer() {
     const { io } = window;
     const { app, updateStreamInfo, togglePlayer } = this.props;
-    const { isOptionsVisible } = this.state;
 
     if (!app.isPlayerEnabled) togglePlayer();
 
     io.emit('new stream', { video: this.selectedVideo, seek: 0 });
   
     io.once('stream created', updateStreamInfo);
-
-    // switch back to file browser mode quietly in the background
-    if (isOptionsVisible) setTimeout(this.toggleCastOptions, 1000);
   }
 
   addTextTrack(location, label, encoding, offset) {
@@ -166,7 +164,7 @@ class FileBrowser extends Component {
   
   render() {
     const { isOptionsVisible } = this.state;
-    const { app, fileBrowser, toggleFileBrowserDialog } = this.props;
+    const { fileBrowser, toggleFileBrowserDialog } = this.props;
     const isComponentVisible = fileBrowser.isVisible;
 
     if (fileBrowser.hasError) {

@@ -7,19 +7,20 @@ import { bindActionCreators } from 'redux';
 
 import { changeTextTrackEncoding } from 'stores/text-track';
 
-import { Flex } from 'shared/components';
+import { Flex, Button } from 'shared/components';
 
 const Container = Flex.extend`
   width: 100%;
   height: 100%;
   box-sizing: border-box;
   position: relative;
-  border-bottom: 1px solid rgb(255,255,255);
+  ${'' /* border-bottom: 1px solid rgb(255,255,255); */}
 `;
 
 const Text = styled.span`
   display: inline-block;
   width: calc(100% - 15px);
+  font-size: 18px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -35,13 +36,25 @@ const Select = styled.select`
   background: transparent;
   border: none;
   position: absolute;
+  z-index:10;
+  cursor: pointer;
 `;
 
-const CaretWrapper = Flex.extend`
-  width: 15px;
-  height: 15px;
-  font-size: 15px;
+const CaretDown = Button.extend`
+  position: absolute;
+  top: 0;
+  right: 0;
+  font-size: 40px;
   box-sizing: border-box;
+  cursor: pointer;
+  color: #fff;
+  background: ${({ theme }) => theme['wet_asphalt']};
+  transition: color 0.25s ease-in-out;
+
+  ${Container}:hover & {
+    color: ${({ theme }) => theme['turquoise']};
+    background: ${({ theme }) => theme['midnight_blue']};
+  }
 `;
 
 const encodingOptions = [
@@ -120,9 +133,9 @@ class SubtitleEncoding extends Component {
             </optgroup>
           ))}
         </Select>
-        <CaretWrapper align='center' justify='center'>
+        <CaretDown size='48px'>
           <FontAwesomeIcon icon={['fas', 'caret-down']} />
-        </CaretWrapper>
+        </CaretDown>
       </Container>
     );
   }

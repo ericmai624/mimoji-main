@@ -35,7 +35,7 @@ class FileBrowserList extends Component {
       onDoubleClickFile,
       navigateUpDir
     } = this.props;
-    const { displayedContent, isVisible, isPending } = fileBrowser;
+    const { displayedContent, isPending } = fileBrowser;
 
     return (
       <Main column justify='center'>
