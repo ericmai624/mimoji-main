@@ -22,7 +22,7 @@ const SearchWrapper = Flex.extend`
   vertical-align: middle;
   box-sizing: border-box;
   background: #fff;
-  caret-color: #34495e;
+  caret-color: ${({ theme }) => theme['midnight_blue']};
   box-shadow: 1px 1px 1px 1px rgba(0,0,0,0.25), -1px 1px 1px 1px rgba(0,0,0,0.25);
   z-index: 50;
   transition: all 0.25s ease-in-out;
@@ -42,14 +42,14 @@ const SearchInput = styled.input.attrs({
   outline: none;
   font-size: 16px;
   font-weight: bold;
-  color: #34495e;
+  color: ${({ theme }) => theme['midnight_blue']};
   background: transparent;
   box-sizing: content-box;
   overflow: hidden;
   text-overflow: ellipsis;
 
   &::placeholder {
-    color: #bdc3c7;
+    color: ${({ theme }) => theme['silver']};
   }
 `;
 

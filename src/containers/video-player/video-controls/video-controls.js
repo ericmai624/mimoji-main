@@ -18,14 +18,13 @@ const Container = Flex.extend`
   height: 48px;
   padding: 0 45px;
   border: none;
-  border-radius: 10px;
-  background: ${({ theme }) => theme.bgColor};
+  background: ${({ theme }) => theme['wet_asphalt']};
   opacity: ${({ isControlsVisible }) => isControlsVisible ? 1 : 0};
   left: calc(50% - 400px);
   bottom: 5%;
   box-sizing: border-box;
   transition: opacity 0.25s ease-in-out;
-  box-shadow: 0 0 4px 2px rgba(0, 0, 0, 0.2);
+  ${'' /* box-shadow: 0 0 4px 2px rgba(0, 0, 0, 0.2); */}
   z-index: 101;
   position: absolute;
 `;

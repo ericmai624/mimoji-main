@@ -9,14 +9,12 @@ const Container = Flex.extend`
   position: absolute;
   width: 100%;
   height: 80px;
-  padding-right: 25px;
   left: 0;
   bottom: 0;
   user-select: none;
-  color: #FFF;
-  font-size: 32px;
+  color: #fff;
   box-sizing: border-box;
-  background: #34495e;
+  background: ${({ theme }) => theme['wet_asphalt']};
   transition: transform 0.5s ease-in-out;
 `;
 
@@ -28,11 +26,11 @@ const YouAreHere = Flex.extend`
   height: 32px;
   border-radius: 16px;
   transform: translateY(-50%);
-  color: #34495e;
+  color: ${({ theme }) => theme['midnight_blue']};
   font-size: 15px;
   font-weight: bold;
   user-select: none;
-  background: #FFF;
+  background: #fff;
   box-shadow: 1px 1px 1px 1px rgba(0,0,0,0.25), -1px 1px 1px 1px rgba(0,0,0,0.25);
 `;
 
@@ -43,7 +41,7 @@ const IconWrapper = Flex.extend`
 `;
 
 const Text = styled.div`
-  width: calc(100% - 40px);
+  width: calc(80% - 40px);
   height: 100%;
   line-height: 50px;
   vertical-align: middle;
@@ -52,6 +50,7 @@ const Text = styled.div`
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  font-size: 28px;
 `;
 
 const GPS = styled.span`
@@ -59,11 +58,13 @@ const GPS = styled.span`
   transition: color 0.25s ease-in-out;
 
   &:hover {
-    color: #1abc9c;
+    color: ${({ theme }) => theme['turquoise']};
   }
 `;
 
 const CloseWrapper = Flex.extend`
+  position: absolute;
+  right: 25px;
   font-size: 40px;
   width: 40px;
   height: 40px;
@@ -72,7 +73,7 @@ const CloseWrapper = Flex.extend`
   transition: color 0.25s ease-in-out;
 
   &:hover {
-    color: #1abc9c;
+    color: ${({ theme }) => theme['turquoise']};
   }
 `;
 

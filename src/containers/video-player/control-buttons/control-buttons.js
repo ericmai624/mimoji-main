@@ -5,12 +5,12 @@ import { Button } from 'shared/components';
 
 const Container = Button.extend`
   width: 42px;
-  color: ${({ color }) => color ? color.normal : 'rgba(255,255,255,1)'};
+  color: ${({ color }) => color ? color.normal : '#fff'};
   z-index: 50;
   transition: color 0.25s ease-in-out;
 
   &:hover {
-    color: ${({ color, theme }) => color ? color.hover : theme.orange};
+    color: ${({ color, theme }) => color ? color.hover : theme['turquoise']};
   }
 `;
 

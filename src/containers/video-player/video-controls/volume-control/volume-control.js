@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import styled from 'styled-components';
+import styled, { withTheme } from 'styled-components';
 import FontAwesomeIcon from '@fortawesome/react-fontawesome';
 
 import { Flex } from 'shared/components';
@@ -32,10 +32,9 @@ const VolumeRangeWrapper = Flex.extend`
   visibility: ${({ isVisible }) => isVisible ? 'visible' : 'hidden'};
   transform: rotate(-90deg) translate(115px, -32px);
   transform-origin: 50% 50%;
-  background: ${({ theme }) => theme.bgColor};
+  background: ${({ theme }) => theme['wet_asphalt']};
   width: 105px;
   height: 40px;
-  border-radius: 5px;
   padding: 0px 5px;
   box-sizing: border-box;
   transition: opacity 0.25s ease-in-out;
@@ -57,11 +56,15 @@ const VolumeRange = styled.input.attrs({
 
   &::-webkit-slider-thumb {
     -webkit-appearance: none;
-    background: rgba(219, 219, 219, 1);
+    background: ${({ theme }) => theme['green_sea']};
     width: 16px;
     height: 16px;
     border-radius: 50%;
     cursor: pointer;
+
+    &:hover {
+      background: #48c9b0;
+    }
   }
 
   &::-webkit-slider-runnable-track {
@@ -70,11 +73,15 @@ const VolumeRange = styled.input.attrs({
   }
 
   &::-moz-range-thumb {
-    background: rgba(219, 219, 219, 1);
+    background: ${({ theme }) => theme['green_sea']};
     width: 16px;
     height: 16px;
     border-radius: 50%;
     cursor: pointer;
+
+    &:hover {
+      background: #48c9b0;
+    }
   }
 
   &::-moz-range-track {
@@ -88,11 +95,15 @@ const VolumeRange = styled.input.attrs({
   }
 
   &::-ms-thumb {
-    background: rgba(219, 219, 219, 1);
+    background: ${({ theme }) => theme['green_sea']};
     width: 16px;
     height: 16px;
     border-radius: 50%;
-    cursor: pointer; 
+    cursor: pointer;
+
+    &:hover {
+      background: #48c9b0;
+    }
   }
 
   &::-ms-track {
@@ -138,7 +149,7 @@ class VolumeControl extends Component {
   }
 
   render() {
-    const { muteOrUnmute, setVolume, volume, isMuted } = this.props;
+    const { muteOrUnmute, setVolume, volume, isMuted, theme } = this.props;
     const { showVolumeRange } = this.state;
 
     let volumeIcon = (<FontAwesomeIcon icon={['fas', 'volume-up']}/>);
@@ -168,10 +179,10 @@ class VolumeControl extends Component {
             value={volume}
             onChange={setVolume}
             style={{
-              background: 'linear-gradient(to right, rgba(228, 75, 54, 0.9) 0%,' 
-                          + `rgba(228, 75, 54, 0.9) ${volume * 100}%,` 
-                          + `rgba(69, 69, 69, 0.9) ${volume * 100}%,` 
-                          + 'rgba(69, 69, 69, 0.9) 100%)'
+              background: `linear-gradient(to right, ${theme['turquoise']} 0%,` 
+                          + `${theme['turquoise']} ${volume * 100}%,` 
+                          + `${theme['clouds']} ${volume * 100}%,` 
+                          + `${theme['clouds']} 100%)`
             }}
           >
           </VolumeRange>
@@ -182,4 +193,4 @@ class VolumeControl extends Component {
   }
 }
 
-export default VolumeControl;
+export default withTheme(VolumeControl);

@@ -32,7 +32,7 @@ const Title = Flex.extend`
   box-sizing: border-box;
   color: ${white};
   user-select: none;
-  background: #34495e;
+  background: ${({ theme }) => theme['wet_asphalt']};
 `;
 
 const Options = styled.ul`

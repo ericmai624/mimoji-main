@@ -27,7 +27,7 @@ const SeekTime = Flex.extend`
   opacity: ${({ isVisible }) => isVisible ? 1 : 0};
   font-size: 12px;
   color: rgb(255,255,255);
-  background: rgba(0, 0, 0, 0.85);
+  background: ${({ theme }) => theme['green_sea']};
   padding: 5px;
   width: 50px;
   height: 12px;
@@ -46,7 +46,8 @@ const SeekTime = Flex.extend`
     bottom: -4px;
     border-width: 5px 5px 0 5px;
     border-style: solid;
-    border-color: rgba(0, 0, 0, 0.85) transparent transparent transparent;
+    border-color: ${({ theme }) => theme['green_sea']} transparent transparent transparent;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.26);
   }
 `;
 
@@ -56,11 +57,11 @@ const ProgressBar = styled.progress`
   height: ${progressHeight}px;
   border: none;
   border-radius: ${borderRadius}px;
-  color: ${({ theme }) => theme.orange};
+  color: ${({ theme }) => theme['turquoise']};
   -webkit-appearance: none;
 
   &::-webkit-progress-value {
-    background: ${({ theme }) => theme.orange};
+    background: ${({ theme }) => theme['turquoise']};
     border: none;
     border-radius: ${borderRadius}px;
   }
@@ -70,7 +71,7 @@ const ProgressBar = styled.progress`
     border-radius: ${borderRadius}px;
   }
   &::-moz-progress-bar {
-    background: ${({ theme }) => theme.orange};
+    background: ${({ theme }) => theme['turquoise']};
     border: none;
     border-radius: ${borderRadius}px;
   }

@@ -27,8 +27,8 @@ const Entry = styled.li`
   user-select: none;
   padding: 16px;
   font-weight: bold;
-  color: #34495e;
-  border-bottom: 2px solid #34495e;
+  color: ${({ theme }) => theme['wet_asphalt']};
+  border-bottom: 2px solid ${({ theme }) => theme['wet_asphalt']};
   align-items: center;
   box-sizing: border-box;
   transition: color 0.25s ease-in-out;
@@ -39,7 +39,7 @@ const Entry = styled.li`
 
   &:hover {
     color: #fff;
-    background: #34495e;
+    background: ${({ theme }) => theme['wet_asphalt']};
   }
 `;
 

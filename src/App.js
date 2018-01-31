@@ -23,9 +23,29 @@ import { Flex, Button } from 'shared/components';
 fontawesome.library.add(brand, solid, regular);
 
 const theme = {
-  orange: 'rgba(228, 75, 54, 0.9)',
-  bgColor: 'rgba(65, 68, 86, 0.8)'
+  'carrot': '#e67e22',
+  'pumpkin': '#d35400',
+  'wet_asphalt': '#34495e',
+  'midnight_blue': '#2c3e50',
+  'turquoise': '#1abc9c',
+  'green_sea': '#16a085',
+  'clouds': '#ecf0f1',
+  'silver': '#bdc3c7'
 };
+
+const Logo = Flex.extend`
+  font-family: 'Megrim', cursive;
+  font-size: 32px;
+  font-weight: bold;
+  color: #fff;
+  z-index: 10;
+  width: 32px;
+  height: 36px;
+  user-select: none;
+  position: fixed;
+  top: 2px;
+  left: 25px;
+`;
 
 const Wrapper = Flex.extend`
   width: 100%;
@@ -45,7 +65,7 @@ const Start = Button.extend`
   display: ${({ isVisible }) => isVisible ? 'flex' : 'none'};
   color: rgba(228, 228, 228, 0.94);
   background-color: #415b76;
-  color: #2c3e50;
+  color: ${({ theme }) => theme['midnight_blue']};
   outline: none;
   border: none;
   box-shadow: 0 0 3px 1px rgba(0, 0, 0, 0.12);
@@ -55,7 +75,7 @@ const Start = Button.extend`
   transition: all 0.25s ease-in-out;
 
   &:hover {
-    color: #1abc9c;
+    color: ${({ theme }) => theme['turquoise']};
     box-shadow: 0 0 6px 3px rgba(0, 0, 0, 0.25);
   }
 `;
@@ -143,6 +163,7 @@ class App extends Component {
             isBlur={app.isInitializing}
             innerRef={el => this.wrapper = el}
           >
+            <Logo align='center' justify='center'>m</Logo>
             <Start
               size='60px'
               onClick={toggleFileBrowserDialog}

@@ -31,7 +31,7 @@ const Top = Flex.extend`
   width: 100%;
   height: 40px;
   box-sizing: border-box;
-  background: #34495e;
+  background: ${({ theme }) => theme['wet_asphalt']};
   transition: transform 0.50s ease-in-out;
 `;
 

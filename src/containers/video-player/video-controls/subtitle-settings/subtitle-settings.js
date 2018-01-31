@@ -26,7 +26,7 @@ const ContainerRectangle = Flex.extend`
   width: ${containerWidth * 2 + 70}px;
   height: ${containerHeight - 50}px;
   padding: ${padding}px ${padding}px;
-  background: ${({ theme }) => theme.bgColor};
+  background: ${({ theme }) => theme['wet_asphalt']};
   box-shadow: ${boxShadow};
   z-index: 101;
   box-sizing: border-box;
@@ -78,7 +78,7 @@ const StyledSpan = styled.span`
 
   &:hover {
     text-decoration: underline;
-    color: ${({ theme }) => theme.orange};
+    color: ${({ theme }) => theme['turquoise']};
     cursor: pointer;
   }
 `;
@@ -99,8 +99,8 @@ const ButtonWrapper = Flex.extend`
   transition: color 0.25s ease-in-out;
 
   &:hover {
-    color: ${({ theme }) => theme.orange};
-    background: rgba(219, 219, 219, 0.2);
+    color: ${({ theme }) => theme['turquoise']};
+    background: ${({ theme }) => theme['clouds']};
   }
 `;
 

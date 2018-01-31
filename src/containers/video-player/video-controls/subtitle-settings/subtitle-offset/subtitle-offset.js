@@ -22,11 +22,11 @@ const Steps = Flex.extend`
 `;
 
 const StepWrapper = Button.extend`
-  color: rgba(255,255,255,0.94);
+  color: #fff;
   transition: color 0.25s ease-in-out;
 
   &:hover {
-    color: ${({ theme }) => theme.orange};
+    color: ${({ theme }) => theme['turquoise']};
   }
 `;
 
@@ -41,12 +41,12 @@ const OffsetInput = styled.input.attrs({
   font-size: 12px;
   outline: none;
   border: none;
-  color: rgba(255,255,255,0.94);
+  color: #fff;
   background: transparent;
   box-sizing: border-box;
 
   &::placeholder {
-    color: rgba(255,255,255,0.94);
+    color: #fff;
   }
 `;
 

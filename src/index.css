@@ -20,6 +20,11 @@ urls will be replaced by base64
   font-style: italic;
 }
 
+@font-face {
+  font-family: Megrim;
+  src: url('assets/font/Megrim/Megrim.ttf');
+}
+
 body {
   font-family: 'Roboto', sans-serif;
   -webkit-font-smoothing: antialiased;
