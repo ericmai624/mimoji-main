@@ -7,9 +7,9 @@ import FileBrowserListEntry from './file-list-entry/file-list-entry';
 import { Flex } from 'shared/components';
 
 const Main = Flex.extend`
-  width: 66.667%;
+  width: calc(61.8% - 75px);
   height: 100%;
-  padding: 10px 0 25px 25px;
+  padding: 12px 0;
   background: inherit;
   box-sizing: border-box;
   overflow: hidden;
@@ -17,7 +17,6 @@ const Main = Flex.extend`
   top: 50%;
   right: 75px;
   transform: translateY(-50%);
-  transition: transform 0.5s ease-in-out;
 `;
 
 class FileBrowserList extends Component {
@@ -39,7 +38,7 @@ class FileBrowserList extends Component {
     const { displayedContent, isVisible, isPending } = fileBrowser;
 
     return (
-      <Main column justify='center' style={{ transform: isVisible ? 'translate(0, -50%)' : 'translate(calc(100% + 75px), -50%)' }}>
+      <Main column justify='center'>
         <FileBrowserListEntry
           content={displayedContent}
           isPending={isPending}

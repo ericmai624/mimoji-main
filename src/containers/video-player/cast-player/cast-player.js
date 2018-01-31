@@ -19,6 +19,7 @@ const Container = Flex.extend`
   position: absolute;
   background: transparent;
   z-index: 98;
+  transition: transform 0.5s ease-in-out;
 `;
 
 class CastPlayer extends Component {
@@ -34,7 +35,8 @@ class CastPlayer extends Component {
     ip: PropTypes.object.isRequired,
     app: PropTypes.object.isRequired,
     stream: PropTypes.object.isRequired,
-    textTrack: PropTypes.object.isRequired
+    textTrack: PropTypes.object.isRequired,
+    isFileBrowserEnabled: PropTypes.bool.isRequired
   }
   
   constructor(props) {
@@ -422,7 +424,7 @@ class CastPlayer extends Component {
 
   render() {
     const { isSeeking, isPaused, isMuted, volume } = this.state;
-    const { stream, toggleFileBrowserDialog } = this.props;
+    const { stream, isFileBrowserEnabled, toggleFileBrowserDialog } = this.props;
 
     if (stream.hasError) {
       return (
@@ -433,7 +435,11 @@ class CastPlayer extends Component {
     }
 
     return (
-      <Container align='center' justify='center'>
+      <Container
+        align='center'
+        justify='center'
+        style={{ transform: isFileBrowserEnabled ? 'translateX(-100%)' : 'none' }}
+      >
         <Loader
           isVisible={isSeeking}
           size={42}
@@ -462,7 +468,8 @@ const mapStateToProps = state => ({
   ip: state.ip,
   app: state.app,
   stream: state.stream,
-  textTrack: state.textTrack
+  textTrack: state.textTrack,
+  isFileBrowserEnabled: state.fileBrowser.isVisible
 });
 
 const mapDispatchToProps = (dispatch) => ({ 

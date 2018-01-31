@@ -21,6 +21,7 @@ const Container = styled.div`
   top: 0;
   width: 100%;
   height: 100%;
+  z-index: 5;
 `;
 
 const Top = Flex.extend`
@@ -40,6 +41,7 @@ const ListContainer = Flex.extend`
   height: calc(100% - 120px); /* minus Top and Nav height */
   top: 40px;
   box-sizing: border-box;
+  transition: transform 0.5s ease-in-out;
 `;
 
 class FileBrowser extends Component {
@@ -61,7 +63,7 @@ class FileBrowser extends Component {
     this.navigateUpDir = this.navigateUpDir.bind(this);
     this.toggleCastOptions = this.toggleCastOptions.bind(this);
   }
-  
+
   componentDidMount() {
     const { io } = window;
 
@@ -165,7 +167,7 @@ class FileBrowser extends Component {
   render() {
     const { isOptionsVisible } = this.state;
     const { app, fileBrowser, toggleFileBrowserDialog } = this.props;
-    const { isVisible } = fileBrowser;
+    const isComponentVisible = fileBrowser.isVisible;
 
     if (fileBrowser.hasError) {
       return (
@@ -176,16 +178,11 @@ class FileBrowser extends Component {
     }
 
     return (
-      <Container 
-        id='file-browser'
-        style={{ 
-          zIndex: app.isPlayerEnabled ? 2147483647 : 5 
-        }}
-      >
-        <Top align='center' justify='center' style={{ transform: isVisible ? 'none' : 'translateY(-63px)' }}>
+      <Container id='file-browser'>
+        <Top align='center' justify='center' style={{ transform: isComponentVisible ? 'none' : 'translateY(-63px)' }}>
           <Search />
         </Top>
-        <ListContainer align='center' justify='flex-end'>
+        <ListContainer align='center' justify='flex-end' style={{ transform: isComponentVisible ? 'none' : 'translateX(100%)' }}>
           <FileBrowserList
             fileBrowser={fileBrowser}
             onDoubleClickDirectory={this.onDoubleClickDirectory}
@@ -200,7 +197,7 @@ class FileBrowser extends Component {
         </ListContainer>
         <Nav
           directory={fileBrowser.directory}
-          isVisible={isVisible}
+          isComponentVisible={isComponentVisible}
           toggleFileBrowserDialog={toggleFileBrowserDialog}
         />
       </Container>

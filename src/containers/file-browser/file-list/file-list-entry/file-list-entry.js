@@ -33,6 +33,10 @@ const Entry = styled.li`
   box-sizing: border-box;
   transition: color 0.25s ease-in-out;
 
+  &:first-child {
+    margin-top: 0;
+  }
+
   &:hover {
     color: #fff;
     background: #34495e;

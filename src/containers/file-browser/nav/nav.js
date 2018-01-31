@@ -80,7 +80,7 @@ class Nav extends Component {
 
   static propTypes = {
     directory: PropTypes.object,
-    isVisible: PropTypes.bool.isRequired,
+    isComponentVisible: PropTypes.bool.isRequired,
     toggleFileBrowserDialog: PropTypes.func.isRequired
   }
 
@@ -99,7 +99,7 @@ class Nav extends Component {
   } 
 
   render() {
-    const { directory, isVisible, toggleFileBrowserDialog } = this.props;
+    const { directory, isComponentVisible, toggleFileBrowserDialog } = this.props;
     let location;
     if (directory) {
       location = directory.folders.map((folder, i) => {
@@ -117,7 +117,7 @@ class Nav extends Component {
     }
 
     return (
-      <Container align='center' justify='flex-start' style={{ transform: isVisible ? 'none' : 'translateY(112px)' }}>
+      <Container align='center' justify='flex-start' style={{ transform: isComponentVisible ? 'none' : 'translateY(112px)' }}>
         <YouAreHere align='center' justify='center'>
           <IconWrapper align='center' justify='flex-start'>
             <FontAwesomeIcon icon={['fas', 'map-marker-alt']} />

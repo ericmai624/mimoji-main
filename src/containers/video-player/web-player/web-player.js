@@ -21,6 +21,7 @@ const VideoContainer = Flex.extend`
   position: absolute;
   background: #000;
   z-index: 100;
+  transition: transform 0.5s ease-in-out;
 `;
 
 class WebPlayer extends Component {
@@ -28,6 +29,7 @@ class WebPlayer extends Component {
   static propTypes = {
     app: PropTypes.object.isRequired,
     stream: PropTypes.object.isRequired,
+    isFileBrowserEnabled: PropTypes.bool.isRequired,
     updateStreamInfo: PropTypes.func.isRequired,
     toggleLoading: PropTypes.func.isRequired,
     togglePlayer: PropTypes.func.isRequired,
@@ -257,7 +259,7 @@ class WebPlayer extends Component {
   }
   
   render() {
-    const { app, stream } = this.props;
+    const { app, stream, isFileBrowserEnabled } = this.props;
     const { isSeeking, isPaused, isMuted, isControlsVisible, volume, currTimeOffset } = this.state;
 
     if (stream.hasError) {
@@ -274,6 +276,7 @@ class WebPlayer extends Component {
         align='center'
         justify='center'
         onMouseMove={this.onVideoMouseMove}
+        style={{ transform: isFileBrowserEnabled ? 'translateX(-100%)' : 'none' }}
       >
         <Loader
           isVisible={isSeeking}
@@ -317,7 +320,8 @@ class WebPlayer extends Component {
 
 const mapStateToProps = (state) => ({ 
   app: state.app,
-  stream: state.stream
+  stream: state.stream,
+  isFileBrowserEnabled: state.fileBrowser.isVisible
 });
 
 const mapDispatchToProps = (dispatch) => ({ 
