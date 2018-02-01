@@ -4,9 +4,9 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
 import { toggleLoading, togglePlayer, streamToGoogleCast } from 'stores/app';
-import { toggleFileBrowserDialog, updateContent, togglePending } from 'stores/file-browser';
+import { toggleFileBrowserDialog, updateContent } from 'stores/file-browser';
 import { setStreamSource, updateStreamInfo } from 'stores/stream';
-import { updateTextTrackId } from 'stores/text-track';
+import { setTextTrackInfo } from 'stores/text-track';
 
 import { Flex } from 'shared/components';
 
@@ -81,14 +81,11 @@ class FileBrowser extends Component {
 
   getContent(dir) {
     const { io } = window;
-    const { togglePending } = this.props;
-    // togglePending(); // Toggles the loading animation
     io.emit('request content', dir);
   }
 
   updatedir(data) {
-    const { togglePending, updateContent } = this.props;
-    // togglePending();
+    const { updateContent } = this.props;
     /* 
     request rejection will not return any data.
     So if data is undefined, the request is rejected 
@@ -140,10 +137,10 @@ class FileBrowser extends Component {
 
   addTextTrack(location, label, encoding, offset) {
     const { io } = window;
-    const { fileBrowser, toggleFileBrowserDialog, updateTextTrackId } = this.props;
+    const { fileBrowser, toggleFileBrowserDialog, setTextTrackInfo } = this.props;
 
     io.emit('new subtitle', { location, offset, encoding });
-    io.once('subtitle created', id => updateTextTrackId(id, label));
+    io.once('subtitle created', id => setTextTrackInfo({ id, label, location }));
 
     if (fileBrowser.isVisible) return toggleFileBrowserDialog();
   }
@@ -211,14 +208,13 @@ const mapStateToProps = (state) => ({
 
 const mapDispatchToProps = (dispatch) => ({ 
   updateContent: bindActionCreators(updateContent, dispatch),
-  togglePending: bindActionCreators(togglePending, dispatch),
   toggleFileBrowserDialog: bindActionCreators(toggleFileBrowserDialog, dispatch),
   togglePlayer: bindActionCreators(togglePlayer, dispatch),
   toggleLoading: bindActionCreators(toggleLoading, dispatch),
   streamToGoogleCast: bindActionCreators(streamToGoogleCast, dispatch),
   setStreamSource: bindActionCreators(setStreamSource, dispatch),
   updateStreamInfo: bindActionCreators(updateStreamInfo, dispatch),
-  updateTextTrackId: bindActionCreators(updateTextTrackId, dispatch)
+  setTextTrackInfo: bindActionCreators(setTextTrackInfo, dispatch)
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(FileBrowser);

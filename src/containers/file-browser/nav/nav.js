@@ -31,7 +31,7 @@ const YouAreHere = Flex.extend`
   font-weight: bold;
   user-select: none;
   background: #fff;
-  box-shadow: 1px 1px 1px 1px rgba(0,0,0,0.25), -1px 1px 1px 1px rgba(0,0,0,0.25);
+  box-shadow: 1px 1px 1px 1px rgba(0,0,0,0.1), -1px 1px 1px 1px rgba(0,0,0,0.1);
 `;
 
 const IconWrapper = Flex.extend`

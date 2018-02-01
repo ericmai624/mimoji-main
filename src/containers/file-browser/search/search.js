@@ -23,7 +23,7 @@ const SearchWrapper = Flex.extend`
   box-sizing: border-box;
   background: #fff;
   caret-color: ${({ theme }) => theme['midnight_blue']};
-  box-shadow: 1px 1px 1px 1px rgba(0,0,0,0.25), -1px 1px 1px 1px rgba(0,0,0,0.25);
+  box-shadow: 1px 1px 1px 1px rgba(0,0,0,0.1), -1px 1px 1px 1px rgba(0,0,0,0.1);
   z-index: 50;
   transition: all 0.25s ease-in-out;
 

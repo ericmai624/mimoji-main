@@ -173,7 +173,7 @@ class App extends Component {
             <Start
               size='60px'
               onClick={toggleFileBrowserDialog}
-              isVisible={!app.isPlayerEnabled && !isFileBrowserEnabled}
+              isVisible={!app.isPlayerEnabled &&!app.isInitializing && !isFileBrowserEnabled}
             >
               <FontAwesomeIcon icon={['fab', 'microsoft']}/>
             </Start>

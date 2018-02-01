@@ -4,8 +4,6 @@ export const updateContent = (data, error) => ({ type: 'CONTENT_UPDATED', payloa
 
 export const modifyDisplayedContent = modifiedContent => ({ type: 'CONTENT_MODIFIED', displayedContent: modifiedContent });
 
-export const togglePending = () => ({ type: 'CONTENT_REQUEST_PENDING' });
-
 export const toggleFileBrowserDialog = () => ({ type: 'FILEBROWSER_DIALOG_TOGGLED' });
 
 const initState = {
@@ -13,7 +11,6 @@ const initState = {
   directory: null,
   content: [],
   displayedContent: [],
-  isPending: false,
   hasError: false
 };
 
@@ -26,7 +23,6 @@ const handlers = {
     return { ...state, directory, content, displayedContent: content };
   },
   CONTENT_MODIFIED: (state, action) => ({ ...state, displayedContent: action.displayedContent }), 
-  CONTENT_REQUEST_PENDING: (state) => ({ ...state, isPending: !state.isPending }),
   FILEBROWSER_DIALOG_TOGGLED: (state) => ({ ...state, isVisible: !state.isVisible })
 };
 

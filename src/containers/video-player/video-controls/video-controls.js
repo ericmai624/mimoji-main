@@ -24,7 +24,6 @@ const Container = Flex.extend`
   bottom: 5%;
   box-sizing: border-box;
   transition: opacity 0.25s ease-in-out;
-  ${'' /* box-shadow: 0 0 4px 2px rgba(0, 0, 0, 0.2); */}
   z-index: 101;
   position: absolute;
 `;
@@ -52,14 +51,13 @@ class VideoControls extends Component {
     super(props);
 
     this.state = { 
-      isSubSettingEnabled: true
+      isSubSettingEnabled: false
     };
 
     this.toggleSubSettings = this.toggleSubSettings.bind(this);
   }
 
-  toggleSubSettings(e) {
-    e.preventDefault();
+  toggleSubSettings() {
     const { isSubSettingEnabled } = this.state;
     this.setState({ isSubSettingEnabled: !isSubSettingEnabled });
   }

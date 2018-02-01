@@ -1,6 +1,6 @@
 import { createReducer } from '../utils';
 
-export const updateTextTrackId = (id, label) => ({ type: 'TEXTTRACK_CREATED', payload: { id, label } });
+export const setTextTrackInfo = (info) => ({ type: 'TEXTTRACK_CREATED', info });
 
 export const changeTextTrackOffset = offset => ({ type: 'TEXTTRACK_OFFSET_CHANGED', offset });
 
@@ -18,7 +18,10 @@ const initState = {
 };
 
 const handlers = {
-  TEXTTRACK_CREATED: (state, action) => ({ ...state, id: action.payload.id, label: action.payload.label, isEnabled: true }),
+  TEXTTRACK_CREATED: (state, action) => { 
+    const { id, label, location } = action.info;
+    return {...state, id, label, location, isEnabled: true };
+  },
   TEXTTRACK_OFFSET_CHANGED: (state, action) => ({ ...state, offset: action.offset }),
   TEXTTRACK_ENCODING_CHANGED: (state, action) => ({ ...state, encoding: action.encoding }),
   TEXTTRACK_RESETS: () => initState
