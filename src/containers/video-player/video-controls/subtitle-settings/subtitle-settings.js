@@ -153,7 +153,7 @@ class SubSettings extends Component {
     isVisible: PropTypes.bool.isRequired,
     toggleFileBrowserDialog: PropTypes.func.isRequired,
     toggleSubSettings: PropTypes.func.isRequired,
-    onControlsMouseMove: PropTypes.func.isRequired
+    onControlsMouseMove: PropTypes.func
   }
 
   constructor(props) {

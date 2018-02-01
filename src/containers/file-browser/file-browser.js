@@ -35,6 +35,20 @@ const Top = Flex.extend`
   transition: transform 0.50s ease-in-out;
 `;
 
+const Logo = Flex.extend`
+  font-family: 'Megrim', cursive;
+  font-size: 32px;
+  font-weight: bold;
+  color: #fff;
+  z-index: 10;
+  width: 32px;
+  height: 36px;
+  user-select: none;
+  position: absolute;
+  top: 2px;
+  left: 25px;
+`;
+
 const ListContainer = Flex.extend`
   position: absolute;
   width: 100%;
@@ -109,19 +123,31 @@ class FileBrowser extends Component {
     }
   }
 
-  setPlayerType(option/* boolean */) {
+  async setPlayerType(e, isChromecast/* boolean */) {
+    const { cast } = window;
     const { app, toggleLoading, fileBrowser, toggleFileBrowserDialog, streamToGoogleCast } = this.props;
     const { isOptionsVisible } = this.state;
 
     if (fileBrowser.isVisible) toggleFileBrowserDialog();
     if (isOptionsVisible) this.toggleCastOptions();
 
-    streamToGoogleCast(option);
+    streamToGoogleCast(isChromecast);
 
-    if (!app.isInitializing) toggleLoading();
-
-    /* Wait 1000ms for smoother transition */
-    setTimeout(this.wakeUpPlayer, 1000);
+    try {
+      if (isChromecast) {
+        const castContext = cast.framework.CastContext.getInstance();
+        const sessionState = castContext.getSessionState();
+        if (sessionState === cast.framework.SessionState.NO_SESSION) {
+          await castContext.requestSession();
+        }
+      }
+      /* Wait 1000ms for smoother transition */
+      if (!app.isInitializing) toggleLoading();
+  
+      setTimeout(this.wakeUpPlayer, 1000);
+    } catch (err) {
+      console.log(err);
+    }
   }
 
   wakeUpPlayer() {
@@ -175,6 +201,7 @@ class FileBrowser extends Component {
     return (
       <Container id='file-browser'>
         <Top align='center' justify='center' style={{ transform: isComponentVisible ? 'none' : 'translateY(-63px)' }}>
+          <Logo>m</Logo>
           <Search />
         </Top>
         <ListContainer align='center' justify='flex-end' style={{ transform: isComponentVisible ? 'none' : 'translateX(100%)' }}>

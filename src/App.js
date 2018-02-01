@@ -2,7 +2,6 @@ import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import io from 'socket.io-client';
 import fontawesome from '@fortawesome/fontawesome';
-import FontAwesomeIcon from '@fortawesome/react-fontawesome';
 import solid from '@fortawesome/fontawesome-free-solid';
 import regular from '@fortawesome/fontawesome-free-regular';
 import brand from '@fortawesome/fontawesome-free-brands';
@@ -39,25 +38,59 @@ const theme = {
   'pomegranate': '#c0392b'
 };
 
-const Logo = Flex.extend`
+const Logo = Button.extend`
+  display: ${({ isVisible }) => isVisible ? 'flex' : 'none'};
   font-family: 'Megrim', cursive;
-  font-size: 32px;
   font-weight: bold;
   color: #fff;
-  z-index: 10;
-  width: 32px;
-  height: 36px;
+  text-align: center;
+  vertical-align: middle;
+  line-height: 60px;
   user-select: none;
-  position: fixed;
-  top: 2px;
-  left: 25px;
+  box-shadow: 1px 1px 3px 1px rgba(0, 0, 0, 0.1), -1px 1px 3px 1px rgba(0, 0, 0, 0.1);
+  background-color: #415b76;
+  z-index: 10; /* higher than file browser 5 */
+  transition: all 0.25s ease-in-out;
+
+  &:hover {
+    color: ${({ theme }) => theme['turquoise']};
+    box-shadow: 1px 1px 6px 2px rgba(0, 0, 0, 0.15), -1px 1px 6px 2px rgba(0, 0, 0, 0.15);
+  }
 `;
+
+/*
+const Tooltip = Flex.extend`
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, calc(-50% - 78px));
+  padding: 15px 25px;
+  background-color: ${({ theme }) => theme['peter_river']};
+  color: #fff;
+  font-size: 20px;
+  font-weight: bold;
+  opacity: ${({ isEnabled }) => isEnabled ? 1 : 0};
+  box-sizing: border-box;
+  z-index: 10;
+  transition: opacity 0.25s ease-in-out;
+
+  &::before {
+    content: '';
+    position: absolute;
+    border-width: 10px 10px 0 10px;
+    border-style: solid;
+    border-color: ${({ theme }) => theme['peter_river']} transparent transparent transparent;
+    left: calc(50% - 10px);
+    bottom: calc(-10px * 0.866);
+  }
+`;
+*/
 
 const Wrapper = Flex.extend`
   width: 100%;
   height: 100%;
   filter: ${({ isBlur }) => isBlur ? 'blur(15px) brightness(60%)' : 'none'};
-  transition: filter 0.4s ease-in-out;
+  transition: filter 0.5s ease-in-out;
   overflow: hidden;
   position: absolute;
   background-image: url('assets/img/1440627692.jpg');
@@ -65,25 +98,6 @@ const Wrapper = Flex.extend`
   background-position: center;
   background-attachment: fixed;
   background-size: cover;
-`;
-
-const Start = Button.extend`
-  display: ${({ isVisible }) => isVisible ? 'flex' : 'none'};
-  color: rgba(228, 228, 228, 0.94);
-  background-color: #415b76;
-  color: ${({ theme }) => theme['midnight_blue']};
-  outline: none;
-  border: none;
-  box-shadow: 0 0 3px 1px rgba(0, 0, 0, 0.12);
-  cursor: pointer;
-  user-select: none;
-  z-index: 10;
-  transition: all 0.25s ease-in-out;
-
-  &:hover {
-    color: ${({ theme }) => theme['turquoise']};
-    box-shadow: 0 0 6px 3px rgba(0, 0, 0, 0.25);
-  }
 `;
 
 class App extends Component {
@@ -169,14 +183,15 @@ class App extends Component {
             isBlur={app.isInitializing}
             innerRef={el => this.wrapper = el}
           >
-            <Logo align='center' justify='center'>m</Logo>
-            <Start
-              size='60px'
+            {/* <Tooltip align='center' justify='center' isEnabled={isTooltipEnabled}>start with a video</Tooltip> */}
+            <Logo size='60px'
               onClick={toggleFileBrowserDialog}
-              isVisible={!app.isPlayerEnabled &&!app.isInitializing && !isFileBrowserEnabled}
+              onMouseOver={e => this.setState({ isTooltipEnabled: true })}
+              onMouseLeave={e => this.setState({ isTooltipEnabled: false })}
+              isVisible={!app.isPlayerEnabled && !app.isInitializing && !isFileBrowserEnabled}
             >
-              <FontAwesomeIcon icon={['fab', 'microsoft']}/>
-            </Start>
+              m
+            </Logo>
             <FileBrowser />
             {app.isPlayerEnabled ? (<VideoPlayer isChromecast={app.isChromecast} />) : null}
           </Wrapper>

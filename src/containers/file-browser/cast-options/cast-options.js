@@ -1,5 +1,5 @@
 import React from 'react';
-import styled from 'styled-components';
+import styled, { withTheme } from 'styled-components';
 
 import { Flex } from 'shared/components';
 
@@ -20,7 +20,7 @@ const Container = styled.div`
   top: calc(50% - ${height / 2}px);
   background: ${white};
   box-shadow: ${boxShadow};
-  transition: opacity 0.2s ease-in-out;
+  transition: opacity 0.25s ease-in-out;
 `;
 
 const Title = Flex.extend`
@@ -56,7 +56,7 @@ const Option = styled.li`
     background: ${lightgray};
   }
 `;
-const CastOptions = ({ isVisible, cast, setPlayerType, toggleCastOptions }) => {
+const CastOptions = ({ theme, isVisible, cast, setPlayerType, toggleCastOptions }) => {
   return (
     <Container isVisible={isVisible}>
       <Title align='center' justify='space-between'>
@@ -64,14 +64,14 @@ const CastOptions = ({ isVisible, cast, setPlayerType, toggleCastOptions }) => {
         <FileBrowserButton
           onClick={toggleCastOptions}
           icon={['fas', 'times']}
-          color={{ normal: 'rgb(255,255,255)', hover: 'rgb(233,63,60)'}}
+          color={{ normal: '#fff', hover: theme['turquoise'] }}
         />
       </Title>
       <Options>
-        <Option onClick={e => setPlayerType(true)}>
+        <Option onClick={e => setPlayerType(e, true)}>
           Play on Chromecast
         </Option>
-        <Option onClick={e => setPlayerType(false)}>
+        <Option onClick={e => setPlayerType(e, false)}>
           Play in the browser
         </Option>
       </Options>
@@ -79,4 +79,4 @@ const CastOptions = ({ isVisible, cast, setPlayerType, toggleCastOptions }) => {
   );
 };
 
-export default CastOptions;
+export default withTheme(CastOptions);

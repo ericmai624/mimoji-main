@@ -51,7 +51,6 @@ class CastPlayer extends Component {
     };
     
     /* Bind all methods to 'this' keyword to avoid illegal invokation */
-    this.initSession = this.initSession.bind(this);
     this.initPlayer = this.initPlayer.bind(this);
     this.setEventListeners = this.setEventListeners.bind(this);
     this.removeEventListeners = this.removeEventListeners.bind(this);
@@ -87,11 +86,11 @@ class CastPlayer extends Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    const { textTrack: prev } = prevProps;
-    const { textTrack: curr } = this.props;
-    const isSame = prev.id === curr.id && prev.offset === curr.offset && prev.encoding === curr.encoding;
-    if (curr.isEnabled && !isSame && this.castSession) {
-      console.log(`Text track id is updated from ${prev.id} to ${curr.id}`);
+    const { textTrack: prevTextTrack } = prevProps;
+    const { textTrack: currTextTrack } = this.props;
+    const isSameTextTrack = prevTextTrack.id === currTextTrack.id;
+
+    if (currTextTrack.isEnabled && !isSameTextTrack && this.castSession) {
       this.updateTextTrack(this.castSession);
     }
   }
@@ -106,24 +105,6 @@ class CastPlayer extends Component {
     if (controller) this.removeEventListeners(controller);
     io.off('playlist ready', this.cast);
     io.off('stream rejected', rejectStream);
-  }
-  
-  initSession() {
-    console.log('cast session');
-    const { chrome } = window;
-    const applicationIDs = chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID;
-    const sessionRequest = new chrome.cast.SessionRequest(applicationIDs);
-    const apiConfig = new chrome.cast.ApiConfig(sessionRequest,
-      session => {
-        console.log('apiConfig session callback: ', session);
-      },
-      receiver => {
-        console.log(`apiConfig receiver callback: ${receiver}`);
-      });
-  
-    chrome.cast.initialize(apiConfig, () => {
-      console.log('init session success');
-    }, console.log);
   }
 
   initPlayer() {
