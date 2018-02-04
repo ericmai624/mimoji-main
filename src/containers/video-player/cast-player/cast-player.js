@@ -293,7 +293,7 @@ class CastPlayer extends Component {
 
     const sub = new chrome.cast.media.Track(id/* track id */, chrome.cast.media.TrackType.TEXT);
     const host = `http://${ip.address}:6300`;
-    const pathname = `/api/stream/subtitle/${textTrack.id}`;
+    const pathname = `/api/subtitle/${textTrack.id}`;
     const query = `start=${currTimeOffset}`;
     
     sub.trackContentId = `${host}${pathname}?${query}`;
@@ -312,7 +312,7 @@ class CastPlayer extends Component {
     const { ip, textTrack } = this.props;
     const { currTimeOffset } = this.state;
     const host = `http://${ip.address}:6300`;
-    const pathname = `/api/stream/subtitle/${textTrack.id}`;
+    const pathname = `/api/subtitle/${textTrack.id}`;
     const query = `start=${currTimeOffset}`;
 
     session.sendMessage('urn:x-cast:texttrack.add', { url: `${host}${pathname}?${query}` })
