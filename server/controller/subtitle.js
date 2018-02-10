@@ -44,6 +44,7 @@ class Subtitle {
 
 const serve = async (req, res) => {
   let { id } = req.params;
+  log(`Recieved request to serve subtitle id: ${id}`);
   if (!id || !subtitles[id]) return res.end();
   let start = parseFloat(req.query.start);
   let subtitle = subtitles[id];

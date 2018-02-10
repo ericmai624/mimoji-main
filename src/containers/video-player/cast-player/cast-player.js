@@ -54,7 +54,6 @@ class CastPlayer extends Component {
     this.initPlayer = this.initPlayer.bind(this);
     this.setEventListeners = this.setEventListeners.bind(this);
     this.removeEventListeners = this.removeEventListeners.bind(this);
-    this.setMessageListeners = this.setMessageListeners.bind(this);
     this.cast = this.cast.bind(this);
     this.switch = this.switch.bind(this);
     this.seek = this.seek.bind(this);
@@ -131,34 +130,28 @@ class CastPlayer extends Component {
       PLAYER_STATE_CHANGED
     } = window.cast.framework.RemotePlayerEventType;
 
-    controller.addEventListener(IS_CONNECTED_CHANGED, this.onConnectionChanged);
-    controller.addEventListener(CURRENT_TIME_CHANGED, this.onCurrentTimeChanged);
-    controller.addEventListener(IS_PAUSED_CHANGED, this.onPausedChanged);
-    controller.addEventListener(VOLUME_LEVEL_CHANGED, this.onVolumeLevelChanged);
-    controller.addEventListener(IS_MUTED_CHANGED, this.onMutedChanged);
-    controller.addEventListener(PLAYER_STATE_CHANGED, this.onPlayerStateChanged);
+    this.eventsList = [
+      { event: IS_CONNECTED_CHANGED, handler: this.onConnectionChanged },
+      { event: CURRENT_TIME_CHANGED, handler: this.onCurrentTimeChanged },
+      { event: IS_PAUSED_CHANGED, handler: this.onPausedChanged },
+      { event: VOLUME_LEVEL_CHANGED, handler: this.onVolumeLevelChanged },
+      { event: IS_MUTED_CHANGED, handler: this.onMutedChanged },
+      { event: PLAYER_STATE_CHANGED, handler: this.onPlayerStateChanged },
+    ];
+
+    this.eventsList.forEach(({ event, handler }) => controller.addEventListener(event, handler));
+
     console.log(`Registered Event Listeners %c+${performance.now() - start}ms`, 'color: #d80a52;');
   }
 
   removeEventListeners(controller) {
-    if (!controller) return;
+    if (!controller || !this.eventsList.length) return;
     console.log('Unregistering Event Listeners');
     const start = performance.now();
-    const {
-      IS_CONNECTED_CHANGED,
-      CURRENT_TIME_CHANGED,
-      IS_PAUSED_CHANGED,
-      VOLUME_LEVEL_CHANGED,
-      IS_MUTED_CHANGED,
-      PLAYER_STATE_CHANGED
-    } = window.cast.framework.RemotePlayerEventType;
 
-    controller.removeEventListener(IS_CONNECTED_CHANGED, this.onConnectionChanged);
-    controller.removeEventListener(CURRENT_TIME_CHANGED, this.onCurrentTimeChanged);
-    controller.removeEventListener(IS_PAUSED_CHANGED, this.onPausedChanged);
-    controller.removeEventListener(VOLUME_LEVEL_CHANGED, this.onVolumeLevelChanged);
-    controller.removeEventListener(IS_MUTED_CHANGED, this.onMutedChanged);
-    controller.removeEventListener(PLAYER_STATE_CHANGED, this.onPlayerStateChanged);
+    this.eventsList.forEach(({ event, handler }) => controller.removeEventListener(event, handler));
+    this.eventsList = [];
+
     console.log(`Unregistered Event Listeners %c+${performance.now() - start}ms`, 'color: #d80a52;');
   }
 
@@ -209,12 +202,6 @@ class CastPlayer extends Component {
     }
   }
 
-  setMessageListeners(session) {
-    session.addMessageListener('urn:x-cast:playermanager.ready', data => {
-      console.log(`received ${data} from receiver`);
-    });
-  }
-
   cast() {
     console.log('%cCasting video to Google Cast...', 'color:#1b5dc6');
     const start = performance.now();
@@ -224,7 +211,6 @@ class CastPlayer extends Component {
     this.remoteElapsedTime = 0; // Reset remote player's current time 
 
     this.castSession = cast.framework.CastContext.getInstance().getCurrentSession();
-    this.setMessageListeners(this.castSession);
 
     const mediaSource = `http://${ip.address}:6300/api/stream/video/${stream.id}/playlist.m3u8`;
     const mediaInfo = new chrome.cast.media.MediaInfo(mediaSource);
