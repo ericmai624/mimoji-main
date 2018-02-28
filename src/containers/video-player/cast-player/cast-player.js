@@ -215,7 +215,8 @@ class CastPlayer extends Component {
     const mediaSource = `http://${ip.address}:6300/api/stream/video/${stream.id}/playlist.m3u8`;
     const mediaInfo = new chrome.cast.media.MediaInfo(mediaSource);
     mediaInfo.contentType = 'application/vnd.apple.mpegurl';
-    mediaInfo.streamType = chrome.cast.media.StreamType.OTHER;
+    mediaInfo.metadata = new chrome.cast.media.GenericMediaMetadata();
+    mediaInfo.streamType = chrome.cast.media.StreamType.BUFFERED;
     // style text track
     mediaInfo.textTrackStyle = new chrome.cast.media.TextTrackStyle();
     mediaInfo.textTrackStyle.backgroundColor = '#00000000';
