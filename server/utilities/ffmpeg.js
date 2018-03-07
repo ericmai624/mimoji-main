@@ -30,14 +30,14 @@ const getFramerate = metadata => {
 
 const processMedia = (input, seek, metadata, output, onError, onFinished) => {
   let command = ffmpeg(input);
-  let bitrate = 12 * 1024 * 1024; // output bitrate
+  let bitrate = 10 * 1024 * 1024; // output bitrate
   let framerate = getFramerate(metadata);
   let inputOptions = ['-hide_banner', '-y', '-nostats', '-copyts', '-loglevel panic'];
   let outputOptions = [
     '-map 0:0',
     '-c:v libx264',
     `-threads ${os.cpus().length}`,
-    '-preset superfast',
+    '-preset veryfast',
     `-b:v ${bitrate}`,
     `-maxrate ${bitrate}`,
     `-minrate ${bitrate}`,
