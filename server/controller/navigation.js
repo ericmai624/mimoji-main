@@ -79,7 +79,7 @@ const getHomedirWin32 = (cb) => {
       return { name: letter, filePath: letter, type: 'directory' };
     }).filter(p => p !== null);
 
-    cb(null, { directory: '', content });
+    cb(null, { directory: null, content });
   });
 };
 
