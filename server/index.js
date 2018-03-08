@@ -1,7 +1,7 @@
 const express = require('express');
 const app = express();
 const server = require('http').Server(app);
-const io = require('./io')(server);
+const io = require('./io');
 const path = require('path');
 
 const middleware = require('./middleware');
@@ -24,5 +24,7 @@ app.use('/api/subtitle', (req, res, next) => {
   res.set({ 'Access-Control-Allow-Origin': '*'});
   next();
 }, routes.subtitle);
+
+io.attach(server, { transport: ['Websocket'] });
 
 server.listen(6300, () => console.log('Ready to accept connections on port 6300'));
