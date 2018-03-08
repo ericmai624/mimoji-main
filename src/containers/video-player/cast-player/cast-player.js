@@ -302,7 +302,7 @@ class CastPlayer extends Component {
     const pathname = `/api/subtitle/${textTrack.id}`;
     const query = `start=${currTimeOffset}`;
 
-    session.sendMessage('urn:x-cast:texttrack.add', { url: `${host}${pathname}?${query}` })
+    session.sendMessage('urn:x-cast:texttrack.update', { url: `${host}${pathname}?${query}` })
       .then(() => console.log(`New text track info has been sent %c+${performance.now() - start}ms`, 'color:#d80a52;'))
       .catch(err => console.log(`Failed to send text track info with ${err}`));
   }
