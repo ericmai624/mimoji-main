@@ -89,9 +89,7 @@ class CastPlayer extends Component {
     const { textTrack: currTextTrack } = this.props;
     const isSameTextTrack = prevTextTrack.id === currTextTrack.id;
 
-    if (currTextTrack.isEnabled && !isSameTextTrack) {
-      this.updateTextTrack();
-    }
+    if (currTextTrack.isEnabled && !isSameTextTrack) this.updateTextTrack();
   }
 
   componentWillUnmount() {
