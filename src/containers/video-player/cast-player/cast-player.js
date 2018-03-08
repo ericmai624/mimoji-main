@@ -89,8 +89,8 @@ class CastPlayer extends Component {
     const { textTrack: currTextTrack } = this.props;
     const isSameTextTrack = prevTextTrack.id === currTextTrack.id;
 
-    if (currTextTrack.isEnabled && !isSameTextTrack && this.castSession) {
-      this.updateTextTrack(this.castSession);
+    if (currTextTrack.isEnabled && !isSameTextTrack) {
+      this.updateTextTrack();
     }
   }
 
@@ -227,7 +227,7 @@ class CastPlayer extends Component {
 
     if (textTrack.isEnabled) {
       /* Generate id for text track. Use random to avoid duplicates */
-      const id = Math.round(Math.random() * 100);
+      const id = Math.round(Math.random() * 90) + 10;
       mediaInfo.tracks = [this.setTextTrack(id)];
       request.activeTrackIds = [id];
     }
@@ -292,8 +292,8 @@ class CastPlayer extends Component {
     return sub;
   }
 
-  updateTextTrack(session) {
-    if (!session) return;
+  updateTextTrack() {
+    if (!this.castSession) return;
     console.log('Updating text track with receiver');
     const start = performance.now();
     const { ip, textTrack } = this.props;
@@ -302,7 +302,7 @@ class CastPlayer extends Component {
     const pathname = `/api/subtitle/${textTrack.id}`;
     const query = `start=${currTimeOffset}`;
 
-    session.sendMessage('urn:x-cast:texttrack.update', { url: `${host}${pathname}?${query}` })
+    this.castSession.sendMessage('urn:x-cast:texttrack.update', { url: `${host}${pathname}?${query}` })
       .then(() => console.log(`New text track info has been sent %c+${performance.now() - start}ms`, 'color:#d80a52;'))
       .catch(err => console.log(`Failed to send text track info with ${err}`));
   }
