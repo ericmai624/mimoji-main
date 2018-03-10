@@ -130,10 +130,8 @@ class App extends Component {
     this.createCastButton(); // Create the Google Cast button after script is loaded
     
     // Event listener for fullscreen change
-    document.addEventListener('fullscreenchange', (e) => toggleFullscreen());
-    document.addEventListener('webkitfullscreenchange', (e) => toggleFullscreen());
-    document.addEventListener('mozfullscreenchange', (e) => toggleFullscreen());
-    document.addEventListener('msfullscreenchange', (e) => toggleFullscreen());
+    const fullscreenEvents = ['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange', 'msfullscreenchange'];
+    fullscreenEvents.forEach(event => document.addEventListener(event, e => toggleFullscreen()));
   }
 
   initializeCastApi(isAvailable) {
@@ -156,17 +154,18 @@ class App extends Component {
 
   createCastButton() {
     const button = document.createElement('button', 'google-cast-button');
-    button.style.border = 'none';
-    button.style.outline = 'none';
-    button.style.cursor = 'pointer';
-    button.style.width = '40px';
-    button.style.height = '40px';
-    button.style.position = 'absolute';
-    button.style.top = '20px';
-    button.style.right = '20px';
-    button.style.background = 'transparent';
-    button.style.display = 'none';
+
+    // button.style.border = 'none';
+    // button.style.outline = 'none';
+    // button.style.cursor = 'pointer';
+    // button.style.width = '40px';
+    // button.style.height = '40px';
+    // button.style.position = 'absolute';
+    // button.style.top = '20px';
+    // button.style.right = '20px';
+    // button.style.background = 'transparent';
     // button.style.zIndex = 10;
+    button.style.display = 'none';
     this.wrapper.insertAdjacentElement('beforeend', button);
   }
   

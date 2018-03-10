@@ -3,6 +3,7 @@ const app = express();
 const server = require('http').Server(app);
 const io = require('./io');
 const path = require('path');
+const { each } = require('lodash');
 
 const middleware = require('./middleware');
 const routes = require('./routes');
@@ -15,15 +16,7 @@ app.use(middleware.morgan('short'));
 
 app.use(express.static(build));
 
-app.use('/api/networkinterface', routes.networkInterface);
-app.use('/api/stream', (req, res, next) => {
-  res.set({ 'Access-Control-Allow-Origin': '*'});
-  next();
-}, routes.stream);
-app.use('/api/subtitle', (req, res, next) => {
-  res.set({ 'Access-Control-Allow-Origin': '*'});
-  next();
-}, routes.subtitle);
+each(routes, (cb, endpoint) => app.use(`/api/${endpoint}`, middleware.setCORS, cb));
 
 io.attach(server, { transport: ['Websocket'] });
 
