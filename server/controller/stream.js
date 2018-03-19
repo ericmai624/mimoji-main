@@ -51,7 +51,7 @@ class VideoStream {
     });
   }
 
-  async create(input, seek) {
+  async create({ input, seek, bitrate }) {
     /* Create the onecast directory first */
     const directory = await this.make(path.join(os.tmpdir(), 'mimoji'));
     const [output, metadata] = await Promise.all(
@@ -60,7 +60,15 @@ class VideoStream {
     this.input = input;
     this.output = output;
     this.metadata = metadata;
-    this.command = util.ffmpeg.processMedia(input, seek, metadata, output, this.clean, this.finish);
+    this.command = util.ffmpeg.processMedia({
+      input,
+      seek,
+      metadata,
+      output,
+      bitrate,
+      onError: this.clean,
+      onFinished: this.finish
+    });
 
     streams[this.id] = this;
 

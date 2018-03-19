@@ -4,20 +4,18 @@ Super charges your browser and Chromecast to play almost any local computer medi
 
 ## Requirements
 
-- Node 9.4.x
-- Gulp-Cli 2.x.x
+- Node 9.x.x
+- Windows or OSX
 
-## Development
+## Usage
 
 ### Installing Dependencies
 
 Run `yarn install` or `npm install` to install dependencies.
 
-Run `yarn run dev` or `npm run dev` to start dev server. The app should be running at `http://localhost:3000` and will automatically reload if you change any of the source files.
+Run `yarn build` or `npm build` to create build files, then `yarn start` to start the server.
 
-## Production build
-
-Run `gulp css` to optimize css files and `yarn build` to create production build.
+Visit `localhost:6300`.
 
 
 

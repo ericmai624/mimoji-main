@@ -1,7 +1,7 @@
 {
-  "name": "onecast",
-  "version": "1.0.0",
-  "main": "main.js",
+  "name": "mimoji",
+  "version": "0.0.1",
+  "main": "server/index.js",
   "license": "MIT",
   "scripts": {
     "start": "node server",
@@ -25,7 +25,7 @@
     "chokidar": "^2.0.2",
     "concurrently": "^3.5.1",
     "d3-timer": "^1.0.7",
-    "express": "^4.16.2",
+    "express": "^4.16.3",
     "fluent-ffmpeg": "^2.1.2",
     "hls.js": "^0.8.9",
     "iconv-lite": "^0.4.19",
@@ -48,19 +48,29 @@
     "rimraf": "^2.6.2",
     "socket.io": "^2.0.4",
     "socket.io-client": "^2.0.4",
-    "styled-components": "^3.2.1"
+    "styled-components": "^3.2.3"
   },
   "devDependencies": {
     "@types/hls.js": "^0.8.1",
     "babel-eslint": "^8.2.2",
     "babel-plugin-styled-components": "^1.5.1",
     "babel-plugin-transform-class-properties": "^6.24.1",
-    "electron": "1.8.3",
+    "electron": "1.8.4",
     "gulp": "^3.9.1",
     "gulp-base64": "^0.1.3",
     "gulp-clean-css": "^3.9.3",
     "gulp-concat": "^2.6.1",
     "gulp-css-base64": "^1.3.4",
     "gulp-imagemin": "^4.1.0"
+  },
+  "bin": "server/index.js",
+  "pkg": {
+    "assets": [
+      "build/**/*",
+      "node_modules/normalize.css/*"
+    ],
+    "targets": [
+      "node9-macos-x64"
+    ]
   }
 }

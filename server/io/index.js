@@ -23,7 +23,7 @@ io.on('connection', socket => {
   });
 
   /* new stream */
-  socket.on('new stream', async ({ video, seek }) => {
+  socket.on('new stream', async ({ video, seek, bitrate = 10 * 1024 * 1024 }) => {
     log('Request to create new stream');
     const start = Date.now();
     console.log(`Input video is ${video}`);
@@ -32,7 +32,7 @@ io.on('connection', socket => {
       each(streams, s => s.terminate()); // stop all processes and remove all files first
       
       const stream = new VideoStream();
-      const output = await stream.create(video, seek);
+      const output = await stream.create({ input: video, seek, bitrate });
 
       stream.watch(output, socket);
       socket.emit('stream created', { id: stream.getId(), duration: stream.getDuration() });

@@ -28,9 +28,9 @@ const getFramerate = metadata => {
   return result;
 };
 
-const processMedia = (input, seek, metadata, output, onError, onFinished) => {
+const processMedia = ({ input, seek, metadata, output, bitrate, onError, onFinished }) => {
+  log(bitrate);
   let command = ffmpeg(input);
-  let bitrate = 10 * 1024 * 1024; // output bitrate
   let framerate = getFramerate(metadata);
   let inputOptions = ['-hide_banner', '-y', '-nostats', '-copyts', '-loglevel panic'];
   let outputOptions = [
