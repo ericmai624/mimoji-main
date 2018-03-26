@@ -124,7 +124,7 @@ class VideoStream {
   }
 }
 
-const serve = (req, res) => {
+const serve = async (req, res) => {
   let { id, file } = req.params;
   let stream = streams[id];
   if (!stream) return res.end();
@@ -132,37 +132,52 @@ const serve = (req, res) => {
   let ext = path.extname(filePath);
 
   try {
-    switch (ext) {
-    case '.m3u8':
-      res.set({ 'Content-Type': 'application/x-mpegURL' });
-
-      fs.createReadStream(filePath, { highWaterMark: 128 * 1024})
-        .on('error', err => {
-          throw err;
-        })
-        .pipe(res);
-      break;
-    case '.ts':
-      res.set({ 'Content-Type': 'video/MP2T' });
-
-      fs.createReadStream(filePath)
-        .on('end', () => {
-          if (stream.finishedQueue.length > 2) stream.remove(stream.dequeue());
-          stream.enqueue(filePath);
-        })
-        .on('error', err => {
-          throw err;
-        })
-        .pipe(res);
-      break;
-    default:
+    if (ext === '.m3u8') {
+      res.set({ 'Content-Type': 'application/x-mpegURL' }).send(await fs.readFileAsync(filePath));
+    } else if (ext === '.ts') {
+      res.set({ 'Content-Type': 'video/MP2T' }).send(await fs.readFileAsync(filePath));
+      if (stream.finishedQueue.length > 2) stream.remove(stream.dequeue());
+      stream.enqueue(filePath);
+    } else {
       throw new Error('Unsupported format');
-      break;
     }
-  } catch (err) {
+  } catch (e) {
     log(chalk.red(err));
     res.sendStatus(500);
   }
+
+  // try {
+  //   switch (ext) {
+  //   case '.m3u8':
+  //     res.set({ 'Content-Type': 'application/x-mpegURL' });
+
+  //     fs.createReadStream(filePath, { highWaterMark: 128 * 1024})
+  //       .on('error', err => {
+  //         throw err;
+  //       })
+  //       .pipe(res);
+  //     break;
+  //   case '.ts':
+  //     res.set({ 'Content-Type': 'video/MP2T' });
+
+  //     fs.createReadStream(filePath)
+  //       .on('end', () => {
+  //         if (stream.finishedQueue.length > 2) stream.remove(stream.dequeue());
+  //         stream.enqueue(filePath);
+  //       })
+  //       .on('error', err => {
+  //         throw err;
+  //       })
+  //       .pipe(res);
+  //     break;
+  //   default:
+  //     throw new Error('Unsupported format');
+  //     break;
+  //   }
+  // } catch (err) {
+  //   log(chalk.red(err));
+  //   res.sendStatus(500);
+  // }
 };
 
 
