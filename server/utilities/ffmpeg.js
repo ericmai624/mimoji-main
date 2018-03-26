@@ -77,7 +77,7 @@ const processMedia = ({ input, seek, metadata, output, bitrate, errorCallback, f
     })
     .on('error', (err) => {
       log(chalk.red('ffmpeg error: ', err));
-      errorCallBack(err);
+      errorCallback(err);
     })
     .on('end', () => {
       console.log(chalk.cyan('process finished'));

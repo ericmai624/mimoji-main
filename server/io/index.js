@@ -23,7 +23,7 @@ io.on('connection', socket => {
   });
 
   /* new stream */
-  socket.on('new stream', async ({ video, seek, bitrate = 8 * 1024 * 1024 }) => {
+  socket.on('new stream', async ({ video, seek, bitrate = 10 * 1024 * 1024 }) => {
     log('Request to create new stream');
     const start = Date.now();
     console.log(`Input video is ${video}`);
