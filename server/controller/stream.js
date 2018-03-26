@@ -66,8 +66,8 @@ class VideoStream {
       metadata,
       output,
       bitrate,
-      onError: this.clean,
-      onFinished: this.finish
+      errorCallback: this.clean,
+      finishCallback: this.finish
     });
 
     streams[this.id] = this;

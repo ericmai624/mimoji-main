@@ -28,7 +28,7 @@ const getFramerate = metadata => {
   return result;
 };
 
-const processMedia = ({ input, seek, metadata, output, bitrate, onError, onFinished }) => {
+const processMedia = ({ input, seek, metadata, output, bitrate, errorCallback, finishCallback }) => {
   log(bitrate);
   let command = ffmpeg(input);
   let framerate = getFramerate(metadata);
@@ -77,11 +77,11 @@ const processMedia = ({ input, seek, metadata, output, bitrate, onError, onFinis
     })
     .on('error', (err) => {
       log(chalk.red('ffmpeg error: ', err));
-      onError(err);
+      errorCallBack(err);
     })
     .on('end', () => {
       console.log(chalk.cyan('process finished'));
-      onFinished();
+      finishCallback();
     })
     .save(path.join(output, 'playlist.m3u8'));
     
