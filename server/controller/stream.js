@@ -102,7 +102,6 @@ class VideoStream {
   }
 
   remove(location) {
-    // console.log(chalk.green(`Removing ${location}`));
     return rimraf(location, { maxBusyTries: 10 }, err => {
       if (err) log(chalk.red(`${err} occured when trying to remove ${location}`));
     });
@@ -125,19 +124,29 @@ class VideoStream {
 }
 
 const serve = async (req, res) => {
-  let { id, file } = req.params;
-  let stream = streams[id];
-  if (!stream) return res.end();
-  let filePath = stream.getFilePath(file);
-  let ext = path.extname(filePath);
-
   try {
+    let { id, file } = req.params;
+    let stream = streams[id];
+    if (!stream) return res.end();
+    let filePath = stream.getFilePath(file);
+    let ext = path.extname(filePath);
+
     if (ext === '.m3u8') {
-      res.set({ 'Content-Type': 'application/x-mpegURL' }).send(await fs.readFileAsync(filePath));
+      fs.createReadStream(filePath, { highWaterMark: 128 * 1024})
+        .on('error', err => {
+          throw err;
+        })
+        .pipe(res.set({ 'Content-Type': 'application/x-mpegURL' }));
     } else if (ext === '.ts') {
-      res.set({ 'Content-Type': 'video/MP2T' }).send(await fs.readFileAsync(filePath));
-      if (stream.finishedQueue.length > 2) stream.remove(stream.dequeue());
-      stream.enqueue(filePath);
+      fs.createReadStream(filePath)
+        .on('end', () => {
+          if (stream.finishedQueue.length > 2) stream.remove(stream.dequeue());
+          stream.enqueue(filePath);
+        })
+        .on('error', err => {
+          throw err;
+        })
+        .pipe(res.set({ 'Content-Type': 'video/MP2T' }));
     } else {
       throw new Error('Unsupported format');
     }
@@ -145,40 +154,6 @@ const serve = async (req, res) => {
     log(chalk.red(err));
     res.sendStatus(500);
   }
-
-  // try {
-  //   switch (ext) {
-  //   case '.m3u8':
-  //     res.set({ 'Content-Type': 'application/x-mpegURL' });
-
-  //     fs.createReadStream(filePath, { highWaterMark: 128 * 1024})
-  //       .on('error', err => {
-  //         throw err;
-  //       })
-  //       .pipe(res);
-  //     break;
-  //   case '.ts':
-  //     res.set({ 'Content-Type': 'video/MP2T' });
-
-  //     fs.createReadStream(filePath)
-  //       .on('end', () => {
-  //         if (stream.finishedQueue.length > 2) stream.remove(stream.dequeue());
-  //         stream.enqueue(filePath);
-  //       })
-  //       .on('error', err => {
-  //         throw err;
-  //       })
-  //       .pipe(res);
-  //     break;
-  //   default:
-  //     throw new Error('Unsupported format');
-  //     break;
-  //   }
-  // } catch (err) {
-  //   log(chalk.red(err));
-  //   res.sendStatus(500);
-  // }
 };
-
 
 module.exports = { streams, VideoStream, serve };
