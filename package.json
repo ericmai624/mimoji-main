@@ -8,6 +8,7 @@
     "dev": "concurrently --names server,react --prefix-colors green,blue \"nodemon server\" \"react-scripts start\"",
     "client": "react-scripts start",
     "build": "react-scripts build",
+    "eject": "react-scripts eject",
     "electron": "electron ."
   },
   "proxy": "http://localhost:6300",
