@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import FontAwesomeIcon from '@fortawesome/react-fontawesome';
 
-import { Flex, Button } from 'shared/components';
+import { Flex, Button } from 'src/shared/components';
 
 const Container = Flex.extend`
   width: 100%;

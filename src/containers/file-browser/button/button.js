@@ -1,7 +1,7 @@
 import React from 'react';
 import FontAwesomeIcon from '@fortawesome/react-fontawesome';
 
-import { Button } from 'shared/components';
+import { Button } from 'src/shared/components';
 
 const lightgray = 'rgba(219, 219, 219, 0.5)';
 

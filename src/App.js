@@ -4,22 +4,20 @@ import io from 'socket.io-client';
 import fontawesome from '@fortawesome/fontawesome';
 import solid from '@fortawesome/fontawesome-free-solid';
 import regular from '@fortawesome/fontawesome-free-regular';
-import brand from '@fortawesome/fontawesome-free-brands';
 import { ThemeProvider } from 'styled-components';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 
-import { toggleFileBrowserDialog } from 'stores/file-browser';
-import { toggleFullscreen } from 'stores/app';
-import { getIpAddress } from 'stores/ip'; 
+import { toggleFileBrowserDialog } from 'src/stores/file-browser';
+import { initFa, toggleFullscreen } from 'src/stores/app';
+import { getIpAddress } from 'src/stores/ip'; 
 
-import LoadingScreen from 'components/loading-screen/loading-screen';
-import FileBrowser from 'containers/file-browser/file-browser';
-import VideoPlayer from 'containers/video-player/video-player';
+import LoadingScreen from 'src/components/loading-screen/loading-screen';
+import FileBrowser from 'src/containers/file-browser/file-browser';
+import VideoPlayer from 'src/containers/video-player/video-player';
 
-import { Flex, Button } from 'shared/components';
+import { Flex, Button } from 'src/shared/components';
 
-fontawesome.library.add(brand, solid, regular);
 
 const theme = {
   'carrot': '#e67e22',
@@ -58,34 +56,6 @@ const Logo = Button.extend`
   }
 `;
 
-/*
-const Tooltip = Flex.extend`
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, calc(-50% - 78px));
-  padding: 15px 25px;
-  background-color: ${({ theme }) => theme['peter_river']};
-  color: #fff;
-  font-size: 20px;
-  font-weight: bold;
-  opacity: ${({ isEnabled }) => isEnabled ? 1 : 0};
-  box-sizing: border-box;
-  z-index: 10;
-  transition: opacity 0.25s ease-in-out;
-
-  &::before {
-    content: '';
-    position: absolute;
-    border-width: 10px 10px 0 10px;
-    border-style: solid;
-    border-color: ${({ theme }) => theme['peter_river']} transparent transparent transparent;
-    left: calc(50% - 10px);
-    bottom: calc(-10px * 0.866);
-  }
-`;
-*/
-
 const Wrapper = Flex.extend`
   width: 100%;
   height: 100%;
@@ -93,7 +63,7 @@ const Wrapper = Flex.extend`
   transition: filter 0.5s ease-in-out;
   overflow: hidden;
   position: absolute;
-  background-image: url('assets/img/1440627692.jpg');
+  background-image: url('/img/1440627692.jpg');
   background-repeat: no-repeat;
   background-position: center;
   background-attachment: fixed;
@@ -101,7 +71,6 @@ const Wrapper = Flex.extend`
 `;
 
 class App extends Component {
-
   static propTypes = {
     app: PropTypes.object.isRequired,
     isFileBrowserEnabled: PropTypes.bool.isRequired,
@@ -120,21 +89,21 @@ class App extends Component {
 
   componentWillMount() {
     this.insertCastScript();
+    fontawesome.library.add(solid, regular);
   }
   
   componentDidMount() {
     const { getIpAddress, toggleFullscreen } = this.props;
     
-    getIpAddress(); // Get ip address for Chromecast stream
-
     this.createCastButton(); // Create the Google Cast button after script is loaded
+    getIpAddress(); // Get ip address for Chromecast stream
     
     // Event listener for fullscreen change
     const fullscreenEvents = ['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange', 'msfullscreenchange'];
     fullscreenEvents.forEach(event => document.addEventListener(event, e => toggleFullscreen()));
   }
 
-  initializeCastApi(isAvailable) {
+  initializeCastApi = (isAvailable) => {
     if (isAvailable) {
       window.cast.framework.CastContext.getInstance().setOptions({
         // receiverApplicationId: chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID
@@ -144,7 +113,7 @@ class App extends Component {
     }
   }
 
-  insertCastScript() {
+  insertCastScript = () => {
     const script = document.createElement('script');
     script.src = 'https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1';
     script.type = 'text/javascript';
@@ -152,19 +121,8 @@ class App extends Component {
     document.getElementById('app').insertAdjacentElement('afterend', script);
   }
 
-  createCastButton() {
+  createCastButton = () => {
     const button = document.createElement('button', 'google-cast-button');
-
-    // button.style.border = 'none';
-    // button.style.outline = 'none';
-    // button.style.cursor = 'pointer';
-    // button.style.width = '40px';
-    // button.style.height = '40px';
-    // button.style.position = 'absolute';
-    // button.style.top = '20px';
-    // button.style.right = '20px';
-    // button.style.background = 'transparent';
-    // button.style.zIndex = 10;
     button.style.display = 'none';
     this.wrapper.insertAdjacentElement('beforeend', button);
   }
@@ -182,11 +140,8 @@ class App extends Component {
             isBlur={app.isInitializing}
             innerRef={el => this.wrapper = el}
           >
-            {/* <Tooltip align='center' justify='center' isEnabled={isTooltipEnabled}>start with a video</Tooltip> */}
             <Logo size='60px'
               onClick={toggleFileBrowserDialog}
-              onMouseOver={e => this.setState({ isTooltipEnabled: true })}
-              onMouseLeave={e => this.setState({ isTooltipEnabled: false })}
               isVisible={!app.isPlayerEnabled && !app.isInitializing && !isFileBrowserEnabled}
             >
               m
@@ -206,7 +161,8 @@ const mapStateToProps = (state) => ({ app: state.app, isFileBrowserEnabled: stat
 const mapDispatchToProps = (dispatch) => ({
   getIpAddress: bindActionCreators(getIpAddress, dispatch),
   toggleFileBrowserDialog: bindActionCreators(toggleFileBrowserDialog, dispatch),
-  toggleFullscreen: bindActionCreators(toggleFullscreen, dispatch)
+  toggleFullscreen: bindActionCreators(toggleFullscreen, dispatch),
+  initFa: bindActionCreators(initFa, dispatch)
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(App);

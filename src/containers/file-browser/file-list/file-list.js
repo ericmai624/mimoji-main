@@ -4,7 +4,7 @@ import { withTheme } from 'styled-components';
 
 import FileBrowserListEntry from './file-list-entry/file-list-entry';
 
-import { Flex } from 'shared/components';
+import { Flex } from 'src/shared/components';
 
 const Main = Flex.extend`
   width: calc(61.8% - 75px);
@@ -19,36 +19,27 @@ const Main = Flex.extend`
   transform: translateY(-50%);
 `;
 
-class FileBrowserList extends Component {
+const FileBrowserList = ({
+  fileBrowser: { displayedContent, isPending },
+  onDoubleClickDirectory, onDoubleClickFile,
+  navigateUpDir 
+}) => (
+  <Main column justify='center'>
+    <FileBrowserListEntry
+      content={displayedContent}
+      isPending={isPending}
+      onDoubleClickDirectory={onDoubleClickDirectory} 
+      onDoubleClickFile={onDoubleClickFile}
+      navigateUpDir={navigateUpDir}
+    />
+  </Main>
+);
 
-  static propTypes = {
-    fileBrowser: PropTypes.object.isRequired,
-    onDoubleClickDirectory: PropTypes.func.isRequired,
-    onDoubleClickFile: PropTypes.func.isRequired,
-    navigateUpDir: PropTypes.func.isRequired
-  }
-
-  render() {
-    const { 
-      fileBrowser,
-      onDoubleClickDirectory,
-      onDoubleClickFile,
-      navigateUpDir
-    } = this.props;
-    const { displayedContent, isPending } = fileBrowser;
-
-    return (
-      <Main column justify='center'>
-        <FileBrowserListEntry
-          content={displayedContent}
-          isPending={isPending}
-          onDoubleClickDirectory={onDoubleClickDirectory} 
-          onDoubleClickFile={onDoubleClickFile}
-          navigateUpDir={navigateUpDir}
-        />
-      </Main>
-    );
-  }
-}
+FileBrowserList.propTypes = {
+  fileBrowser: PropTypes.object.isRequired,
+  onDoubleClickDirectory: PropTypes.func.isRequired,
+  onDoubleClickFile: PropTypes.func.isRequired,
+  navigateUpDir: PropTypes.func.isRequired
+};
 
 export default withTheme(FileBrowserList);

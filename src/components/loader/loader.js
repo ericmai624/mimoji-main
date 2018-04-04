@@ -1,7 +1,7 @@
 import React from 'react';
 import FontAwesomeIcon from '@fortawesome/react-fontawesome';
 
-import { Flex } from 'shared/components';
+import { Flex } from 'src/shared/components';
 
 const Container = Flex.extend`
   display: ${({ isVisible }) => isVisible ? 'flex' : 'none'};

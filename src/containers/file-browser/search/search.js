@@ -4,11 +4,11 @@ import styled, { withTheme } from 'styled-components';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
-import FileBrowserButton from 'containers/file-browser/button/button';
+import FileBrowserButton from 'src/containers/file-browser/button/button';
 
-import { modifyDisplayedContent } from 'stores/file-browser';
+import { modifyDisplayedContent } from 'src/stores/file-browser';
 
-import { Flex } from 'shared/components';
+import { Flex } from 'src/shared/components';
 
 const SearchWrapper = Flex.extend`
   position: absolute;
@@ -65,46 +65,35 @@ const Shadow = styled.span`
 `;
 
 class Search extends Component {
-
   static propTypes = {
     content: PropTypes.array.isRequired,
     modifyDisplayedContent: PropTypes.func.isRequired
   }
 
-  constructor(props) {
-    super(props);
-    
-    this.state = {
-      userInput: '',
-      inputWidth: 150
-    };
-
-    this.focusInput = this.focusInput.bind(this);
-    this.onSearchChange = this.onSearchChange.bind(this);
-    this.filterContent = this.filterContent.bind(this);
-    this.resizeInputIfNeeded = this.resizeInputIfNeeded.bind(this);
-    this.resetSearchInput = this.resetSearchInput.bind(this);
-  }
+  state = {
+    userInput: '',
+    inputWidth: 150
+  };
 
   componentDidUpdate(prevProps, prevState) {
     if (prevProps.directory !== this.props.directory) this.resetSearchInput();
   }
 
-  focusInput(e) {
+  focusInput = (e) => {
     e.preventDefault();
     if (!this.search) return; // input is not mounted
 
     this.search.focus();
   }
 
-  onSearchChange(e) {
+  onSearchChange = (e) => {
     this.setState({ userInput: e.target.value }, () => {
       this.filterContent();
       this.resizeInputIfNeeded();
     });
   }
 
-  filterContent() {
+  filterContent = () => {
     const { modifyDisplayedContent, content } = this.props;
     const { userInput } = this.state;
     const regex = new RegExp(escape(userInput), 'i');
@@ -113,7 +102,7 @@ class Search extends Component {
     modifyDisplayedContent(newContent);
   }
 
-  resizeInputIfNeeded() {
+  resizeInputIfNeeded = () => {
     if (!this.search || !this.shadow) return;
 
     let shadowWidth = this.shadow.clientWidth + 32; // one character extra width
@@ -121,8 +110,16 @@ class Search extends Component {
     if (shadowWidth >= searchWidth) this.setState({ inputWidth: shadowWidth + 66 }); // extra 66px because of padding and search icon
   }
 
-  resetSearchInput() {
+  resetSearchInput = () => {
     this.setState({ userInput: '' });
+  }
+
+  setSearchRef = (el) => {
+    this.search = el;
+  }
+
+  setShadowRef = (el) => {
+    this.shadow = el;
   }
   
   render() {
@@ -139,7 +136,7 @@ class Search extends Component {
           placeholder='Search'
           onChange={this.onSearchChange}
           value={userInput}
-          innerRef={el => this.search = el}
+          innerRef={this.setSearchRef}
         >
         </SearchInput>
         <FileBrowserButton
@@ -149,7 +146,7 @@ class Search extends Component {
           size={'12px'}
           style={{ cursor: 'text' }}
         />
-        <Shadow innerRef={el => this.shadow = el}>{userInput}</Shadow>
+        <Shadow innerRef={this.setShadowRef}>{userInput}</Shadow>
       </SearchWrapper>
     );
   }

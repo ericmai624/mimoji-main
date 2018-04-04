@@ -1,11 +1,11 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import styled, { withTheme } from 'styled-components';
 import FontAwesomeIcon from '@fortawesome/react-fontawesome';
 
-import { Flex } from 'shared/components';
+import { Flex } from 'src/shared/components';
 
-import ControlButton from 'containers/video-player/control-buttons/control-buttons';
+import ControlButton from 'src/containers/video-player/control-buttons/control-buttons';
 
 const Bridge = styled.div`
   display: ${({ isVisible }) => isVisible ? 'block' : 'none'};
@@ -120,8 +120,7 @@ const VolumeRange = styled.input.attrs({
   }
 `;
 
-class VolumeControl extends Component {
-
+class VolumeControl extends PureComponent {
   static propTypes = {
     muteOrUnmute: PropTypes.func.isRequired,
     setVolume: PropTypes.func.isRequired,
@@ -129,22 +128,15 @@ class VolumeControl extends Component {
     isMuted: PropTypes.bool.isRequired
   }
 
-  constructor(props) {
-    super(props);
-    
-    this.state = {
-      showVolumeRange: false
-    };
+  state = {
+    showVolumeRange: false
+  };
 
-    this.onVolumeMouseEnter = this.onVolumeMouseEnter.bind(this);
-    this.onVolumeMouseLeave = this.onVolumeMouseLeave.bind(this);
-  }
-
-  onVolumeMouseEnter(e) {
+  onVolumeMouseEnter = (e) => {
     if (!this.state.showVolumeRange) this.setState({ showVolumeRange: true });
   }
 
-  onVolumeMouseLeave(e) {
+  onVolumeMouseLeave = (e) => {
     this.setState({ showVolumeRange: false });
   }
 

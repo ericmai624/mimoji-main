@@ -4,15 +4,15 @@ import Hls from 'hls.js';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
-import Loader from 'components/loader/loader';
-import VideoControls from 'containers/video-player/video-controls/video-controls';
-import TextTrack from 'containers/video-player/text-track/text-track';
+import Loader from 'src/components/loader/loader';
+import VideoControls from 'src/containers/video-player/video-controls/video-controls';
+import TextTrack from 'src/containers/video-player/text-track/text-track';
 
-import { toggleLoading, togglePlayer } from 'stores/app';
-import { updateStreamInfo, updateStreamTime, rejectStream, resetStream } from 'stores/stream';
-import { resetTextTrack } from 'stores/text-track';
+import { toggleLoading, togglePlayer } from 'src/stores/app';
+import { updateStreamInfo, updateStreamTime, rejectStream, resetStream } from 'src/stores/stream';
+import { resetTextTrack } from 'src/stores/text-track';
 
-import { Flex } from 'shared/components';
+import { Flex } from 'src/shared/components';
 
 /* Styled Components */
 const VideoContainer = Flex.extend`
@@ -25,7 +25,6 @@ const VideoContainer = Flex.extend`
 `;
 
 class WebPlayer extends Component {
-
   static propTypes = {
     app: PropTypes.object.isRequired,
     stream: PropTypes.object.isRequired,
@@ -38,36 +37,15 @@ class WebPlayer extends Component {
     resetStream: PropTypes.func.isRequired,
     resetTextTrack: PropTypes.func.isRequired
   }
-  
-  constructor(props) {
-    super(props);
 
-    this.state = {
-      isSeeking: false,
-      isPaused: false,
-      isMuted: false,
-      isControlsVisible: true,
-      volume: 1,
-      currTimeOffset: 0
-    };
-  
-    this.initHls = this.initHls.bind(this);
-    this.playOrPause = this.playOrPause.bind(this);
-    this.showControls = this.showControls.bind(this);
-    this.hideControls = this.hideControls.bind(this);
-    this.onVideoMouseMove = this.onVideoMouseMove.bind(this);
-    this.onControlsMouseMove = this.onControlsMouseMove.bind(this);
-    this.seek = this.seek.bind(this);
-    this.onVideoPlaying = this.onVideoPlaying.bind(this);
-    this.onVideoPaused = this.onVideoPaused.bind(this);
-    this.onVideoTimeUpdate = this.onVideoTimeUpdate.bind(this);
-    this.stop = this.stop.bind(this);
-    this.setVolume = this.setVolume.bind(this);
-    this.muteOrUnmute = this.muteOrUnmute.bind(this);
-    this.toggleFullscreen = this.toggleFullscreen.bind(this);
-    this.stopControlsTimer = this.stopControlsTimer.bind(this);
-    this.cleanup = this.cleanup.bind(this);
-  }
+  state = {
+    isSeeking: false,
+    isPaused: false,
+    isMuted: false,
+    isControlsVisible: true,
+    volume: 1,
+    currTimeOffset: 0
+  };
 
   componentDidMount() {
     const { io } = window;
@@ -85,7 +63,7 @@ class WebPlayer extends Component {
     io.off('stream rejected', rejectStream);
   }
   
-  initHls() {
+  initHls = () => {
     const { video } = this;
     const { app, stream, toggleLoading } = this.props;
     const source = `/api/stream/video/${stream.id}/playlist.m3u8`;
@@ -122,7 +100,7 @@ class WebPlayer extends Component {
     });
   }
 
-  playOrPause(e) {
+  playOrPause = (e) => {
     e.preventDefault();
     const { video } = this;
 
@@ -130,17 +108,17 @@ class WebPlayer extends Component {
     else this.setState({ isPaused: true }, video.pause.bind(video));
   }
 
-  showControls() {
+  showControls = () => {
     const { isControlsVisible } = this.state;
     if (!isControlsVisible) this.setState({ isControlsVisible: true });
   }
 
-  hideControls() {
+  hideControls = () => {
     const { isControlsVisible } = this.state;
     if (isControlsVisible) this.setState({ isControlsVisible: false });
   }
 
-  onVideoMouseMove(e) {
+  onVideoMouseMove = (e) => {
     e.stopPropagation();
     const { app } = this.props;
     this.stopControlsTimer();
@@ -149,7 +127,7 @@ class WebPlayer extends Component {
     this.controlsTimer = setTimeout(this.hideControls, 4000);
   }
 
-  onControlsMouseMove(e) {
+  onControlsMouseMove = (e) => {
     e.stopPropagation();
     const { isControlsVisible } = this.state;
     this.stopControlsTimer();
@@ -157,7 +135,7 @@ class WebPlayer extends Component {
     if (!isControlsVisible) this.setState({ isControlsVisible: true });
   }
 
-  seek(seekTime) {
+  seek = (seekTime) => {
     const { io } = window;
     const { stream, updateStreamInfo, updateStreamTime } = this.props;
 
@@ -177,17 +155,17 @@ class WebPlayer extends Component {
     });
   }
 
-  onVideoPlaying() {
+  onVideoPlaying = () => {
     const { isPaused } = this.state;
     if (isPaused) this.setState({ isPaused: false });
   }
 
-  onVideoPaused() {
+  onVideoPaused = () => {
     const { isPaused } = this.state;
     if (!isPaused) this.setState({ isPaused: true });
   }
 
-  onVideoTimeUpdate() {
+  onVideoTimeUpdate = () => {
     const { updateStreamTime } = this.props;
     const { isControlsVisible, currTimeOffset } = this.state;
     const { video } = this;
@@ -195,26 +173,26 @@ class WebPlayer extends Component {
     if (isControlsVisible) updateStreamTime(video.currentTime + currTimeOffset);
   }
 
-  stop() {
+  stop = () => {
     console.log('the video has ended');
     return this.cleanup();
   }
 
-  setVolume(e) {
+  setVolume = (e) => {
     const { video } = this;
     const volume = parseFloat(e.target.value);
 
     this.setState({ volume }, () => video.volume = volume);
   }
 
-  muteOrUnmute() {
+  muteOrUnmute = () => {
     const { isMuted } = this.state;
     const { video } = this;
 
     this.setState({ isMuted: !isMuted }, () => video.muted = !isMuted);
   }
 
-  toggleFullscreen(e) {
+  toggleFullscreen = (e) => {
     const { app } = this.props;
     const rootNode = document.getElementById('app');
 
@@ -237,14 +215,14 @@ class WebPlayer extends Component {
     else exitFullscreen.call(document);
   }
 
-  stopControlsTimer() {
+  stopControlsTimer = () => {
     if (this.controlsTimer) {
       clearTimeout(this.controlsTimer);
       this.controlsTimer = null;
     }
   }
 
-  cleanup() {
+  cleanup = () => {
     const { io } = window;
     const { app, stream, togglePlayer, resetStream, resetTextTrack } = this.props;
     if (this.hls) this.hls.destroy();
@@ -333,9 +311,5 @@ const mapDispatchToProps = (dispatch) => ({
   resetStream: bindActionCreators(resetStream, dispatch),
   resetTextTrack: bindActionCreators(resetTextTrack, dispatch)
 });
-
-WebPlayer.propTypes = {
-
-};
 
 export default connect(mapStateToProps, mapDispatchToProps)(WebPlayer);

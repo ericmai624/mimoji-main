@@ -9,7 +9,7 @@ import Progress from './progress/progress';
 import VolumeControl from './volume-control/volume-control';
 import ControlButton from '../control-buttons/control-buttons';
 
-import { Flex } from 'shared/components';
+import { Flex } from 'src/shared/components';
 
 momentDurationSetup(moment);
 
@@ -29,7 +29,6 @@ const Container = Flex.extend`
 `;
 
 class VideoControls extends Component {
-
   static propTypes = {
     onControlsMouseMove: PropTypes.func,
     isFullscreenEnabled: PropTypes.bool,
@@ -47,17 +46,11 @@ class VideoControls extends Component {
     duration: PropTypes.number.isRequired
   }
   
-  constructor(props) {
-    super(props);
+  state = { 
+    isSubSettingEnabled: false
+  };
 
-    this.state = { 
-      isSubSettingEnabled: false
-    };
-
-    this.toggleSubSettings = this.toggleSubSettings.bind(this);
-  }
-
-  toggleSubSettings() {
+  toggleSubSettings = () => {
     const { isSubSettingEnabled } = this.state;
     this.setState({ isSubSettingEnabled: !isSubSettingEnabled });
   }

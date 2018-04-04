@@ -3,7 +3,9 @@ import styled from 'styled-components';
 import PropTypes from 'prop-types';
 import FontAwesomeIcon from '@fortawesome/react-fontawesome';
 
-import { Flex } from 'shared/components';
+import DirectoryEntry from './directory-entry';
+
+import { Flex } from 'src/shared/components';
 
 const Container = Flex.extend`
   position: absolute;
@@ -53,15 +55,6 @@ const Text = styled.div`
   font-size: 28px;
 `;
 
-const GPS = styled.span`
-  cursor: pointer;
-  transition: color 0.25s ease-in-out;
-
-  &:hover {
-    color: ${({ theme }) => theme['turquoise']};
-  }
-`;
-
 const CloseWrapper = Flex.extend`
   position: absolute;
   right: 25px;
@@ -78,20 +71,13 @@ const CloseWrapper = Flex.extend`
 `;
 
 class Nav extends Component {
-
   static propTypes = {
     directory: PropTypes.object,
     isComponentVisible: PropTypes.bool.isRequired,
     toggleFileBrowserDialog: PropTypes.func.isRequired
   }
-
-  constructor(props) {
-    super(props);
-    
-    this.navigate = this.navigate.bind(this);
-  }
   
-  navigate(e, index) {
+  navigate = (index) => {
     const { io } = window;
     const { directory } = this.props;
     const dir = directory.folders.slice(0, index + 1).join(directory.sep);
@@ -99,20 +85,16 @@ class Nav extends Component {
     io.emit('request content', dir);
   } 
 
+  renderDirectories = (folder, i) => {
+    const { sep } = this.props.directory;
+    return <DirectoryEntry onClick={this.navigate} index={i} key={i} folder={folder} sep={sep}/>;
+  }
+
   render() {
     const { directory, isComponentVisible, toggleFileBrowserDialog } = this.props;
     let location;
     if (directory) {
-      location = directory.folders.map((folder, i) => {
-        return (
-          <span key={i}>
-            <GPS onClick={e => this.navigate(e, i)}>
-              {folder}
-            </GPS>
-            {directory.sep}
-          </span>
-        );
-      });
+      location = directory.folders.map(this.renderDirectories);
     } else {
       location = '';
     }

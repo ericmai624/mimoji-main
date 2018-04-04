@@ -5,10 +5,10 @@ import FontAwesomeIcon from '@fortawesome/react-fontawesome';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
-import { toggleFileBrowserDialog } from 'stores/file-browser';
-import { setTextTrackInfo } from 'stores/text-track';
+import { toggleFileBrowserDialog } from 'src/stores/file-browser';
+import { setTextTrackInfo } from 'src/stores/text-track';
 
-import { Flex, Button } from 'shared/components';
+import { Flex, Button } from 'src/shared/components';
 
 import SubtitleSource from './subtitle-source/subtitle-source';
 import SubtitleEncoding from './subtitle-encoding/subtitle-encoding';
@@ -25,7 +25,7 @@ const Container = Flex.extend`
   padding: 50px 40px;
   padding-bottom: 0;
   /* Same color as file browser */
-  background-image: url('assets/img/1440627692.jpg');
+  background-image: url('/img/1440627692.jpg');
   background-repeat: no-repeat;
   background-position: center;
   background-attachment: fixed;
@@ -147,7 +147,6 @@ const Cancel = Confirm.extend`
 `;
 
 class SubSettings extends Component {
-
   static propTypes = {
     textTrack: PropTypes.object.isRequired,
     isVisible: PropTypes.bool.isRequired,
@@ -156,13 +155,7 @@ class SubSettings extends Component {
     onControlsMouseMove: PropTypes.func
   }
 
-  constructor(props) {
-    super(props);
-    
-    this.confirm = this.confirm.bind(this);
-  }
-
-  confirm(e) {
+  confirm = (e) => {
     const { io } = window;
     const { textTrack, setTextTrackInfo, toggleSubSettings } = this.props;
     const { location, offset, encoding, label } = textTrack;

@@ -1,8 +1,8 @@
 import React from 'react';
 
-import { Flex } from 'shared/components';
+import { Flex } from 'src/shared/components';
 
-import Loader from 'components/loader/loader';
+import Loader from 'src/components/loader/loader';
 
 const Container = Flex.extend`
   display: ${({ isVisible }) => isVisible ? 'flex' : 'none'};

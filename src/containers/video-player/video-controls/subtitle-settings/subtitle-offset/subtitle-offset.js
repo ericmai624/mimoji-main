@@ -1,13 +1,13 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import FontAwesomeIcon from '@fortawesome/react-fontawesome';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
-import { changeTextTrackOffset } from 'stores/text-track';
+import { changeTextTrackOffset } from 'src/stores/text-track';
 
-import { Flex, Button } from 'shared/components';
+import { Flex, Button } from 'src/shared/components';
  
 const Container = Flex.extend`
   width: 100%;
@@ -72,42 +72,21 @@ const Warning = Flex.extend`
   box-shadow: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
   white-space: nowrap;
   transition: opacity 0.25s ease-in-out;
-
-  ${'' /* &::before {
-    content: '';
-    position: absolute;
-    left: calc(50% - 10px);
-    top: calc(-10px * 0.866);
-    border-width: 0 10px 10px 10px;
-    border-style: solid;
-    border-color: transparent transparent ${({ theme }) => theme['alizarin']} transparent;
-  } */}
 `;
 
-class SubtitleOffset extends Component {
-
+class SubtitleOffset extends PureComponent {
   static propTypes = {
     offset: PropTypes.number.isRequired,
     changeTextTrackOffset: PropTypes.func.isRequired
   }
 
-  constructor(props) {
-    super(props);
+  state = {
+    input: '',
+    isInputNaN: false,
+    caretPos: '3px'
+  };
 
-    this.state = {
-      input: '',
-      isInputNaN: false,
-      caretPos: '3px'
-    };
-
-    this.onInputChange = this.onInputChange.bind(this);
-    this.onInputMouseOver = this.onInputMouseOver.bind(this);
-    this.onInputMouseLeave = this.onInputMouseLeave.bind(this);
-    this.increaseOffset = this.increaseOffset.bind(this);
-    this.decreaseOffset = this.decreaseOffset.bind(this);
-  }
-
-  onInputChange(e) {
+  onInputChange = (e) => {
     e.preventDefault();
     const input = e.target.value;
     const offset = parseFloat(input);
@@ -117,26 +96,26 @@ class SubtitleOffset extends Component {
     this.setState({ input, isInputNaN, caretPos }, this.updateTextTrackOffset.bind(this, offset));
   }
 
-  onInputMouseOver(e) {
+  onInputMouseOver = (e) => {
     this.setState({ input: '' }, this.offsetInput.focus.bind(this.offsetInput));
   }
 
-  onInputMouseLeave(e) {
+  onInputMouseLeave = (e) => {
     this.setState({ input: '' }, this.offsetInput.blur.bind(this.offsetInput));
   }
 
-  updateTextTrackOffset(offset) {
+  updateTextTrackOffset = (offset) => {
     const { changeTextTrackOffset } = this.props;
 
     if (!isNaN(offset)) return changeTextTrackOffset(parseFloat(offset.toFixed(3)));
   }
 
-  increaseOffset(e) {
+  increaseOffset = (e) => {
     const { offset, changeTextTrackOffset } = this.props;
     changeTextTrackOffset(offset + 0.005);
   }
 
-  decreaseOffset(e) {
+  decreaseOffset = (e) => {
     const { offset, changeTextTrackOffset } = this.props;
     changeTextTrackOffset(offset - 0.005);
   }

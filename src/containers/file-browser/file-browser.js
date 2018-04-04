@@ -3,12 +3,12 @@ import styled from 'styled-components';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
-import { toggleLoading, togglePlayer, streamToGoogleCast } from 'stores/app';
-import { toggleFileBrowserDialog, updateContent } from 'stores/file-browser';
-import { setStreamSource, updateStreamInfo } from 'stores/stream';
-import { setTextTrackInfo } from 'stores/text-track';
+import { toggleLoading, togglePlayer, streamToGoogleCast } from 'src/stores/app';
+import { toggleFileBrowserDialog, updateContent } from 'src/stores/file-browser';
+import { setStreamSource, updateStreamInfo } from 'src/stores/stream';
+import { setTextTrackInfo } from 'src/stores/text-track';
 
-import { Flex } from 'shared/components';
+import { Flex } from 'src/shared/components';
 
 import FileBrowserList from './file-list/file-list';
 import CastOptions from './cast-options/cast-options';
@@ -59,24 +59,9 @@ const ListContainer = Flex.extend`
 `;
 
 class FileBrowser extends Component {
-  
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      isOptionsVisible: false,
-    };
-    
-    this.getContent = this.getContent.bind(this);
-    this.updatedir = this.updatedir.bind(this);
-    this.onDoubleClickDirectory = this.onDoubleClickDirectory.bind(this);
-    this.onDoubleClickFile = this.onDoubleClickFile.bind(this);
-    this.setPlayerType = this.setPlayerType.bind(this);
-    this.wakeUpPlayer = this.wakeUpPlayer.bind(this);
-    this.addTextTrack = this.addTextTrack.bind(this);
-    this.navigateUpDir = this.navigateUpDir.bind(this);
-    this.toggleCastOptions = this.toggleCastOptions.bind(this);
-  }
+  state = {
+    isOptionsVisible: false,
+  };
 
   componentDidMount() {
     const { io } = window;
@@ -93,12 +78,12 @@ class FileBrowser extends Component {
     this.getContent('');
   }
 
-  getContent(dir) {
+  getContent = (dir) => {
     const { io } = window;
     io.emit('request content', dir);
   }
 
-  updatedir(data) {
+  updatedir = (data) => {
     const { updateContent } = this.props;
     /* 
     request rejection will not return any data.
@@ -107,12 +92,12 @@ class FileBrowser extends Component {
     updateContent(data, data === undefined);
   }
 
-  onDoubleClickDirectory(e, file) {
+  onDoubleClickDirectory = (e, file) => {
     e.preventDefault();
     this.getContent(file.filePath);
   }
 
-  onDoubleClickFile(e, file) {
+  onDoubleClickFile = (e, file) => {
     e.preventDefault();
     const { setStreamSource, textTrack } = this.props;
     if (file.type === 'subtitle') return this.addTextTrack(file.filePath, file.name, textTrack.encoding, textTrack.offset);
@@ -123,7 +108,7 @@ class FileBrowser extends Component {
     }
   }
 
-  async setPlayerType(e, isChromecast/* boolean */) {
+  setPlayerType = async (e, isChromecast/* boolean */) => {
     const { cast } = window;
     const { app, toggleLoading, fileBrowser, toggleFileBrowserDialog, streamToGoogleCast } = this.props;
     const { isOptionsVisible } = this.state;
@@ -150,7 +135,7 @@ class FileBrowser extends Component {
     }
   }
 
-  wakeUpPlayer() {
+  wakeUpPlayer = () => {
     const { io } = window;
     const { app, updateStreamInfo, togglePlayer } = this.props;
 
@@ -161,7 +146,7 @@ class FileBrowser extends Component {
     io.once('stream created', updateStreamInfo);
   }
 
-  addTextTrack(location, label, encoding, offset) {
+  addTextTrack = (location, label, encoding, offset) => {
     const { io } = window;
     const { fileBrowser, toggleFileBrowserDialog, setTextTrackInfo } = this.props;
 
@@ -171,7 +156,7 @@ class FileBrowser extends Component {
     if (fileBrowser.isVisible) return toggleFileBrowserDialog();
   }
 
-  navigateUpDir(e) {
+  navigateUpDir = (e) => {
     e.preventDefault();
     const { folders, sep } = this.props.fileBrowser.directory;
     if (!folders || !folders.length) return;
@@ -179,7 +164,7 @@ class FileBrowser extends Component {
     this.getContent(location);
   }
 
-  toggleCastOptions(e) {
+  toggleCastOptions = (e) => {
     if (e) e.stopPropagation();
     const { isOptionsVisible } = this.state;
     this.setState({ isOptionsVisible: !isOptionsVisible });

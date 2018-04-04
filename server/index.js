@@ -8,13 +8,16 @@ const { each } = require('lodash');
 const middleware = require('./middleware');
 const routes = require('./routes');
 
-const build = path.join(__dirname, '..', 'build');
-
 app.use(middleware.bodyParser.json());
 app.use(middleware.bodyParser.urlencoded({ extended: true }));
 app.use(middleware.morgan('short'));
 
-app.use(express.static(build));
+app.use(express.static(path.resolve(__dirname, '..', 'dist', 'js')));
+app.use(express.static(path.resolve(__dirname, '..', 'static')));
+app.set('views', path.resolve(__dirname, 'views'));
+app.set('view engine', 'pug');
+
+app.get('/', (req, res) => res.render('index.pug'));
 
 each(routes, (cb, endpoint) => app.use(`/api/${endpoint}`, middleware.setCORS, cb));
 

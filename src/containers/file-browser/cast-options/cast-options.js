@@ -1,7 +1,7 @@
 import React from 'react';
 import styled, { withTheme } from 'styled-components';
 
-import { Flex } from 'shared/components';
+import { Flex } from 'src/shared/components';
 
 import FileBrowserButton from '../button/button';
 

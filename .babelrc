@@ -1,5 +1,12 @@
 {
+  "presets": [
+    "env",
+    "react"
+  ],
   "plugins": [
-    "transform-class-properties"
+    "transform-object-rest-spread",
+    "transform-class-properties",
+    "transform-async-to-generator",
+    "syntax-dynamic-import"
   ]
 }

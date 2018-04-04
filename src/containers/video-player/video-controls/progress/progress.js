@@ -1,12 +1,10 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import moment from 'moment';
 import momentDurationSetup from 'moment-duration-format';
 
-import { Flex } from 'shared/components';
-
-momentDurationSetup(moment);
+import { Flex } from 'src/shared/components';
 
 const borderRadius = 6;
 const progressHeight = 12;
@@ -23,8 +21,8 @@ const ProgressContainer = Flex.extend`
 `;
 
 const SeekTime = Flex.extend`
-  visibility: ${({ isVisible }) => isVisible ? 'visible' : 'hidden'};
-  opacity: ${({ isVisible }) => isVisible ? 1 : 0};
+  visibility: ${({ isVisible }) => (isVisible ? 'visible' : 'hidden')};
+  opacity: ${({ isVisible }) => (isVisible ? 1 : 0)};
   font-size: 12px;
   color: rgb(255,255,255);
   background: ${({ theme }) => theme['green_sea']};
@@ -77,8 +75,7 @@ const ProgressBar = styled.progress`
   }
 `;
 
-class Progress extends Component {
-
+class Progress extends PureComponent {
   static propTypes = {
     currentTime: PropTypes.number.isRequired,
     duration: PropTypes.number.isRequired,
@@ -86,21 +83,17 @@ class Progress extends Component {
     seek: PropTypes.func.isRequired
   };
 
-  constructor(props) {
-    super(props);
-    
-    this.state = {
-      seekTimePos: 0,
-      seekTime: 0,
-      isSeekTimeVisible: false
-    };
+  state = {
+    seekTimePos: 0,
+    seekTime: 0,
+    isSeekTimeVisible: false
+  };
 
-    this.getSeekTime = this.getSeekTime.bind(this);
-    this.hideSeekTime = this.hideSeekTime.bind(this);
-    this.handleSeek = this.handleSeek.bind(this);
+  componentDidMount() {
+    momentDurationSetup(moment);
   }
-  
-  getSeekTime(e) {
+
+  getSeekTime = (e) => {
     e.stopPropagation();
     const { duration } = this.props;
     const { progress } = this;
@@ -111,12 +104,12 @@ class Progress extends Component {
     this.setState({ seekTime, seekTimePos, isSeekTimeVisible: true });
   }
 
-  hideSeekTime(e) {
+  hideSeekTime = (e) => {
     e.stopPropagation();
     this.setState({ isSeekTimeVisible: false });
   }
   
-  handleSeek(e) {
+  handleSeek = (e) => {
     e.stopPropagation();
     const { seek } = this.props;
     const { seekTime } = this.state;

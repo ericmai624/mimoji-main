@@ -2,9 +2,9 @@ import React from 'react';
 import styled from 'styled-components';
 import FontAwesomeIcon from '@fortawesome/react-fontawesome';
 
-import { Flex } from 'shared/components';
+import { Flex } from 'src/shared/components';
 
-import Loader from 'components/loader/loader';
+import Loader from 'src/components/loader/loader';
 
 const Container = Flex.extend`
   overflow: auto;

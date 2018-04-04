@@ -1,20 +1,19 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import FontAwesomeIcon from '@fortawesome/react-fontawesome';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
-import { changeTextTrackEncoding } from 'stores/text-track';
+import { changeTextTrackEncoding } from 'src/stores/text-track';
 
-import { Flex, Button } from 'shared/components';
+import { Flex, Button } from 'src/shared/components';
 
 const Container = Flex.extend`
   width: 100%;
   height: 100%;
   box-sizing: border-box;
   position: relative;
-  ${'' /* border-bottom: 1px solid rgb(255,255,255); */}
 `;
 
 const Text = styled.span`
@@ -57,47 +56,42 @@ const CaretDown = Button.extend`
   }
 `;
 
-const encodingOptions = [
-  {
-    language: 'Unicode',
-    encodings: ['UTF-8', 'UTF-16', 'UTF-16 LE', 'UTF-16 BE']
-  },
-  {
-    language: 'Chinese Simplfied',
-    encodings: ['GB2312', 'GBK', 'GB18030', 'Windows-936']
-  },
-  {
-    language: 'Chinese Traditional',
-    encodings: ['BIG5']
-  },
-  {
-    language: 'Japanese',
-    encodings: ['Shift_JIS', 'EUC-JP']
-  }
-];
-
-class SubtitleEncoding extends Component {
-
+class SubtitleEncoding extends PureComponent {
   static propTypes = {
     encoding: PropTypes.string.isRequired,
     changeTextTrackEncoding: PropTypes.func.isRequired
   }
 
-  constructor(props) {
-    super(props);
-    
-    this.state = {
-      currentEncoding: 'Auto-Detect'
-    };
-
-    this.onSelectionChange = this.onSelectionChange.bind(this);
+  static defaultProps = {
+    encodingOptions: [
+      {
+        language: 'Unicode',
+        encodings: ['UTF-8', 'UTF-16', 'UTF-16 LE', 'UTF-16 BE']
+      },
+      {
+        language: 'Chinese Simplfied',
+        encodings: ['GB2312', 'GBK', 'GB18030', 'Windows-936']
+      },
+      {
+        language: 'Chinese Traditional',
+        encodings: ['BIG5']
+      },
+      {
+        language: 'Japanese',
+        encodings: ['Shift_JIS', 'EUC-JP']
+      }
+    ]
   }
+
+  state = {
+    currentEncoding: 'Auto-Detect'
+  };
   
-  onSelectionChange(e) {
+  onSelectionChange = (e) => {
     this.setState({ currentEncoding: e.target.value }, this.updateTextTrackEncoding);
   }
 
-  updateTextTrackEncoding() {
+  updateTextTrackEncoding = () => {
     const { currentEncoding } = this.state;
     const { changeTextTrackEncoding } = this.props;
     const encoding = this.encodingParser(currentEncoding);
@@ -105,7 +99,7 @@ class SubtitleEncoding extends Component {
     changeTextTrackEncoding(encoding);
   }
 
-  encodingParser(encoding) {
+  encodingParser = (encoding) => {
     if ((/auto-detect/i).test(encoding)) return encoding;
     const start = encoding.indexOf('(') + 1; // + 1 to exclude '('
     const end = encoding.length - 1;
@@ -113,8 +107,21 @@ class SubtitleEncoding extends Component {
     return encoding.substring(start, end);
   }
 
+  renderEncodingOptions = (opt, i) => {
+    return (
+      <optgroup label={opt.language} key={i}>
+        {opt.encodings.map((encoding, i) => (
+          <option value={`${opt.language} (${encoding})`} key={i}>
+            {`${opt.language} (${encoding})`}
+          </option>
+        ))}
+      </optgroup>
+    );
+  }
+
   render() {
     const { currentEncoding } = this.state;
+    const { encodingOptions } = this.props;
 
     return (
       <Container align='center' justify='space-between'>
@@ -123,15 +130,7 @@ class SubtitleEncoding extends Component {
           <optgroup label='Default'>
             <option value='Auto-Detect'>Auto-Detect</option>
           </optgroup>
-          {encodingOptions.map((option, i) => (
-            <optgroup label={option.language} key={i}>
-              {option.encodings.map((encoding, i) => (
-                <option value={`${option.language} (${encoding})`} key={i}>
-                  {`${option.language} (${encoding})`}
-                </option>
-              ))}
-            </optgroup>
-          ))}
+          {encodingOptions.map(this.renderEncodingOptions)}
         </Select>
         <CaretDown size='48px'>
           <FontAwesomeIcon icon={['fas', 'caret-down']} />
