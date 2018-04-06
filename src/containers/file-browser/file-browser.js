@@ -1,19 +1,21 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
+import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+
+import FileBrowserList from './file-list/file-list';
+import CastOptions from './cast-options/cast-options';
+import Nav from './nav/nav';
+import Search from './search/search';
+import { Flex } from 'src/shared/components';
 
 import { toggleLoading, togglePlayer, streamToGoogleCast } from 'src/stores/app';
 import { toggleFileBrowserDialog, updateContent } from 'src/stores/file-browser';
 import { setStreamSource, updateStreamInfo } from 'src/stores/stream';
 import { setTextTrackInfo } from 'src/stores/text-track';
 
-import { Flex } from 'src/shared/components';
-
-import FileBrowserList from './file-list/file-list';
-import CastOptions from './cast-options/cast-options';
-import Nav from './nav/nav';
-import Search from './search/search';
+import { fileBrowserType, textTrackType } from 'src/types';
 
 const Container = styled.div`
   position: absolute;
@@ -59,6 +61,20 @@ const ListContainer = Flex.extend`
 `;
 
 class FileBrowser extends Component {
+  static propTypes = {
+    app: PropTypes.objectOf(PropTypes.bool),
+    fileBrowser: PropTypes.shape(fileBrowserType),
+    textTrack: PropTypes.shape(textTrackType),
+    updateContent: PropTypes.func,
+    toggleFileBrowserDialog: PropTypes.func,
+    togglePlayer: PropTypes.func,
+    toggleLoading: PropTypes.func,
+    streamToGoogleCast: PropTypes.func,
+    setStreamSource: PropTypes.func,
+    updateStreamInfo: PropTypes.func,
+    setTextTrackInfo: PropTypes.func
+  }
+
   state = {
     isOptionsVisible: false,
   };
@@ -68,28 +84,23 @@ class FileBrowser extends Component {
 
     /* Register event listeners first */
     io.on('request content fulfilled', this.updatedir);
-
     io.on('request content rejected', this.updatedir);
-
-    /* 
-    Start requesting directory content 
-    '' means root directory
-    */
-    this.getContent('');
+    
+    /* Get root directory content */
+    this.getContent();
   }
 
-  getContent = (dir) => {
+  getContent = (dir = '') => {
     const { io } = window;
     io.emit('request content', dir);
   }
 
   updatedir = (data) => {
     const { updateContent } = this.props;
-    /* 
-    request rejection will not return any data.
-    So if data is undefined, the request is rejected 
-    */
-    updateContent(data, data === undefined);
+    if (!data) {
+      return updateContent(true/* error */, null);
+    }
+    return updateContent(false/* error */, data);
   }
 
   onDoubleClickDirectory = (e, file) => {

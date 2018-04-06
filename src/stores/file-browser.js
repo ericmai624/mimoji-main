@@ -1,6 +1,6 @@
 import { createReducer } from '../utils';
 
-export const updateContent = (data, error) => ({ type: 'CONTENT_UPDATED', payload: { data, error } });
+export const updateContent = (error, data) => ({ type: 'CONTENT_UPDATED', payload: { error, data } });
 
 export const modifyDisplayedContent = modifiedContent => ({ type: 'CONTENT_MODIFIED', displayedContent: modifiedContent });
 

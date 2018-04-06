@@ -9,7 +9,7 @@ import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 
 import { toggleFileBrowserDialog } from 'src/stores/file-browser';
-import { initFa, toggleFullscreen } from 'src/stores/app';
+import { toggleFullscreen } from 'src/stores/app';
 import { getIpAddress } from 'src/stores/ip'; 
 
 import LoadingScreen from 'src/components/loading-screen/loading-screen';
@@ -17,7 +17,6 @@ import FileBrowser from 'src/containers/file-browser/file-browser';
 import VideoPlayer from 'src/containers/video-player/video-player';
 
 import { Flex, Button } from 'src/shared/components';
-
 
 const theme = {
   'carrot': '#e67e22',
@@ -161,8 +160,7 @@ const mapStateToProps = (state) => ({ app: state.app, isFileBrowserEnabled: stat
 const mapDispatchToProps = (dispatch) => ({
   getIpAddress: bindActionCreators(getIpAddress, dispatch),
   toggleFileBrowserDialog: bindActionCreators(toggleFileBrowserDialog, dispatch),
-  toggleFullscreen: bindActionCreators(toggleFullscreen, dispatch),
-  initFa: bindActionCreators(initFa, dispatch)
+  toggleFullscreen: bindActionCreators(toggleFullscreen, dispatch)
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(App);
