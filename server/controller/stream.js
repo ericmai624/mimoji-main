@@ -24,9 +24,6 @@ class VideoStream {
     this.watcher = null;
     this.finishedQueue = [];
     this.uniqueFilePath = new Set();
-    /* Methods binding */
-    this.clean = this.clean.bind(this);
-    this.finish = this.finish.bind(this);
   }
 
   getId() {
