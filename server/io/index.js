@@ -17,7 +17,7 @@ io.on('connection', socket => {
       const content = await readdir(location);
       socket.emit('request content fulfilled', content);
     } catch (err) {
-      log(`Failed to get content in ${dir} with ${err}`);
+      log(`Failed to get content, ${err}`);
       socket.emit('request content rejected');
     }
   });
